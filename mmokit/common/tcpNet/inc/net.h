@@ -63,7 +63,7 @@ static inline unsigned int NET_Swap32(unsigned int D) {
 #endif
 #ifdef NET_HAS_64BIT_TYPE
 #ifndef NET_Swap64
-static inline long long SDLNET_Swap64(long long val) {
+static inline long long NET_Swap64(long long val) {
 	Uint32 hi, lo;
 
 	/* Separate into high and low 32-bit values and swap them */
@@ -229,7 +229,7 @@ unsigned int net_Read32(void *area);
 /* Write a 16 bit value to network packet buffer */
 #if !NET_DATA_ALIGNED
 #define net_Write16(value, areap)	\
-	(*(unsigned short *)(areap) = SDLNET_SwapBE16(value))
+	(*(unsigned short *)(areap) = NET_SwapBE16(value))
 #else
 #if NET_BYTEORDER == NET_BIG_ENDIAN
 #define net_Write16(value, areap)	\
