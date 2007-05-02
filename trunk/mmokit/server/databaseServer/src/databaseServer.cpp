@@ -12,7 +12,6 @@
 
 int magicNumber = _MAGIC_DEFAULT_NUMBER;
 
-
 bool quit = false;
 
 int main(int argc, char* argv[])
