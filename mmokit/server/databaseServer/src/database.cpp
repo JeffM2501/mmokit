@@ -76,11 +76,11 @@ DatabaseItem* DatabaseTable::findRecordItemByKey ( std::string &key, int label )
 	return &(record->items[label]);
 }
 
-void DatabaseTable::addRecord ( std::string &key )
+DatabaseRecord* DatabaseTable::addRecord ( std::string &key )
 {
 	DatabaseRecord* record = findRecordByKey(key);
 	if (record)
-		return;
+		return record;
 
 	DatabaseRecord newRecord;
 
@@ -88,6 +88,8 @@ void DatabaseTable::addRecord ( std::string &key )
 		newRecord.items.push_back(std::string(""));
 
 	records[key] = newRecord;
+
+	return &records[key];
 }
 
 void DatabaseTable::deleteRecord ( std::string &key )

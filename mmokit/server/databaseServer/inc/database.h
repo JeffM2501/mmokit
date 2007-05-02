@@ -40,7 +40,7 @@ public:
 	DatabaseItem* findRecordItemByKey ( std::string &key, std::string &label );
 	DatabaseItem* findRecordItemByKey ( std::string &key, int label );
 
-	void addRecord ( std::string &key );
+	DatabaseRecord* addRecord ( std::string &key );
 	void deleteRecord ( std::string &key );
 	void addLabel ( std::string &label, bool unique = true, std::string defaultData = std::string(""));
 	void deleteLabel ( std::string &label);
