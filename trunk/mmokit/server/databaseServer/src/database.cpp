@@ -152,8 +152,11 @@ Database::~Database()
 	write();
 }
 
-bool Database::read ( void )
+bool Database::read ( const char* filename )
 {
+	if (filename)
+		diskFile = filename;
+
 	if (!diskFile.size())
 		return false;
 

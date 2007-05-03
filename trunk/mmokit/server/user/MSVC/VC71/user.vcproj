@@ -129,6 +129,9 @@
 			<File
 				RelativePath="..\..\..\..\common\inc\netUtils.h">
 			</File>
+			<File
+				RelativePath="..\..\inc\userMessages.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

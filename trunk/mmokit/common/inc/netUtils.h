@@ -68,7 +68,7 @@ public:
 				{
 					PendingMessage message;
 					message.code = net_Read16(pos);
-					message.len = net_Read16(pos);
+					message.len = net_Read16(pos+2);
 
 					if ( end-pos >= 4 + message.len )
 					{
@@ -161,5 +161,23 @@ public:
 		pendingMessages.clear();
 	}
 };
+
+unsigned int readStringFromData ( std::string &str, const char *data, unsigned int len )
+{
+	str = "";
+	unsigned short strLen = net_Read16(data);
+	if ( (unsigned short)len < strLen+2 )
+		return 0;
+
+	char* temp = (char*)malloc(strLen+1);
+	temp[strLen] = 0;
+
+	memcpy(temp,data+2,strLen);
+
+	str = temp;
+	free(temp);
+
+	return strLen+2;
+}
 
 #endif //_NET_UTILS_H_

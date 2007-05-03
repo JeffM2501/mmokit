@@ -4,11 +4,23 @@
 #include "database.h"
 #include "tcpConnection.h"
 #include "netUtils.h"
+#include "userMessages.h"
+
 #include <vector>
 #include <map>
 #include <string>
 
 #define _INVALID_ID 0xFFFFFFFF
+
+Database	database;
+
+void sendPeerResponce( TCPServerConnectedPeer *peer, UseNetResponces responce )
+{
+	char buffer[4];
+	net_Write16((unsigned short)responce,buffer);
+	net_Write16(6,buffer+2);
+	peer->sendData(buffer,4);
+}
 
 class UserLoginListener : public TCPServerDataPendingListener
 {
@@ -17,10 +29,7 @@ public:
 	virtual void pending ( TCPServerConnection *connection, TCPServerConnectedPeer *peer, unsigned int count );
 	virtual void disconnect ( TCPServerConnection *connection, TCPServerConnectedPeer *peer, bool forced = false );
 
-	Database	*database;
-
 protected:
-
 	class UserPeer : public ShortShortNetworkPeer
 	{
 	public:
@@ -30,7 +39,7 @@ protected:
 			peer = NULL;
 		}
 
-		UserPeer(TCPServerConnectedPeer*p){ userID = _INVALID_ID; peer = p;}
+		UserPeer(TCPServerConnectedPeer*p){userID = _INVALID_ID; peer = p;}
 		unsigned int userID;
 		TCPServerConnectedPeer *peer;
 
@@ -57,8 +66,6 @@ public:
 	virtual bool connect ( TCPServerConnection *connection, TCPServerConnectedPeer *peer );
 	virtual void pending ( TCPServerConnection *connection, TCPServerConnectedPeer *peer, unsigned int count );
 	virtual void disconnect ( TCPServerConnection *connection, TCPServerConnectedPeer *peer, bool forced = false );
-
-	Database	*database;
 
 	class TokenPeer : public ShortShortNetworkPeer
 	{
@@ -112,8 +119,31 @@ std::string blocked = "blocked";
 
 // record IDs
 unsigned int userDataTableUserNameField = 0;
+unsigned int userDataTablePassHashField = 0;
 
-void setupDatabase ( Database &database )
+// password stuff
+std::string passwordHashKey = "123456789012345678901234567890";
+
+std::string hashPassword ( std::string password )
+{
+	std::string hash;
+
+	unsigned int len = (unsigned int)passwordHashKey.size();
+	if ( password.size() > len )
+		len = (unsigned int)password.size();
+
+	for ( unsigned int i = 0; i < len; i++ )
+	{
+		unsigned char c = password[i] + passwordHashKey[i];
+		if ( c == 0 )
+			c = 1;
+		hash += c;
+	}
+
+	return hash;
+}
+
+void setupDatabase ( void )
 {
 	if ( database.getTable(userDataTable) == NULL )
 	{
@@ -129,6 +159,7 @@ void setupDatabase ( Database &database )
 	DatabaseTable *userData = database.getTable(userDataTable);
 
 	userDataTableUserNameField = userData->getLabelIndex(userName);
+	userDataTablePassHashField = userData->getLabelIndex(passwordHash);
 
 	// build up a reverse name lookup table
 	// also makes it easy to check for used names
@@ -153,17 +184,16 @@ void setupDatabase ( Database &database )
 
 int main(int argc, char* argv[])
 {
-	Database	database("characters.dbf");
+	database.read("characters.dbf");
+	setupDatabase();
 
 	TCPConnection			&tcpConnection = TCPConnection::instance();
 
 	TokenRetrevalListener	tokenListener;
-	tokenListener.database = &database;
 	TCPServerConnection		*tokenServer = tcpConnection.newServerConnection(tokenListenPort,maxTokenListens);	
 	tokenServer->addListener(&tokenListener);
 
 	UserLoginListener		userListener;
-	userListener.database = &database;
 	TCPServerConnection		*userServer = tcpConnection.newServerConnection(userListenPort,maxUserListens);	
 	userServer->addListener(&userListener);
 
@@ -186,10 +216,61 @@ bool UserLoginListener::UserPeer::messagePending ( unsigned short code, unsigned
 	if (!peer || !data || !len)
 		return true;
 
-	//switch(code)
-	//{
+	char* p = data;
+	char* e = p + len;
+	switch((UseNetMessages)code)
+	{
+		default:
+		break;
 
-	//}
+		case eUserLoginNetMessage:
+		{
+			// somone wants to login
+			std::string username;
+			p += readStringFromData(username,p,e-p);
+
+			std::string passHash;
+			p += readStringFromData(passHash,p,e-p);
+
+			DatabaseTable *nameLookup = database.getTable(userNameTable);
+			DatabaseTable *usersData = database.getTable(userDataTable);
+			
+			if (nameLookup && usersData)
+			{
+				std::string id = nameLookup->findRecordItemByKey(userNameTable,0)->data;
+				if ( !id.size() )
+					sendPeerResponce(peer,eNoUsernameUserNetResponce);
+				else
+				{
+					DatabaseRecord *record = usersData->findRecordByKey(id);
+					if (!record)
+						sendPeerResponce(peer,eNoUsernameUserNetResponce);
+					else
+					{
+						std::string storedHash = record->items[userDataTablePassHashField].data;
+						if (!storedHash.size())
+							sendPeerResponce(peer,eInvalidPasswordUserNetResponce);
+						else
+						{
+							if (storedHash != passHash)
+								sendPeerResponce(peer,eInvalidPasswordUserNetResponce);
+							else
+							{
+								userID = atoi(id.c_str());
+								sendPeerResponce(peer,ePasswordOKUserNetResponce);
+							}
+						}
+					}
+				}
+			}
+			else // fuck
+				sendPeerResponce(peer,eGeneralErrorUserNetResponce);
+		}
+		break;
+
+		case eNewUserNetMessage:
+		break;
+	}
 
 	return true;
 }
