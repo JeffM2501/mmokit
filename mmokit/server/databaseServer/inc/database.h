@@ -51,10 +51,10 @@ typedef std::map<std::string, DatabaseTable> DatabaseTableMap;
 class Database 
 {
 public:
-	Database( const char* filename );
+	Database( const char* filename = NULL );
 	virtual ~Database();
 
-	bool read ( void );
+	bool read ( const char* filename = NULL );
 	bool write ( void );
 
 	DatabaseTable*	getTable ( std::string &table );
