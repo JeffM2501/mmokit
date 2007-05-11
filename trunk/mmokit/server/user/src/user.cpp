@@ -5,6 +5,7 @@
 #include "tcpConnection.h"
 #include "netUtils.h"
 #include "userMessages.h"
+#include "text"
 
 #include <vector>
 #include <map>
@@ -13,6 +14,11 @@
 #define _INVALID_ID 0xFFFFFFFF
 
 Database	database;
+
+std::string newToken ( void *peer )
+{
+	return tex
+}
 
 void sendPeerResponce( TCPServerConnectedPeer *peer, UseNetResponces responce )
 {
@@ -123,6 +129,17 @@ unsigned int userDataTablePassHashField = 0;
 
 // password stuff
 std::string passwordHashKey = "123456789012345678901234567890";
+
+// tokenList
+typedef struct 
+{
+	std::string token;
+	float		time;
+	bool		used;
+}trUserToken;
+
+typedef std::map<TCPServerConnectedPeer*,trUserToken> UserTokenMap;
+UserTokenMap activeTokens;
 
 std::string hashPassword ( std::string password )
 {
@@ -256,7 +273,7 @@ bool UserLoginListener::UserPeer::messagePending ( unsigned short code, unsigned
 								sendPeerResponce(peer,eInvalidPasswordUserNetResponce);
 							else
 							{
-								userID = atoi(id.c_str());
+								userID = (unsigned int)atoi(id.c_str());
 								sendPeerResponce(peer,ePasswordOKUserNetResponce);
 							}
 						}
@@ -269,7 +286,26 @@ bool UserLoginListener::UserPeer::messagePending ( unsigned short code, unsigned
 		break;
 
 		case eNewUserNetMessage:
+			{
+
+			}
 		break;
+
+		case eGiveTokenNetMessage:
+			if (userID == _INVALID_ID)
+			{
+				sendPeerResponce(peer,eNoUsernameUserNetResponce);
+				break;
+			}
+			else
+			{
+				std::string token;
+				UserTokenMap::iterator itr = activeTokens.find(peer);
+				if ( itr != activeTokens.end())
+					token = itr->second;
+
+			}
+			break;
 	}
 
 	return true;
@@ -279,6 +315,10 @@ bool UserLoginListener::connect ( TCPServerConnection *connection, TCPServerConn
 {
 	if (!getPeerData(peer))
 		peerMap[peer] = UserPeer(peer);
+
+	UserTokenMap::iterator itr = activeTokens.find(peer);
+	if ( itr != activeTokens.end())
+		activeTokens.erase(itr);
 
 	return true;
 }
@@ -300,6 +340,10 @@ void UserLoginListener::disconnect ( TCPServerConnection *connection, TCPServerC
 {
 	if (getPeerData(peer))
 		peerMap.erase(peerMap.find(peer));
+
+	UserTokenMap::iterator itr = activeTokens.find(peer);
+	if ( itr != activeTokens.end())
+		activeTokens.erase(itr);
 }
 
 bool TokenRetrevalListener::connect ( TCPServerConnection *connection, TCPServerConnectedPeer *peer )
