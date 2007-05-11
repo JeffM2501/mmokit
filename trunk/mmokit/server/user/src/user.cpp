@@ -5,7 +5,7 @@
 #include "tcpConnection.h"
 #include "netUtils.h"
 #include "userMessages.h"
-#include "text"
+#include "textUtils.h"
 
 #include <vector>
 #include <map>
@@ -17,7 +17,8 @@ Database	database;
 
 std::string newToken ( void *peer )
 {
-	return tex
+	unsigned int token = (int)peer;
+	return TextUtils::format("%d",token);
 }
 
 void sendPeerResponce( TCPServerConnectedPeer *peer, UseNetResponces responce )
@@ -302,8 +303,16 @@ bool UserLoginListener::UserPeer::messagePending ( unsigned short code, unsigned
 				std::string token;
 				UserTokenMap::iterator itr = activeTokens.find(peer);
 				if ( itr != activeTokens.end())
-					token = itr->second;
-
+					token = itr->second.token;
+				else
+				{
+					trUserToken	tok;
+					tok.used = false;
+					tok.time = 1.0f;
+					tok.token = newToken(peer);
+					token = tok.token; 
+					activeTokens[peer] = tok;
+				}
 			}
 			break;
 	}
