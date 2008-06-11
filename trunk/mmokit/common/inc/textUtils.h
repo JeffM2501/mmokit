@@ -37,6 +37,11 @@ namespace TextUtils {
   std::string vformat(const char* fmt, va_list args);
   std::string format(const char* fmt, ...);
 
+  bool same_no_case( const std::string& s1, const char * s2 );
+  bool same_no_case( const std::string& s1, const std::string& s2 );
+  bool same_no_case( const char* s1, const char* s2 );
+  bool same_no_case( const char* s1, const std::string& s2 );
+
   /** returns a string converted to lowercase
    */
   inline std::string tolower(const std::string& s)

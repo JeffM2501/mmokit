@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "databaseServer", "databaseServer.vcproj", "{E8072EB7-B1F1-48D3-93E3-92D94D6328AC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4677A346-82E0-4B81-B2F3-30402DD70FB8} = {4677A346-82E0-4B81-B2F3-30402DD70FB8}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcpNet", "..\..\..\..\common\tcpNet\MSVC\VC8\tcpNet.vcproj", "{4677A346-82E0-4B81-B2F3-30402DD70FB8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "database", "database.vcproj", "{E8072EB7-B1F2-48D4-93E3-92D94D6328AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E8072EB7-B1F1-48D3-93E3-92D94D6328AC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8072EB7-B1F1-48D3-93E3-92D94D6328AC}.Debug|Win32.Build.0 = Debug|Win32
+		{E8072EB7-B1F1-48D3-93E3-92D94D6328AC}.Release|Win32.ActiveCfg = Release|Win32
+		{E8072EB7-B1F1-48D3-93E3-92D94D6328AC}.Release|Win32.Build.0 = Release|Win32
+		{4677A346-82E0-4B81-B2F3-30402DD70FB8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4677A346-82E0-4B81-B2F3-30402DD70FB8}.Debug|Win32.Build.0 = Debug|Win32
+		{4677A346-82E0-4B81-B2F3-30402DD70FB8}.Release|Win32.ActiveCfg = Release|Win32
+		{4677A346-82E0-4B81-B2F3-30402DD70FB8}.Release|Win32.Build.0 = Release|Win32
+		{E8072EB7-B1F2-48D4-93E3-92D94D6328AC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8072EB7-B1F2-48D4-93E3-92D94D6328AC}.Release|Win32.ActiveCfg = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -45,6 +45,27 @@ namespace TextUtils
     return buffer;
   }
 
+  bool same_no_case( const std::string& s1, const char * s2 )
+  {
+    return same_no_case(s1.c_str(),s2);
+  }
+
+  bool same_no_case( const std::string& s1, const std::string& s2 )
+  {
+    return same_no_case(s1.c_str(),s2.c_str());
+  }
+
+  bool same_no_case( const char* s1, const std::string& s2 )
+  {
+    return same_no_case(s1,s2.c_str());
+  }
+
+  bool same_no_case( const char* s1, const char* s2 )
+  {
+    if (!s1 || !s2)
+      return false;
+    return stricmp(s1,s2) == 0;
+  }
 
   std::string format(const char* fmt, ...) {
     va_list args;
