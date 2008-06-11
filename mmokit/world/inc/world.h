@@ -20,13 +20,15 @@ public:
 	WorldMesh(){};
 	virtual ~WorldMesh(){};
 
+	virtual void finalise ( void );
+
 	std::vector<Vector3> verts,norms;
 	std::vector<Vector2> uvs;
 
 	class  FaceVert
 	{
 	public:
-		FaceVert(int _v = -1, int _n = -1, int _u = -1)
+		FaceVert(size_t _v = 0, size_t _n = 0, size_t _u = -1)
 		{
 			v = _v;
 			n = _n;
@@ -39,7 +41,7 @@ public:
 			n = fv.n;
 			u = fv.u;
 		}
-		int v,n,u;
+		size_t v,n,u;
 	};
 
 	typedef struct  

@@ -7,6 +7,36 @@
 using namespace TextUtils;
 using namespace std;
 
+//WorldMesh
+void WorldMesh::finalise ( void )
+{
+	// go thru the faces and verify that all the indexes are valid, ditching any faces that have invalid indexes
+	std::vector<size_t> badFaces;
+
+	for (size_t f = 0; f < faces.size(); f++ )
+	{
+		Face &face = faces[f];
+
+		bool bad = false;
+		for ( size_t v = 0; v < face.corners.size(); v++ )
+		{
+			FaceVert &corner = face.corners[v];
+			if ( corner.v >= verts.size() || corner.n >= norms.size() || corner.u >= uvs.size())
+				bad = true;
+		}
+
+		if (bad)
+			badFaces.push_back(f);
+	}
+
+	std::vector<size_t>::reverse_iterator itr = badFaces.rbegin();
+	while (itr != badFaces.rend())
+	{
+		faces.erase(faces.begin()+*itr);
+		itr++;
+	}
+}
+
 
 //WorldObject
 WorldMesh* WorldObject::newMesh ( void )
@@ -99,8 +129,10 @@ bool WorldStreamReader::read ( std::istream &input )
 		{
 			if (same_no_case(token,"cell:"))
 			{
-				if (cell)
+				if (cell && cell->objects.size())
 					world.cells.push_back(cell);
+				else if (cell)
+					world.deleteCell(cell);
 
 				cell = world.newCell();
 
@@ -111,6 +143,9 @@ bool WorldStreamReader::read ( std::istream &input )
 			{
 				if (object && object->meshes.size() && cell)
 					cell->objects.push_back(object);
+				else if (object && cell)
+					cell->deleteObject(object);
+
 				if (cell)
 					object = cell->newObject();
 				else
@@ -123,13 +158,16 @@ bool WorldStreamReader::read ( std::istream &input )
 			{
 				if (object)
 					input >> object->transform;
-			//	else
-			//		input.getline(temp,512);
 			}
 			else if (same_no_case(token,"mesh:"))
 			{
 				if (mesh.mesh && mesh.mesh->faces.size() && object)
+				{
+					mesh.mesh->finalise();
 					object->meshes.push_back(mesh);
+				}
+				else if (mesh.mesh && object)
+					object->deleteMesh(mesh.mesh);
 
 				mesh.mesh = NULL;
 				mesh.material = "";
@@ -139,8 +177,6 @@ bool WorldStreamReader::read ( std::istream &input )
 					mesh.mesh = object->newMesh();
 					input >> mesh.material;
 				}
-			//	else
-			//		input.getline(temp,512);
 			}
 			else if (same_no_case(token,"vert:"))
 			{
@@ -150,8 +186,6 @@ bool WorldStreamReader::read ( std::istream &input )
 					input >> v;
 					mesh.mesh->verts.push_back(v);
 				}
-			//	else
-			//		input.getline(temp,512);
 			}
 			else if (same_no_case(token,"norm:"))
 			{
@@ -161,8 +195,6 @@ bool WorldStreamReader::read ( std::istream &input )
 					input >> v;
 					mesh.mesh->norms.push_back(v);
 				}
-			//	else
-			//		input.getline(temp,512);
 			}
 			else if (same_no_case(token,"uv:"))
 			{
@@ -172,8 +204,6 @@ bool WorldStreamReader::read ( std::istream &input )
 					input >> v;
 					mesh.mesh->uvs.push_back(v);
 				}
-			//	else
-			//		input.getline(temp,512);
 			}
 			else if (same_no_case(token,"face:"))
 			{
@@ -208,8 +238,6 @@ bool WorldStreamReader::read ( std::istream &input )
 				else if (same_no_case(tag,"object:") && object)
 					object->attributes[key] = value;
 			}
-		//	else
-	//			input.getline(temp,512);	
 
 			token = "";
 			input >> token;
@@ -220,13 +248,22 @@ bool WorldStreamReader::read ( std::istream &input )
 		mesh.mesh->faces.push_back(face);
 	
 	if (mesh.mesh && mesh.mesh->faces.size() && object)
+	{
+		mesh.mesh->finalise();
 		object->meshes.push_back(mesh);
+	}
+	else if ( mesh.mesh && object)
+		object->deleteMesh(mesh.mesh);
 
 	if (object && object->meshes.size() && cell)
 		cell->objects.push_back(object);
+	else if (object && cell)
+		cell->deleteObject(object);
 
 	if (cell && cell->objects.size())
 		world.cells.push_back(cell);
+	else if (cell)
+		world.deleteCell(cell);
 
 	return world.cells.size() > 0;
 }
