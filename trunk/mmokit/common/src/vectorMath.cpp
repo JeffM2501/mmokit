@@ -371,22 +371,22 @@ float Vector3::normalise ( void )
 	return ::normalise(vec);
 }
 
-float Vector3::magnitude ( void )
+float Vector3::magnitude ( void ) const
 {
 	return ::magnitude(vec);
 }
 
-float Vector3::magnitude2d ( void )
+float Vector3::magnitude2d ( void ) const
 {
 	return ::magnitude2d(vec);
 }
 
-float Vector3::magnitudeSquared ( void )
+float Vector3::magnitudeSquared ( void ) const
 {
 	return ::magnitudeSquared (vec);
 }
 
-float Vector3::magnitudeSquared2d( void )
+float Vector3::magnitudeSquared2d( void ) const
 {
 	return ::magnitudeSquared2d (vec);
 }
