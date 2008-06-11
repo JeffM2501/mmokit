@@ -49,6 +49,26 @@ void WorldObject::deleteMesh ( WorldMesh* p )
 	delete(p);
 }
 
+void WorldObject::finalise ( void )
+{
+	// check the meshes to make sure they are valid
+	std::vector<size_t> badMeshes;
+
+	for (size_t m = 0; m < meshes.size(); m++ )
+	{
+		if (!meshes[m].mesh->faces.size())
+			badMeshes.push_back(m);
+	}
+
+	std::vector<size_t>::reverse_iterator itr = badMeshes.rbegin();
+	while (itr != badMeshes.rend())
+	{
+		meshes.erase(meshes.begin()+*itr);
+		itr++;
+	}
+}
+
+
 //WorldCell
 WorldObject* WorldCell::newObject ( void )
 {
@@ -58,6 +78,25 @@ WorldObject* WorldCell::newObject ( void )
 void WorldCell::deleteObject ( WorldObject* p )
 {
 	delete(p);
+}
+
+void WorldCell::finalise ( void )
+{
+	// check the meshes to make sure they are valid
+	std::vector<size_t> badObjects;
+
+	for (size_t o = 0; o < objects.size(); o++ )
+	{
+		if (!objects[o]->meshes.size())
+			badObjects.push_back(o);
+	}
+
+	std::vector<size_t>::reverse_iterator itr = badObjects.rbegin();
+	while (itr != badObjects.rend())
+	{
+		objects.erase(objects.begin()+*itr);
+		itr++;
+	}
 }
 
 //World
@@ -70,6 +109,26 @@ void World::deleteCell ( WorldCell* p )
 {
 	delete(p);
 }
+
+void World::finalise ( void )
+{
+	// check the meshes to make sure they are valid
+	std::vector<size_t> badCells;
+
+	for (size_t c = 0; c < cells.size(); c++ )
+	{
+		if (!cells[c]->objects.size())
+			badCells.push_back(c);
+	}
+
+	std::vector<size_t>::reverse_iterator itr = badCells.rbegin();
+	while (itr != badCells.rend())
+	{
+		cells.erase(cells.begin()+*itr);
+		itr++;
+	}
+}
+
 
 void World::clear ( void )
 {
@@ -100,7 +159,6 @@ void World::clear ( void )
 	name = "";
 }
 
-
 //WorldStreamReader
 WorldStreamReader::WorldStreamReader(World &w): world(w)
 {
@@ -130,7 +188,10 @@ bool WorldStreamReader::read ( std::istream &input )
 			if (same_no_case(token,"cell:"))
 			{
 				if (cell && cell->objects.size())
+				{
+					cell->finalise();
 					world.cells.push_back(cell);
+				}
 				else if (cell)
 					world.deleteCell(cell);
 
@@ -142,7 +203,10 @@ bool WorldStreamReader::read ( std::istream &input )
 			else if (same_no_case(token,"object:"))
 			{
 				if (object && object->meshes.size() && cell)
+				{
+					object->finalise();
 					cell->objects.push_back(object);
+				}
 				else if (object && cell)
 					cell->deleteObject(object);
 
@@ -256,15 +320,22 @@ bool WorldStreamReader::read ( std::istream &input )
 		object->deleteMesh(mesh.mesh);
 
 	if (object && object->meshes.size() && cell)
+	{
+		object->finalise();
 		cell->objects.push_back(object);
+	}
 	else if (object && cell)
 		cell->deleteObject(object);
 
 	if (cell && cell->objects.size())
+	{
+		cell->finalise();
 		world.cells.push_back(cell);
+	}
 	else if (cell)
 		world.deleteCell(cell);
 
+	world.finalise();
 	return world.cells.size() > 0;
 }
 

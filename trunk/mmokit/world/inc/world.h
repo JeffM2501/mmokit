@@ -59,6 +59,8 @@ public:
 	WorldObject(){};
 	virtual ~WorldObject(){};
 
+	virtual void finalise ( void );
+
 	class ObjectMesh
 	{
 	public:
@@ -89,6 +91,8 @@ public:
 	WorldCell(){};
 	virtual ~WorldCell(){};
 
+	virtual void finalise ( void );
+
 	typedef std::vector<WorldObject*> WorldObjectList;
 
 	WorldObjectList objects;
@@ -105,6 +109,7 @@ public:
 	World(){};
 	virtual ~World(){};
 
+	virtual void finalise ( void );
 
 	void clear ( void );
 
