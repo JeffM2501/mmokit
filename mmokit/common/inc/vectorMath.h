@@ -118,10 +118,10 @@ public:
 	void cross ( const float lhs[], const float rhs[] );
 
 	float normalise ( void );
-	float magnitude ( void );
-	float magnitudeSquared ( void );
-	float magnitude2d ( void );
-	float magnitudeSquared2d ( void );
+	float magnitude ( void ) const;
+	float magnitudeSquared ( void ) const;
+	float magnitude2d ( void ) const;
+	float magnitudeSquared2d ( void ) const;
 
 	float x ( void ) const;
 	float y ( void ) const;
