@@ -2,9 +2,7 @@
 //
 
 #include "collisionWorld.h"
-#include "textUtils.h"
 
-using namespace TextUtils;
 using namespace std;
 
 //CollisionMesh
@@ -28,40 +26,39 @@ void lesserAxis ( Vector3 &result, const Vector3 &input )
 		result.z(input.z());
 }
 
-void CollisionMesh::finalise ( void )
+BoundingInfo::BoundingInfo()
 {
-	WorldMesh::finalise();
-
-	// build up the bbox and rad
-
-	Vector3 bbox[2];
-
-	if (!verts.size())
-		return;
-
-	bbox[0] = bbox[1] = verts[0];
-	
-	for (size_t f = 0; f < faces.size(); f++ )
-	{
-		Face &face = faces[f];
-
-		bool bad = false;
-		for ( size_t v = 0; v < face.corners.size(); v++ )
-		{
-			FaceVert &corner = face.corners[v];
-
-			greaterAxis(bbox[0],verts[corner.v]);
-			lesserAxis(bbox[1],verts[corner.v]);
-		}
-	}
-
-	bboxSize = bbox[0] - bbox[1];
-	bboxSize *= 0.5f;
-	radius = bboxSize.magnitude();
-	center += bboxSize + bbox[1];
+	clear();
 }
 
-bool CollisionMesh::collide ( const Vector3 &pos, const float rad, Vector3 *hit)
+void BoundingInfo::clear ( void )
+{
+	set = false;
+}
+
+void BoundingInfo::add ( const Vector3 &vert )
+{
+	if (!set)
+	{
+		bbox[0] = bbox[1] = vert;
+		radius = 0;
+		bboxSize = Vector3();
+		center = vert;
+		set = true;
+	}
+	else
+	{
+		greaterAxis(bbox[0],vert);
+		lesserAxis(bbox[1],vert);
+
+		bboxSize = bbox[0] - bbox[1];
+		bboxSize *= 0.5f;
+		radius = bboxSize.magnitude();
+		center += bboxSize + bbox[1];
+	}
+}
+
+bool BoundingInfo::sphereIn ( const Vector3 &pos, const float rad, Vector3 *hit )
 {
 	Vector3 vec = pos - center;
 
@@ -80,14 +77,61 @@ bool CollisionMesh::collide ( const Vector3 &pos, const float rad, Vector3 *hit)
 	return true;
 }
 
-bool CollisionMesh::collide ( const Vector3 &pos, const Vector3 &size, Vector3 *hit)
+bool BoundingInfo::boxIn ( const Vector3 &pos, const Vector3 &size, Vector3 *hit)
 {
-	return collide(pos,size.magnitude(),hit);
+	if (!sphereIn(pos,size.magnitude()))
+		return false;
+
+	// this is cheap, do real tests later
+	return sphereIn(pos,size.magnitude(),hit);
 }
 
-bool CollisionMesh::collide ( const Vector3 &pos, const Vector3 &size, const Matrix34& /*transform*/, Vector3 *hit)
+bool BoundingInfo::boxIn ( const Vector3 &pos, const Vector3 &size, const Matrix34& /*transform*/, Vector3 *hit)
 {
-	return collide(pos,size.magnitude(),hit);
+	if (!sphereIn(pos,size.magnitude()))
+		return false;
+
+	// this is cheap, do real tests later
+	return sphereIn(pos,size.magnitude(),hit);
+}
+
+void CollisionMesh::finalise ( void )
+{
+	WorldMesh::finalise();
+
+	bounds.clear();
+	// build up the bbox and rad
+
+	if (!verts.size())
+		return;
+	
+	for (size_t f = 0; f < faces.size(); f++ )
+	{
+		Face &face = faces[f];
+
+		bool bad = false;
+		for ( size_t v = 0; v < face.corners.size(); v++ )
+		{
+			FaceVert &corner = face.corners[v];
+
+			bounds.add(verts[corner.v]);
+		}
+	}
+}
+
+bool CollisionMesh::collide ( const Vector3 &pos, const float rad, Vector3 *hit)
+{
+	return bounds.sphereIn(pos,rad,hit);
+}
+
+bool CollisionMesh::collide ( const Vector3 &pos, const Vector3 &size, Vector3 *hit)
+{
+	return bounds.boxIn(pos,size,hit);
+}
+
+bool CollisionMesh::collide ( const Vector3 &pos, const Vector3 &size, const Matrix34& transform, Vector3 *hit)
+{
+	return bounds.boxIn(pos,size,transform,hit);
 }
 
 //WorldObject
@@ -101,8 +145,30 @@ void CollisionObject::deleteMesh ( WorldMesh* p )
 	delete(p);
 }
 
+void CollisionObject::finalise ( void )
+{
+	bounds.clear();
+
+	float maxRad = 0;
+
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		CollisionMesh* mesh = (CollisionMesh*)meshes[i].mesh;
+
+		bounds.add(mesh->bounds.center);
+		if (mesh->bounds.radius > maxRad)
+			maxRad = mesh->bounds.radius;
+
+	}
+	bounds.radius += maxRad;
+}
+
 bool CollisionObject::collide ( const Vector3 &pos, const float rad, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,rad))
+		return false;
+
 	for (size_t i = 0; i < meshes.size(); i++)
 	{
 		CollisionMesh* mesh = (CollisionMesh*)meshes[i].mesh;
@@ -115,6 +181,10 @@ bool CollisionObject::collide ( const Vector3 &pos, const float rad, Vector3 *hi
 
 bool CollisionObject::collide ( const Vector3 &pos, const Vector3 &size, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,size.magnitude()))
+		return false;
+
 	for (size_t i = 0; i < meshes.size(); i++)
 	{
 		CollisionMesh* mesh = (CollisionMesh*)meshes[i].mesh;
@@ -127,6 +197,10 @@ bool CollisionObject::collide ( const Vector3 &pos, const Vector3 &size, Vector3
 
 bool CollisionObject::collide ( const Vector3 &pos, const Vector3 &size, const Matrix34& transform, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,size.magnitude()))
+		return false;
+
 	for (size_t i = 0; i < meshes.size(); i++)
 	{
 		CollisionMesh* mesh = (CollisionMesh*)meshes[i].mesh;
@@ -148,8 +222,29 @@ void CollisionCell::deleteObject ( WorldObject* p )
 	delete(p);
 }
 
+void CollisionCell::finalise ( void )
+{
+	bounds.clear();
+
+	float maxRad = 0;
+
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		CollisionObject* object = (CollisionObject*)objects[i];
+
+		bounds.add(object->bounds.center);
+		if (object->bounds.radius > maxRad)
+			maxRad = object->bounds.radius;
+	}
+	bounds.radius += maxRad;
+}
+
 bool CollisionCell::collide ( const Vector3 &pos, const float rad, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,rad))
+		return false;
+
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		CollisionObject* object = (CollisionObject*)objects[i];
@@ -162,6 +257,10 @@ bool CollisionCell::collide ( const Vector3 &pos, const float rad, Vector3 *hit)
 
 bool CollisionCell::collide ( const Vector3 &pos, const Vector3 &size, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,size.magnitude()))
+		return false;
+
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		CollisionObject* object = (CollisionObject*)objects[i];
@@ -174,6 +273,10 @@ bool CollisionCell::collide ( const Vector3 &pos, const Vector3 &size, Vector3 *
 
 bool CollisionCell::collide ( const Vector3 &pos, const Vector3 &size, const Matrix34& transform, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,size.magnitude()))
+		return false;
+
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		CollisionObject* object = (CollisionObject*)objects[i];
@@ -195,8 +298,29 @@ void CollisionWorld::deleteCell ( WorldCell* p )
 	delete(p);
 }
 
+void CollisionWorld::finalise ( void )
+{
+	bounds.clear();
+
+	float maxRad = 0;
+
+	for (size_t i = 0; i < cells.size(); i++)
+	{
+		CollisionCell* cell = (CollisionCell*)cells[i];
+
+		bounds.add(cell->bounds.center);
+		if (cell->bounds.radius > maxRad)
+			maxRad = cell->bounds.radius;
+	}
+	bounds.radius += maxRad;
+}
+
 bool CollisionWorld::collide ( const Vector3 &pos, const float rad, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,rad))
+		return false;
+
 	for (size_t i = 0; i < cells.size(); i++)
 	{
 		CollisionCell* cell = (CollisionCell*)cells[i];
@@ -209,6 +333,10 @@ bool CollisionWorld::collide ( const Vector3 &pos, const float rad, Vector3 *hit
 
 bool CollisionWorld::collide ( const Vector3 &pos, const Vector3 &size, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,size.magnitude()))
+		return false;
+
 	for (size_t i = 0; i < cells.size(); i++)
 	{
 		CollisionCell* cell = (CollisionCell*)cells[i];
@@ -221,6 +349,10 @@ bool CollisionWorld::collide ( const Vector3 &pos, const Vector3 &size, Vector3 
 
 bool CollisionWorld::collide ( const Vector3 &pos, const Vector3 &size, const Matrix34& transform, Vector3 *hit)
 {
+	// easy out
+	if (!bounds.sphereIn(pos,size.magnitude()))
+		return false;
+
 	for (size_t i = 0; i < cells.size(); i++)
 	{
 		CollisionCell* cell = (CollisionCell*)cells[i];
