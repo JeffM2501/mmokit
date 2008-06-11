@@ -38,8 +38,8 @@ void buildTestWorld ( void )
 
 	face.normal.z(1);
 	face.corners.push_back(WorldMesh::FaceVert(0,0,0));
-	face.corners.push_back(WorldMesh::FaceVert(1,1,1));
-	face.corners.push_back(WorldMesh::FaceVert(2,2,2));
+	face.corners.push_back(WorldMesh::FaceVert(1,0,1));
+	face.corners.push_back(WorldMesh::FaceVert(2,0,2));
 
 	mesh.mesh->faces.push_back(face);
 	object->meshes.push_back(mesh);
@@ -51,11 +51,23 @@ int main(int argc, char* argv[])
 {
 	buildTestWorld();
 
-	std::ofstream stream("./test.wrld");
+	std::ofstream oStream1("./test.wrld");
 	WorldStreamWriter writer(world);
 
-	writer.write(stream);
-	stream.close();
+	writer.write(oStream1);
+	oStream1.close();
+
+	std::ifstream iStream("./test.wrld");
+	WorldStreamReader reader(world);
+
+	reader.read(iStream);
+	iStream.close();
+
+	std::ofstream oStream2("./test2.wrld");
+	writer.setWorld(world);
+	writer.write(oStream2);
+	oStream2.close();
+
 	return 0;
 }
 

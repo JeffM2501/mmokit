@@ -133,18 +133,18 @@ public:
 
 	bool close ( const Vector3& v ) const;
 
-protected:
 	float vec[3];
 };
 
-inline istream& operator>>(istream& o, Vector3 &)
+inline istream& operator>>(istream& o, Vector3 &v)
 {
+	o  >> v.vec[0] >> v.vec[1] >> v.vec[2];
 	return o;
 }
 
 inline ostream& operator<<(ostream& o, const Vector3 &v)
 {
-	o << setprecision(5) << "x:" << v.x() << " y:" << v.y() << " Z:" << v.z() << resetiosflags(ios_base::scientific);
+	o << setprecision(5) << v.x() << " " << v.y() << " " << v.z() << resetiosflags(ios_base::scientific);
 	return o;
 }
 
@@ -195,18 +195,18 @@ public:
 	float x ( float _x );
 	float y ( float _y );
 
-protected:
 	float vec[2];
 };
 
 inline istream& operator>>(istream& o, Vector2 &v)
 {
+	o >> v.vec[0] >> v.vec[1];
 	return o;
 }
 
 inline ostream& operator<<(ostream& o, const Vector2 &v)
 {
-	o << fixed << setprecision(5)<< "x:" << v.x() << " y:" << v.y() << resetiosflags(ios_base::scientific);
+	o << fixed << setprecision(5) << v.x() << " " << v.y() << resetiosflags(ios_base::scientific);
 	return o;
 }
 

@@ -83,18 +83,20 @@ bool WorldStreamReader::read ( std::istream &input )
 
 	world.clear();
 
-	WorldCell *cell = NULL;
-	WorldObject * object = NULL;
-	WorldObject::ObjectMesh mesh;
+	WorldCell					*cell = NULL;
+	WorldObject					*object = NULL;
+	WorldObject::ObjectMesh		mesh;
+	WorldMesh::Face				face;
+//	char temp[512];
 
 	if ( same_no_case(token,"world:") )
 	{
 		// read the name
 		input >> world.name;
+		input >> token;
+
 		while (token.size())
 		{
-			input >> token;
-
 			if (same_no_case(token,"cell:"))
 			{
 				if (cell)
@@ -107,11 +109,8 @@ bool WorldStreamReader::read ( std::istream &input )
 			}
 			else if (same_no_case(token,"object:"))
 			{
-				if (object)
-				{
-					if (cell)
-						cell->objects.push_back(object);
-				}
+				if (object && object->meshes.size() && cell)
+					cell->objects.push_back(object);
 				if (cell)
 					object = cell->newObject();
 				else
@@ -120,15 +119,113 @@ bool WorldStreamReader::read ( std::istream &input )
 				size_t objectID;
 				input >> objectID;
 			}
-			else
+			else if (same_no_case(token,"transform:"))
 			{
-				char temp[512];
-				input.getline(temp,512);
+				if (object)
+					input >> object->transform;
+			//	else
+			//		input.getline(temp,512);
 			}
+			else if (same_no_case(token,"mesh:"))
+			{
+				if (mesh.mesh && mesh.mesh->faces.size() && object)
+					object->meshes.push_back(mesh);
+
+				mesh.mesh = NULL;
+				mesh.material = "";
+
+				if (object)
+				{
+					mesh.mesh = object->newMesh();
+					input >> mesh.material;
+				}
+			//	else
+			//		input.getline(temp,512);
+			}
+			else if (same_no_case(token,"vert:"))
+			{
+				if (mesh.mesh)
+				{
+					Vector3 v;
+					input >> v;
+					mesh.mesh->verts.push_back(v);
+				}
+			//	else
+			//		input.getline(temp,512);
+			}
+			else if (same_no_case(token,"norm:"))
+			{
+				if (mesh.mesh)
+				{
+					Vector3 v;
+					input >> v;
+					mesh.mesh->norms.push_back(v);
+				}
+			//	else
+			//		input.getline(temp,512);
+			}
+			else if (same_no_case(token,"uv:"))
+			{
+				if (mesh.mesh)
+				{
+					Vector2 v;
+					input >> v;
+					mesh.mesh->uvs.push_back(v);
+				}
+			//	else
+			//		input.getline(temp,512);
+			}
+			else if (same_no_case(token,"face:"))
+			{
+				if (face.corners.size() && mesh.mesh)
+					mesh.mesh->faces.push_back(face);
+
+				face.corners.clear();
+				face.normal = Vector3();
+
+				int faceID;
+				input >> faceID;
+			}
+			else if (same_no_case(token,"normal:"))
+			{
+				input >> face.normal;
+			}
+			else if (same_no_case(token,"corner:"))
+			{
+				WorldMesh::FaceVert fv;
+
+				input >> fv.v >> fv.n >> fv.u;
+				face.corners.push_back(fv);
+			}
+			else if (same_no_case(token,"attribute:"))
+			{
+				std::string tag, key, value;
+				input >> tag >> key >> value;
+				if (same_no_case(tag,"world:"))
+					world.attributes[key] = value;
+				else if (same_no_case(tag,"cell:") && cell)
+					cell->attributes[key] = value;
+				else if (same_no_case(tag,"object:") && object)
+					object->attributes[key] = value;
+			}
+		//	else
+	//			input.getline(temp,512);	
+
+			token = "";
+			input >> token;
 		}
 	}
 
-	if (cell)
+	if (face.corners.size() && mesh.mesh)
+		mesh.mesh->faces.push_back(face);
+	
+	if (mesh.mesh && mesh.mesh->faces.size() && object)
+		object->meshes.push_back(mesh);
+
+	if (object && object->meshes.size() && cell)
+		cell->objects.push_back(object);
+
+	if (cell && cell->objects.size())
 		world.cells.push_back(cell);
 
 	return world.cells.size() > 0;
@@ -194,7 +291,7 @@ bool WorldStreamWriter::write ( std::ostream &output )
 						output << "normal: " << face.normal << "\n";
 
 						for ( size_t v = 0; v < face.corners.size(); v++ )
-							output << "corner: " << face.corners[v].v << " " << face.corners[v].n << " " << face.corners[v].v << "\n";
+							output << "corner: " << face.corners[v].v << " " << face.corners[v].n << " " << face.corners[v].u << "\n";
 					}
 				}
 			}

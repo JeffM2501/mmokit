@@ -124,6 +124,8 @@ public:
 	WorldStreamReader(World &w);
 	virtual ~WorldStreamReader(){};
 
+	void setWorld(World &w){world = w;}
+
 	bool read ( std::istream &input );
 
 protected:
@@ -135,6 +137,8 @@ class WorldStreamWriter
 public:
 	WorldStreamWriter(World &w);
 	virtual ~WorldStreamWriter(){};
+
+	void setWorld(World &w){world = w;}
 
 	bool write ( std::ostream &output );
 
