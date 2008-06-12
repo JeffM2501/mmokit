@@ -13,10 +13,9 @@
 #include "materials.h"
 #include "textures.h"
 
-#define _USE_MATERIALS 0
-
 DrawablesSystem::~DrawablesSystem()
 {
+	materials = false;
 }
 
 DrawableID DrawablesSystem::addItem ( int id, DrawableItem* drawable )
@@ -47,7 +46,7 @@ void DrawablesSystem::drawAll ( void )
 
 	Material	*lastMat = NULL;
 	// if we are doing materials, do 2 passes, one with textures off, one with em on
-	if (_USE_MATERIALS)
+	if (materials)
 	{
 		glDisable(GL_TEXTURE_2D);
 		while (itr != idList.end())
@@ -79,7 +78,7 @@ void DrawablesSystem::drawAll ( void )
 
 	while (itr != idList.end())
 	{
-		if (_USE_MATERIALS)
+		if (materials)
 		{
 			Material *mat = ms.getMaterial(itr->first);
 			if ( !mat || !mat->isTextured())
