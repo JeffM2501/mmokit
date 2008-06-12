@@ -17,13 +17,16 @@
 
 #include "openGL.h"
 
+typedef unsigned int MaterialID;
+#define _INVALID_MATERIAL 0xFFFFFFFF
+
 class Material
 {
 public:
-	int id;
+	MaterialID id;
 
 	Material ( float r = 1, float g = 1, float b = 1, float a = 1 );
-	Material ( const char* texture );
+	Material ( const char* texture, float a = 1 );
 	Material ( const Material* mat );
 	Material ( const Material& mat );
 
@@ -66,17 +69,21 @@ public:
 
 	Material* newMaterial( const Material &mat );
 
-	Material *getMaterial ( int id );
+	Material* getMaterial ( MaterialID id );
 
-	void deleteMaterial ( int id );
+	void deleteMaterial ( MaterialID id );
 
-	void setMaterial ( int id, Material *lastMaterial = NULL );
+	void setMaterial ( MaterialID id, Material *lastMaterial = NULL );
 
 protected:
 	MaterialsSystem();
 
-	int						lastID;
-	std::map<int,Material>	materials;
+	MaterialID						lastID;
+
+	typedef std::map<MaterialID,Material*> MaterialMap;
+	MaterialMap	materials;
+
+	Material* findMat ( Material* mat );
 };
 #endif //_MATERIALS_H_
 
