@@ -42,6 +42,7 @@ public:
 	void drawAll ( void );
 	void clearAll ( void );
 
+	void useMaterials ( bool use ){materials = use;}
 protected:
 	DrawablesSystem();
 
@@ -56,6 +57,7 @@ protected:
 	std::map<int,DrawablesList>	idList;
 
 	DrawableID lastID;
+	bool		materials;
 };
 
 #endif //_DRAWABLES_H_
