@@ -27,7 +27,7 @@ public:
 class CollisionMesh : public WorldMesh
 {
 public:
-	CollisionMesh():WorldMesh(){};
+	CollisionMesh(World*w):WorldMesh(w){};
 	virtual ~CollisionMesh(){};
 
 	virtual void finalise ( void );
@@ -42,7 +42,7 @@ public:
 class CollisionObject : public WorldObject
 {
 public:
-	CollisionObject():WorldObject(){};
+	CollisionObject(World*w):WorldObject(w){};
 	virtual ~CollisionObject(){};
 
 	virtual void finalise ( void );
@@ -60,7 +60,7 @@ public:
 class CollisionCell : public WorldCell
 {
 public:
-	CollisionCell():WorldCell(){};
+	CollisionCell(World*w):WorldCell(w){};
 	virtual ~CollisionCell(){};
 
 	virtual void finalise ( void );
