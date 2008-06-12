@@ -137,7 +137,7 @@ bool CollisionMesh::collide ( const Vector3 &pos, const Vector3 &size, const Mat
 //WorldObject
 WorldMesh* CollisionObject::newMesh ( void )
 {
-	return new CollisionMesh();
+	return new CollisionMesh(world);
 }
 
 void CollisionObject::deleteMesh ( WorldMesh* p )
@@ -214,7 +214,7 @@ bool CollisionObject::collide ( const Vector3 &pos, const Vector3 &size, const M
 //CollisionCellCell
 WorldObject* CollisionCell::newObject ( void )
 {
-	return new CollisionObject();
+	return new CollisionObject(world);
 }
 
 void CollisionCell::deleteObject ( WorldObject* p )
@@ -290,7 +290,7 @@ bool CollisionCell::collide ( const Vector3 &pos, const Vector3 &size, const Mat
 //CollisionWorld
 WorldCell* CollisionWorld::newCell ( void )
 {
-	return new CollisionCell();
+	return new CollisionCell(this);
 }
 
 void CollisionWorld::deleteCell ( WorldCell* p )

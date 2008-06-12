@@ -7,6 +7,60 @@
 using namespace TextUtils;
 using namespace std;
 
+//AttributeList
+
+bool AttributeList::exists ( const std::string &key )
+{
+	return attributes.find(key) != attributes.end();
+}
+
+bool AttributeList::exists ( const char* key )
+{
+	return attributes.find(std::string(key)) != attributes.end();
+}
+
+const std::string& AttributeList::get ( const std::string &key )
+{
+	static std::string blank;
+	std::map<std::string,std::string>::iterator itr = attributes.find(key);
+	if (itr == attributes.end())
+		return blank;
+	return itr->second;
+}
+
+const std::string& AttributeList::get ( const char* key )
+{
+	static std::string blank;
+	std::map<std::string,std::string>::iterator itr = attributes.find(std::string(key));
+	if (itr == attributes.end())
+		return blank;
+	return itr->second;
+}
+
+void AttributeList::set ( const std::string &key, const std::string &value )
+{
+	attributes[key] = value;
+}
+
+void AttributeList::set ( const char* key, const std::string &value )
+{
+	if (key)
+		attributes[std::string(key)] = value;
+}
+
+void AttributeList::set ( const std::string &key, const  char* value )
+{
+	if (value)
+		attributes[key] = std::string(value);
+}
+
+void AttributeList::set ( const char *key, const char* value )
+{
+	if (key && value)
+		attributes[std::string(key)] = std::string(value);
+}
+
+
 //WorldMesh
 void WorldMesh::finalise ( void )
 {
@@ -41,7 +95,7 @@ void WorldMesh::finalise ( void )
 //WorldObject
 WorldMesh* WorldObject::newMesh ( void )
 {
-	return new WorldMesh();
+	return new WorldMesh(world);
 }
 
 void WorldObject::deleteMesh ( WorldMesh* p )
@@ -72,7 +126,7 @@ void WorldObject::finalise ( void )
 //WorldCell
 WorldObject* WorldCell::newObject ( void )
 {
-	return new WorldObject();
+	return new WorldObject(world);
 }
 
 void WorldCell::deleteObject ( WorldObject* p )
@@ -102,10 +156,20 @@ void WorldCell::finalise ( void )
 //World
 WorldCell* World::newCell ( void )
 {
-	return new WorldCell();
+	return new WorldCell(this);
 }
 
 void World::deleteCell ( WorldCell* p )
+{
+	delete(p);
+}
+
+WorldMaterial* World::newMaterial ( void )
+{
+	return new WorldMaterial(this);
+}
+
+void World::deleteMaterial ( WorldMaterial* p )
 {
 	delete(p);
 }
@@ -157,6 +221,14 @@ void World::clear ( void )
 	}
 	cells.clear();
 	name = "";
+
+	for (size_t m = 0; m < materials.size(); m++)
+	{
+		if (materials[m])
+			deleteMaterial(materials[m]);
+	}
+
+	materials.clear();
 }
 
 //WorldStreamReader
@@ -175,6 +247,7 @@ bool WorldStreamReader::read ( std::istream &input )
 	WorldObject					*object = NULL;
 	WorldObject::ObjectMesh		mesh;
 	WorldMesh::Face				face;
+	WorldMaterial				*material = NULL;
 //	char temp[512];
 
 	if ( same_no_case(token,"world:") )
@@ -185,7 +258,25 @@ bool WorldStreamReader::read ( std::istream &input )
 
 		while (token.size())
 		{
-			if (same_no_case(token,"cell:"))
+			if (same_no_case(token,"material:"))
+			{
+				if (material && material->name.size())
+				{
+					material->finalise();
+					world.materials.push_back(material);
+				}
+				else if (material)
+					world.deleteMaterial(material);
+
+				material = world.newMaterial();
+				input >> material->name;
+			}
+			else if (same_no_case(token,"texture:"))
+			{
+				if (material)
+					input >> material->texture;
+			}
+			else if (same_no_case(token,"cell:"))
 			{
 				if (cell && cell->objects.size())
 				{
@@ -296,11 +387,13 @@ bool WorldStreamReader::read ( std::istream &input )
 				std::string tag, key, value;
 				input >> tag >> key >> value;
 				if (same_no_case(tag,"world:"))
-					world.attributes[key] = value;
+					world.attributes.set(key,value);
 				else if (same_no_case(tag,"cell:") && cell)
-					cell->attributes[key] = value;
+					cell->attributes.set(key,value);
 				else if (same_no_case(tag,"object:") && object)
-					object->attributes[key] = value;
+					object->attributes.set(key,value);
+				else if (same_no_case(tag,"material:") && material)
+					material->attributes.set(key,value);
 			}
 
 			token = "";
@@ -335,6 +428,14 @@ bool WorldStreamReader::read ( std::istream &input )
 	else if (cell)
 		world.deleteCell(cell);
 
+	if (material && material->name.size())
+	{
+		material->finalise();
+		world.materials.push_back(material);
+	}
+	else if (material)
+		world.deleteMaterial(material);
+
 	world.finalise();
 	return world.cells.size() > 0;
 }
@@ -346,9 +447,9 @@ WorldStreamWriter::WorldStreamWriter(World &w): world(w)
 
 void WorldStreamWriter::dumpAttributes ( ostream &output, const char* tag, const AttributeList &attributes )
 {
-	for ( AttributeList::const_iterator a = attributes.begin(); a != attributes.end(); a++ )
+	for ( std::map<std::string,std::string>::const_iterator a = attributes.attributes.begin(); a != attributes.attributes.end(); a++ )
 		output << "attribute: " << tag << ": " << a->first << " " << a->second << "\n";
-}
+} 
 
 bool WorldStreamWriter::write ( std::ostream &output )
 {
@@ -358,6 +459,19 @@ bool WorldStreamWriter::write ( std::ostream &output )
 	output << "world: " << world.name << "\n";
 
 	dumpAttributes(output,"world",world.attributes);
+
+	for ( size_t m = 0; m < world.materials.size(); m++ )
+	{
+		WorldMaterial *material = world.materials[m];
+		if (material)
+		{
+			output << "material: " << material->name << "\n";
+			if (material->texture.size())
+				output << "texture: " << material->texture << "\n";
+
+			dumpAttributes(output,"material", material->attributes);
+		}
+	}
 
 	for ( size_t c = 0; c < world.cells.size(); c++ )
 	{

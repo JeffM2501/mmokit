@@ -12,12 +12,31 @@
 // base class for the world object.
 // the final class will derive off
 
-typedef std::map<std::string,std::string> AttributeList;
+class AttributeList
+{
+public:
+	virtual ~AttributeList(){};
+		
+	bool exists ( const std::string &key );
+	bool exists ( const char* key );
+
+	const std::string& get ( const std::string &key );
+	const std::string& get ( const char* key );
+
+	void set ( const std::string &key, const std::string &value );
+	void set ( const char* key, const std::string &value );
+	void set ( const std::string &key, const  char* value );
+	void set ( const char *key, const char* value );
+
+	std::map<std::string,std::string> attributes;
+}; 
+
+class World;
 
 class WorldMesh
 {
 public:
-	WorldMesh(){};
+	WorldMesh(World*w = NULL):world(w){};
 	virtual ~WorldMesh(){};
 
 	virtual void finalise ( void );
@@ -51,12 +70,13 @@ public:
 	}Face;
 
 	std::vector<Face>	faces;
+	World	*world;
 };
 
 class WorldObject
 {
 public:
-	WorldObject(){};
+	WorldObject(World*w = NULL):world(w){};
 	virtual ~WorldObject(){};
 
 	virtual void finalise ( void );
@@ -83,12 +103,13 @@ public:
 	virtual void deleteMesh ( WorldMesh* p );
 
 	AttributeList attributes;
+	World *world;
 };
 
 class WorldCell
 {
 public:
-	WorldCell(){};
+	WorldCell(World*w = NULL):world(w){};
 	virtual ~WorldCell(){};
 
 	virtual void finalise ( void );
@@ -101,13 +122,29 @@ public:
 	virtual void deleteObject ( WorldObject* p );
 
 	AttributeList attributes;
+	World *world;
 };
 
+class WorldMaterial
+{
+public:
+	WorldMaterial(World*w = NULL):world(w){};
+	virtual ~WorldMaterial(){};
+
+	virtual void finalise ( void ){};
+
+	std::string name;
+	std::string texture;
+
+	AttributeList attributes;
+	World *world;
+};
+ 
 class World
 {
 public:
 	World(){};
-	virtual ~World(){};
+	virtual ~World(){clear();}
 
 	virtual void finalise ( void );
 
@@ -116,11 +153,16 @@ public:
 	virtual WorldCell* newCell ( void );
 	virtual void deleteCell ( WorldCell* p );
 
+	virtual WorldMaterial* newMaterial ( void );
+	virtual void deleteMaterial ( WorldMaterial* p );
+
 	AttributeList attributes;
 
 	typedef std::vector<WorldCell*> WorldCellList;
+	typedef std::vector<WorldMaterial*> WorldMaterialList;
 
 	WorldCellList cells;
+	WorldMaterialList materials;
 
 	std::string name;
 };
