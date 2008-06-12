@@ -67,7 +67,7 @@ TextureImage::~TextureImage()
 //----------------TextureSystem----------------
 TextureSystem::TextureSystem()
 {
-	bool loaded;
+	bool loaded = false;
 
 	lastID = 0;
 	imageLoader = NULL;
