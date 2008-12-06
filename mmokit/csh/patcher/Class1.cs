@@ -40,6 +40,11 @@ namespace patcher
             tempFile = null;
 
             // check if the local file exists
+            if (localFile.Exists)
+            {
+                localFile.Delete();
+                if (localFile.Exists)
+            }
 
             WebRequest request = WebRequest.Create(URL + "?file=" + remoteFile);
 
@@ -51,23 +56,10 @@ namespace patcher
             Stream dataStream = response.GetResponseStream();
             // Open the stream using a StreamReader for easy access.
             StreamReader reader = new StreamReader(dataStream);
-            // Read the content.
-            List<PatchFileRecord> patchFiles = new List<PatchFileRecord>();
-            string index = reader.ReadLine();
-            while (index.Length > 0)
-            {
-                index = reader.ReadLine();
-
-                string[] chunks = index.Split(":");
-                if (chunks.Length == 2)
-                    patchFiles.Add(new PatchFileRecord(rootDir, chunks[0], chunks[1]));
-            }
-
+ 
             reader.Close();
             dataStream.Close();
             response.Close();
-
-
 
             return true;
         }
