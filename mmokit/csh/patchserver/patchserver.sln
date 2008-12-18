@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "patchserver", "patchserver\patchserver.csproj", "{56EFEE9B-5C94-481C-BDF6-B8AD306D6A9B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "patchserver", "patchserver.csproj", "{56EFEE9B-5C94-481C-BDF6-B8AD306D6A9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
