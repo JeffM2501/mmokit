@@ -42,6 +42,7 @@ namespace ocstart
             this.Register = new System.Windows.Forms.Button();
             this.SaveCred = new System.Windows.Forms.CheckBox();
             this.LoginGroup = new System.Windows.Forms.GroupBox();
+            this.FullCheck = new System.Windows.Forms.Button();
             this.LoginGroup.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -81,7 +82,7 @@ namespace ocstart
             // PatchStatus
             // 
             this.PatchStatus.AutoSize = true;
-            this.PatchStatus.Location = new System.Drawing.Point(9, 219);
+            this.PatchStatus.Location = new System.Drawing.Point(9, 210);
             this.PatchStatus.Name = "PatchStatus";
             this.PatchStatus.Size = new System.Drawing.Size(49, 13);
             this.PatchStatus.TabIndex = 4;
@@ -89,7 +90,7 @@ namespace ocstart
             // 
             // PathcProgress
             // 
-            this.PathcProgress.Location = new System.Drawing.Point(12, 235);
+            this.PathcProgress.Location = new System.Drawing.Point(12, 226);
             this.PathcProgress.Name = "PathcProgress";
             this.PathcProgress.Size = new System.Drawing.Size(159, 25);
             this.PathcProgress.TabIndex = 5;
@@ -97,7 +98,7 @@ namespace ocstart
             // PatchInfo
             // 
             this.PatchInfo.AutoSize = true;
-            this.PatchInfo.Location = new System.Drawing.Point(9, 261);
+            this.PatchInfo.Location = new System.Drawing.Point(9, 252);
             this.PatchInfo.Name = "PatchInfo";
             this.PatchInfo.Size = new System.Drawing.Size(61, 13);
             this.PatchInfo.TabIndex = 6;
@@ -184,6 +185,16 @@ namespace ocstart
             this.LoginGroup.TabStop = false;
             this.LoginGroup.Text = "Login";
             // 
+            // FullCheck
+            // 
+            this.FullCheck.Location = new System.Drawing.Point(96, 359);
+            this.FullCheck.Name = "FullCheck";
+            this.FullCheck.Size = new System.Drawing.Size(75, 23);
+            this.FullCheck.TabIndex = 7;
+            this.FullCheck.Text = "Full Check";
+            this.FullCheck.UseVisualStyleBackColor = true;
+            this.FullCheck.Click += new System.EventHandler(this.FullCheck_Click);
+            // 
             // Launcher
             // 
             this.AcceptButton = this.Play;
@@ -191,6 +202,7 @@ namespace ocstart
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(862, 423);
+            this.Controls.Add(this.FullCheck);
             this.Controls.Add(this.PatchInfo);
             this.Controls.Add(this.PathcProgress);
             this.Controls.Add(this.PatchStatus);
@@ -229,6 +241,7 @@ namespace ocstart
         private System.Windows.Forms.Button Register;
         private System.Windows.Forms.CheckBox SaveCred;
         private System.Windows.Forms.GroupBox LoginGroup;
+        private System.Windows.Forms.Button FullCheck;
     }
 }
 
