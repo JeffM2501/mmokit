@@ -338,6 +338,8 @@ namespace patchserver
                         string[] chunks = line.Split(new char[] { ':' }, 2);
                         if (chunks.Length > 1)
                             vers.fileKeys.Add(chunks[1], chunks[0]);
+
+                        line = reader.ReadLine();
                     }
                     reader.Close();
                     fs.Close();
