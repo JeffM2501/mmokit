@@ -43,7 +43,6 @@ namespace patcher
             if (localFile.Exists)
             {
                 localFile.Delete();
-                if (localFile.Exists)
             }
 
             WebRequest request = WebRequest.Create(URL + "?file=" + remoteFile);
