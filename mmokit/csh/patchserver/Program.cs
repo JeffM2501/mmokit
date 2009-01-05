@@ -78,7 +78,7 @@ namespace patchserver
     public class Setup
     {
         public List<string> hosts = new List<string>();
-        public string rootDir;
+        public string rootDir = "./";
     }
 
     public class VersionResources
@@ -278,12 +278,16 @@ namespace patchserver
             if (args.Length > 0)
                 setup.rootDir = args[0];
 
-            setup.hosts.Add("http://localhost/");
+           // setup.hosts.Add("http://localhost/");
             if (args.Length > 1)
             {
                 for ( int i = 1; i < args.Length; i++)
                 {
-                    setup.hosts.Add(args[i]);
+                    if (args[i] != string.Empty)
+                    {
+                        Console.WriteLine("adding host " + args[i]);
+                        setup.hosts.Add(args[i]);
+                    }
                 }
             }
         }
