@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Threading;
 using System.Net;
+using System.IO;
 
 namespace ocstart
 {
@@ -42,7 +43,7 @@ namespace ocstart
 
             Application.Idle += new EventHandler(checkState);
 
-            new Thread(new ThreadStart(checkForUpdates)).Start();
+           // new Thread(new ThreadStart(checkForUpdates)).Start();
         }
 
         public void checkForUpdates ( )
@@ -51,8 +52,8 @@ namespace ocstart
 
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-            if (response.StatusCode != HttpStatusCode.Accepted)
-                return false;
+            if (response.StatusCode != HttpStatusCode.OK)
+                return;
 
             Stream dataStream = response.GetResponseStream();
             // Open the stream using a StreamReader for easy access.
@@ -62,12 +63,11 @@ namespace ocstart
             while (line != null && line != string.Empty)
             {
 
+                line = reader.ReadLine();
             }
             reader.Close();
             dataStream.Close();
             response.Close();
-
-
         }
 
         public void checkState ( Object sender, EventArgs e )
@@ -140,7 +140,7 @@ namespace ocstart
 
         private void Register_Click(object sender, EventArgs e)
         {
-            string URL = "http://www.opencombat.net/oc_game/register/";
+            string URL = "http://www.opencombat.net/oc_game/am/login.php?action=register";
             if (Username.Text != string.Empty)
                 URL += "?username=" + Username.Text;
             Process.Start(URL);
@@ -154,6 +154,11 @@ namespace ocstart
         private void FullCheck_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            checkForUpdates();
         }
     }
 }
