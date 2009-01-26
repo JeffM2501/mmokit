@@ -67,6 +67,8 @@ namespace patcher
         {
             if (!tempFile.Exists)
                 return false;
+
+            return true;
         }
 
     }
@@ -110,7 +112,7 @@ namespace patcher
             {
                 index = reader.ReadLine();
 
-                string[] chunks = index.Split(":");
+                string[] chunks = index.Split(':');
                 if (chunks.Length == 2)
                     patchFiles.Add(new PatchFileRecord(rootDir, chunks[0], chunks[1]));
             }
@@ -119,12 +121,12 @@ namespace patcher
             dataStream.Close();
             response.Close();
 
-            if (patchFiles.Length == 0)
+            if (patchFiles.Count == 0)
                 return PatchReturn.eServerFail;
 
             List<PatchFileRecord> delayedWrites = new List<PatchFileRecord>();
 
-            int i;
+            int i =0;
             foreach (PatchFileRecord f in patchFiles)
             {
                 if (callback != null)
