@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UVTool", "app\UVTool.csproj", "{04407203-EFEB-42D8-937E-A8314FFB4680}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UVapi", "UVapi\UVapi.csproj", "{471B4756-3BE5-42C2-8105-30BED045B1DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OBJReader", "OBJReader\OBJReader.csproj", "{070B138F-96FE-4925-8941-950A6A474A1A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04407203-EFEB-42D8-937E-A8314FFB4680}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04407203-EFEB-42D8-937E-A8314FFB4680}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04407203-EFEB-42D8-937E-A8314FFB4680}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04407203-EFEB-42D8-937E-A8314FFB4680}.Release|Any CPU.Build.0 = Release|Any CPU
+		{471B4756-3BE5-42C2-8105-30BED045B1DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{471B4756-3BE5-42C2-8105-30BED045B1DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{471B4756-3BE5-42C2-8105-30BED045B1DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{471B4756-3BE5-42C2-8105-30BED045B1DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{070B138F-96FE-4925-8941-950A6A474A1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{070B138F-96FE-4925-8941-950A6A474A1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{070B138F-96FE-4925-8941-950A6A474A1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{070B138F-96FE-4925-8941-950A6A474A1A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
