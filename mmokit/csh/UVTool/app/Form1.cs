@@ -11,16 +11,30 @@ using System.IO;
 using UVapi;
 using UVapi.FileIO;
 
+using Tao.OpenGl;
+using Tao.Platform.Windows;
+
+using GLRenderer;
+
 namespace UVTool
 {
     public partial class Form1 : Form
     {
-        public Form1()
+        private Renderer renderer;
+
+        Dictionary<string, IFileIOPlugin> fileIOClasses = new Dictionary<string, IFileIOPlugin>();
+
+        public void checkForFileIOHandler ( Type type )
         {
-            InitializeComponent();
+            if (type.IsDefined(typeof(UVapi.FileIO.FileIOPluginAttribute), true))
+            {
+                IFileIOPlugin pclass = (IFileIOPlugin)Activator.CreateInstance(type);
+                fileIOClasses.Add(pclass.getName(), pclass);
+            }
 
-            Dictionary<string,IFileIOPlugin> fileIOClasses = new Dictionary<string,IFileIOPlugin>();
-
+        }
+        public void loadPlugins ( )
+        {
             DirectoryInfo dir = new DirectoryInfo("./plugins");
 
             if (!dir.Exists)
@@ -31,32 +45,66 @@ namespace UVTool
                 Assembly assembly = Assembly.LoadFile(f.FullName);
                 if (assembly != null)
                 {
-                    foreach(Type type in assembly.GetTypes())
+                    foreach (Type type in assembly.GetTypes())
                     {
                         if (type.IsAbstract)
                             continue;
 
-                        if (type.IsDefined(typeof(UVapi.FileIO.FileIOPluginAttribute), true))
-                        {
-                            IFileIOPlugin pclass = (IFileIOPlugin)Activator.CreateInstance(type);
-                            fileIOClasses.Add(pclass.getName(),pclass);
-                        }
+                        checkForFileIOHandler(type);
                     }
                 }
             }
+        }
 
-            MessageBox.Show(fileIOClasses.Count.ToString() + " file io plugins found","Number of Plug-ins");
+        public Form1()
+        {
+            InitializeComponent();
 
-            if (fileIOClasses.Count > 0)
+            this.CreateParams.ClassStyle = this.CreateParams.ClassStyle | User.CS_HREDRAW | User.CS_VREDRAW | User.CS_OWNDC;      // Redraw On Size, And Own DC For Window.
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);            // No Need To Erase Form Background
+            this.SetStyle(ControlStyles.DoubleBuffer, true);                    // Buffer Control
+            this.SetStyle(ControlStyles.Opaque, true);                          // No Need To Draw Form Background
+            this.SetStyle(ControlStyles.ResizeRedraw, true);                    // Redraw On Resize
+            this.SetStyle(ControlStyles.UserPaint, true);                       // We'll Handle Painting Ourselves
+
+            renderer = new Renderer(this);
+            renderer.setClearColor(0, 0, 0);
+
+            this.Paint += new PaintEventHandler(paint);                  // On Paint
+
+        }
+
+        public void paint( Object sender, PaintEventArgs e )
+        {
+            renderer.beginDraw();
+
+            // do stuff
+            renderer.endDraw();
+        }
+
+        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            // build the list of fileIO plugins
+            foreach(KeyValuePair<string,IFileIOPlugin> p in fileIOClasses)
             {
-                foreach(KeyValuePair<string,IFileIOPlugin> t in fileIOClasses)
+                if (p.Value.carRead())
                 {
-                    IFileIOPlugin p = t.Value;
-
-                    MessageBox.Show(p.getName() + " reads in " + p.getExtension() + " files", "First Plugin");
-                    break;
+                    
                 }
             }
         }
+
+        private void exportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+
     }
 }
