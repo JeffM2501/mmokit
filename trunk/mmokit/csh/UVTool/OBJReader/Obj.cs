@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 using UVapi.FileIO;
 
@@ -24,7 +25,17 @@ namespace UVapi.FileIO.OBJReader
             return "Wavefront OBJ Files";
         }
 
-        public bool read(string file, Model model)
+        bool carRead()
+        {
+            return true;
+        }
+
+        bool canWrite()
+        {
+            return false;
+        }
+
+        public bool read(FileInfo file, Model model)
         {
             return false;
         }

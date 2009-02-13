@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+using System.IO;
 using UVapi;
 
 namespace UVapi.FileIO
@@ -12,7 +12,10 @@ namespace UVapi.FileIO
        string getExtension();
        string getDescription();
 
-       bool read(string file, Model model);
+       bool carRead();
+       bool canWrite();
+
+       bool read(FileInfo file, Model model);
    }
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
