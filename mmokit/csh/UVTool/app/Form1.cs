@@ -85,14 +85,22 @@ namespace UVTool
         private void importToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            
+            openFileDialog1.Title = "Select a File to Import File";
+
+
             // build the list of fileIO plugins
             foreach(KeyValuePair<string,IFileIOPlugin> p in fileIOClasses)
             {
-                if (p.Value.carRead())
+                if (p.Value.canRead())
                 {
                     
                 }
             }
+
+            if ()
+            openFileDialog1.Filter += "All files|*.*";
         }
 
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)
