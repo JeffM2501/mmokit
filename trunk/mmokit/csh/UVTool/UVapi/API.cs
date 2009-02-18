@@ -12,7 +12,7 @@ namespace UVapi.FileIO
        string getExtension();
        string getDescription();
 
-       bool carRead();
+       bool canRead();
        bool canWrite();
 
        bool read(FileInfo file, Model model);
