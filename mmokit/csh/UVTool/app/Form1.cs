@@ -93,14 +93,21 @@ namespace UVTool
             // build the list of fileIO plugins
             foreach(KeyValuePair<string,IFileIOPlugin> p in fileIOClasses)
             {
-                if (p.Value.canRead())
+                IFileIOPlugin ioPlugin = p.Value;
+
+                if (ioPlugin.canRead())
                 {
-                    
+                    string filter = ioPlugin.getDescription();
+                    filter += " (*." + ioPlugin.getExtension() + ")|*.";
+                    filter += ioPlugin.getExtension() + "|";
                 }
             }
-
-            if ()
             openFileDialog1.Filter += "All files|*.*";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                string ext = openFileDialog1.DefaultExt;
+            }
         }
 
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)

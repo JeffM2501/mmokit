@@ -25,12 +25,12 @@ namespace UVapi.FileIO.OBJReader
             return "Wavefront OBJ Files";
         }
 
-        bool canRead()
+        public bool canRead()
         {
             return true;
         }
 
-        bool canWrite()
+        public bool canWrite()
         {
             return false;
         }
