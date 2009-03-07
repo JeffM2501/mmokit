@@ -16,9 +16,9 @@ namespace UVapi
 
     public class FaceVert
     {
-        public int vert;
-        public int normal;
-        public int uv;
+        public int vert = -1;
+        public int normal = -1;
+        public int uv = -1;
     }
 
     public class Color
@@ -40,6 +40,39 @@ namespace UVapi
         public List<Vertex3D> normals = new List<Vertex3D>();
         public List<Vertex2D> uvs = new List<Vertex2D>();
         public List<Face> faces = new List<Face>();
+
+        public int addVert ( Vertex3D v )
+        {
+            if (!verts.Contains(v))
+            {
+                verts.Add(v);
+                return verts.Count;
+            }
+
+            return verts.FindIndex(v);
+        }
+
+        public int addNormal ( Vertex3D v )
+        {
+            if (!normals.Contains(v))
+            {
+                normals.Add(v);
+                return normals.Count;
+            }
+
+            return normals.FindIndex(v);
+        }
+
+        public int addUV ( Vertex2D v )
+        {
+            if (!uvs.Contains(v))
+            {
+                uvs.Add(v);
+                return uvs.Count;
+            }
+
+            return uvs.FindIndex(v);
+        }
     }
 
     public class Model
