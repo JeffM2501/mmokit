@@ -11,29 +11,28 @@ namespace _3dSpeeders
 {
     public partial class GameWindow : Form
     {
-        public ConnectionInfo config;
         Game game;
 
-        public GameWindow( ConnectionInfo cinfo )
+        public GameWindow(Game g)
         {
-            config = cinfo;
+            game = g;
+            game.window = this;
 
             InitializeComponent();
 
-            label1.Text = "Whee I'm a game window\r\nI'm gonna connect to " + config.server + "\r\nAnd be ";
-            label1.Text += config.resolutionX.ToString() + " by " + config.resolutionY.ToString();
-            if (config.fullscreen)
+            label1.Text = "Whee I'm a game window\r\nI'm gonna connect to " + game.conInfo.server + "\r\nAnd be ";
+            label1.Text += game.config.resolutionX.ToString() + " by " + game.config.resolutionY.ToString();
+            if (game.config.fullscreen)
                 label1.Text += " Fullscreen";
             else
                 label1.Text += " in a window";
 
             setup();
-            game = new Game(this);
        }
 
         void setup ()
         {
-            if (config.fullscreen)
+            if (game.config.fullscreen)
             {
                 Bounds = Screen.PrimaryScreen.Bounds;
                 TopMost = true;
@@ -42,9 +41,10 @@ namespace _3dSpeeders
             }
             else
             {
-                Width = config.resolutionX;
-                Height = config.resolutionY;
+                Width = game.config.resolutionX;
+                Height = game.config.resolutionY;
             }
+            game.init();
         }
 
         private void GameWindow_FormClosing(object sender, FormClosingEventArgs e)

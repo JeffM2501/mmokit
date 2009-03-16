@@ -23,7 +23,7 @@ namespace _3dSpeeders
             {
                 form.Dispose();
 
-                Application.Run(new GameWindow(form.connectionInfo));
+                Application.Run(new GameWindow(new Game(form.config,form.connectionInfo)));
             }
         }
     }

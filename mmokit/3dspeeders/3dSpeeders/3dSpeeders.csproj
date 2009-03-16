@@ -48,6 +48,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountSettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AccountSettingsDialog.Designer.cs">
+      <DependentUpon>AccountSettingsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AudioOptionsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AudioOptionsDialog.Designer.cs">
+      <DependentUpon>AudioOptionsDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ClientConfig.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -64,6 +76,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AccountSettingsDialog.resx">
+      <DependentUpon>AccountSettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AudioOptionsDialog.resx">
+      <DependentUpon>AudioOptionsDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
