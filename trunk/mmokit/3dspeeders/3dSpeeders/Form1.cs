@@ -28,6 +28,8 @@ namespace _3dSpeeders
             Play.Enabled = false;
             Login.Enabled = false;
 
+            ResizeRedraw = true;
+
             loadConfig();
         }
 
@@ -95,6 +97,12 @@ namespace _3dSpeeders
 
         void saveConfig ()
         {
+            if (!config.saveUsername)
+                config.username = string.Empty;
+
+            if (!config.savePassword)
+                config.password = string.Empty;
+
             DirectoryInfo specialDir = new DirectoryInfo(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData));
             DirectoryInfo configDir = specialDir.CreateSubdirectory("3dSpeeders");
             FileInfo configFile = new FileInfo(Path.Combine(configDir.FullName, "config.xml"));
@@ -131,9 +139,6 @@ namespace _3dSpeeders
                 return;
             }
             connectionInfo.connect = true;
-            connectionInfo.fullscreen = config.fullscreen;
-            connectionInfo.resolutionX = config.resolutionX;
-            connectionInfo.resolutionY = config.resolutionY;
             connectionInfo.server = ServerHost.Text;
             if (ServerPort.Text == string.Empty)
                 connectionInfo.server += ":6088";
@@ -172,8 +177,11 @@ namespace _3dSpeeders
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            connectionInfo.username = Username.Text;
+            connectionInfo.password = Password.Text;
             config.username = Username.Text;
             config.password = Password.Text;
+
             config.lastServer = ServerHost.Text + ":" + ServerPort.Text;
             saveConfig();
         }
@@ -182,6 +190,23 @@ namespace _3dSpeeders
         {
             if (new VideoOptionsDialog(config).ShowDialog() == DialogResult.OK)
                 saveConfig();
+        }
+
+        private void audioSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (new AudioOptionsDialog(config).ShowDialog() == DialogResult.OK)
+                saveConfig();
+
+        }
+
+        private void accountSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (new AccountSettingsDialog(config).ShowDialog() == DialogResult.OK)
+                saveConfig();
+        }
+
+        private void Form1_ResizeEnd(object sender, EventArgs e)
+        {
         }
     }
 }

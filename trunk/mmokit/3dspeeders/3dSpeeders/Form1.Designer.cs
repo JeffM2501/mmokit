@@ -52,6 +52,7 @@
             this.audioSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.inputSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.networkSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.accountSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -257,6 +258,7 @@
             this.oToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.videoSettingsToolStripMenuItem,
             this.audioSettingsToolStripMenuItem,
+            this.accountSettingsToolStripMenuItem,
             this.inputSettingsToolStripMenuItem,
             this.networkSettingsToolStripMenuItem});
             this.oToolStripMenuItem.Name = "oToolStripMenuItem";
@@ -272,10 +274,10 @@
             // 
             // audioSettingsToolStripMenuItem
             // 
-            this.audioSettingsToolStripMenuItem.Enabled = false;
             this.audioSettingsToolStripMenuItem.Name = "audioSettingsToolStripMenuItem";
             this.audioSettingsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.audioSettingsToolStripMenuItem.Text = "Audio Settings...";
+            this.audioSettingsToolStripMenuItem.Click += new System.EventHandler(this.audioSettingsToolStripMenuItem_Click);
             // 
             // inputSettingsToolStripMenuItem
             // 
@@ -290,6 +292,13 @@
             this.networkSettingsToolStripMenuItem.Name = "networkSettingsToolStripMenuItem";
             this.networkSettingsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.networkSettingsToolStripMenuItem.Text = "Network Settings...";
+            // 
+            // accountSettingsToolStripMenuItem
+            // 
+            this.accountSettingsToolStripMenuItem.Name = "accountSettingsToolStripMenuItem";
+            this.accountSettingsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.accountSettingsToolStripMenuItem.Text = "Account Settings...";
+            this.accountSettingsToolStripMenuItem.Click += new System.EventHandler(this.accountSettingsToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -308,6 +317,7 @@
             this.Name = "Form1";
             this.Text = "3dSpeeders";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -345,6 +355,7 @@
         private System.Windows.Forms.ToolStripMenuItem audioSettingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem inputSettingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem networkSettingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem accountSettingsToolStripMenuItem;
     }
 }
 
