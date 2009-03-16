@@ -1,0 +1,5 @@
+C:\Users\JefferyM\Desktop\lidgren-network\Samples\SamplesCommon\bin\Debug\SamplesCommon.dll
+C:\Users\JefferyM\Desktop\lidgren-network\Samples\SamplesCommon\bin\Debug\SamplesCommon.pdb
+C:\Users\JefferyM\Desktop\lidgren-network\Samples\SamplesCommon\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\JefferyM\Desktop\lidgren-network\Samples\SamplesCommon\obj\Debug\SamplesCommon.dll
+C:\Users\JefferyM\Desktop\lidgren-network\Samples\SamplesCommon\obj\Debug\SamplesCommon.pdb
