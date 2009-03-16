@@ -91,60 +91,214 @@ namespace NetworkCallers
             return size;
         }
 
+        public bool getBool()
+        {
+            if (data == null || data.Length < 1)
+                return false;
+
+            if (type == Type.UByte || type == Type.NBuffer || type == Type.NText)
+                return data[0] != '0';
+
+            if (type == Type.Short)
+                return getShort() != 0;
+            if (type == Type.UShort)
+                return getUShort() != 0;
+            if (type == Type.Long)
+                return getLong() != 0;
+            if (type == Type.ULong)
+                return getLong() != 0;
+            if (type == Type.Float)
+                return getFloat() != 0.0f;
+            if (type == Type.DFloat)
+                return getDouble() != 0.0;
+
+            return false;
+        }
+
         public Byte getByte()
         {
-            if (type != Type.UByte || data == null || data.Length < 1)
+            if (data == null || data.Length < 1)
                 return 0;
 
-            return data[0];
+            if (type == Type.UByte || type == Type.NBuffer || type == Type.NText)
+                return data[0];
+
+            if (type == Type.Short)
+                return (Byte)getShort();
+            if (type == Type.UShort)
+                return (Byte)getUShort();
+            if (type == Type.Long)
+                return (Byte)getLong();
+            if (type == Type.ULong)
+                return (Byte)getLong();
+            if (type == Type.Float)
+                return (Byte)getFloat();
+            if (type == Type.DFloat)
+                return (Byte)getDouble();
+
+            return 0;
         }
 
         public Int16 getShort()
         {
-            if (type != Type.Short || data == null || data.Length < 2)
+            if (data == null || data.Length < 1)
                 return 0;
 
-            return BitConverter.ToInt16(data,0);
+            if (type != Type.Short)
+                return BitConverter.ToInt16(data,0);
+
+            if (type == Type.NText)
+                return Int16.Parse(getString());
+
+            if (type == Type.UByte)
+                return (Int16)getByte();
+            if (type == Type.UShort)
+                return (Int16)getUShort();
+            if (type == Type.Long)
+                return (Int16)getLong();
+            if (type == Type.ULong)
+                return (Int16)getLong();
+            if (type == Type.Float)
+                return (Int16)getFloat();
+            if (type == Type.DFloat)
+                return (Int16)getDouble();
+
+            return 0;
         }
 
         public UInt16 getUShort()
         {
-            if (type != Type.UShort || data == null || data.Length < 2)
+            if (data == null || data.Length < 1)
                 return 0;
 
-            return BitConverter.ToUInt16(data,0);
+            if (type != Type.UShort)
+                return BitConverter.ToUInt16(data, 0);
+
+            if (type == Type.NText)
+                return UInt16.Parse(getString());
+
+            if (type == Type.UByte)
+                return (UInt16)getByte();
+            if (type == Type.Short)
+                return (UInt16)getShort();
+            if (type == Type.Long)
+                return (UInt16)getLong();
+            if (type == Type.ULong)
+                return (UInt16)getLong();
+            if (type == Type.Float)
+                return (UInt16)getFloat();
+            if (type == Type.DFloat)
+                return (UInt16)getDouble();
+
+            return 0;
         }
 
         public Int32 getLong()
         {
-            if (type != Type.Long || data == null || data.Length < 4)
+            if (data == null || data.Length < 1)
                 return 0;
 
-            return BitConverter.ToInt32(data, 0);
+            if (type != Type.Long)
+                return BitConverter.ToInt32(data, 0);
+
+            if (type == Type.NText)
+                return Int32.Parse(getString());
+
+            if (type == Type.UByte)
+                return (Int32)getByte();
+            if (type == Type.Short)
+                return (Int32)getShort();
+            if (type == Type.UShort)
+                return (Int32)getUShort();
+            if (type == Type.ULong)
+                return (Int32)getULong();
+            if (type == Type.Float)
+                return (Int32)getFloat();
+            if (type == Type.DFloat)
+                return (Int32)getDouble();
+
+            return 0;
         }
 
         public UInt32 getULong()
         {
-            if (type != Type.ULong || data == null || data.Length < 4)
+            if (data == null || data.Length < 1)
                 return 0;
 
-            return BitConverter.ToUInt32(data, 0);
+            if (type != Type.ULong)
+                return BitConverter.ToUInt32(data, 0);
+
+            if (type == Type.NText)
+                return UInt32.Parse(getString());
+
+            if (type == Type.UByte)
+                return (UInt32)getByte();
+            if (type == Type.Short)
+                return (UInt32)getShort();
+            if (type == Type.UShort)
+                return (UInt32)getUShort();
+            if (type == Type.Long)
+                return (UInt32)getLong();
+            if (type == Type.Float)
+                return (UInt32)getFloat();
+            if (type == Type.DFloat)
+                return (UInt32)getDouble();
+
+            return 0;
         }
 
         public float getFloat()
         {
-            if (type != Type.Float || data == null || data.Length < 4)
+            if (data == null || data.Length < 1)
                 return 0;
 
-            return BitConverter.ToSingle(data, 0);
+            if (type != Type.Float)
+                return BitConverter.ToSingle(data, 0);
+
+            if (type == Type.NText)
+                return float.Parse(getString());
+
+            if (type == Type.UByte)
+                return (float)getByte();
+            if (type == Type.Short)
+                return (float)getShort();
+            if (type == Type.UShort)
+                return (float)getUShort();
+            if (type == Type.Long)
+                return (float)getLong();
+            if (type == Type.ULong)
+                return (float)getULong();
+            if (type == Type.DFloat)
+                return (float)getDouble();
+
+            return 0;
         }
 
         public double getDouble()
         {
-            if (type != Type.DFloat || data == null || data.Length < 8)
+            if (data == null || data.Length < 1)
                 return 0;
 
-            return BitConverter.ToDouble(data, 0);
+            if (type != Type.DFloat)
+                return BitConverter.ToDouble(data, 0);
+
+            if (type == Type.NText)
+                return Double.Parse(getString());
+
+            if (type == Type.UByte)
+                return (double)getByte();
+            if (type == Type.Short)
+                return (double)getShort();
+            if (type == Type.UShort)
+                return (double)getUShort();
+            if (type == Type.Long)
+                return (double)getLong();
+            if (type == Type.ULong)
+                return (double)getULong();
+            if (type == Type.Float)
+                return (double)getFloat();
+
+            return 0;
         }
 
         public Byte[] getBuffer()
@@ -152,13 +306,28 @@ namespace NetworkCallers
             if ((type == Type.NBuffer || type == Type.NText) && data != null && data.Length < 0)
                 return data;
 
-            return new Byte[0];
+            return (Byte[])data.Clone();
         }
 
         public String getString()
         {
             if ((type == Type.NBuffer || type == Type.NText) && data != null && data.Length < 0)
                 return new UnicodeEncoding().GetString(data);
+
+            if (type == Type.UByte)
+                return getByte().ToString();
+            if (type == Type.Short)
+                return getShort().ToString();
+            if (type == Type.UShort)
+                return getUShort().ToString();
+            if (type == Type.Long)
+                return getLong().ToString();
+            if (type == Type.ULong)
+                return getULong().ToString();
+            if (type == Type.Float)
+                return getFloat().ToString();
+            if (type == Type.DFloat)
+                return getDouble().ToString();
 
             return string.Empty;
         }

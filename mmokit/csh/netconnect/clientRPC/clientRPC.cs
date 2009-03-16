@@ -14,6 +14,9 @@ namespace ClientRPCSystem
         public void register(string name, ClientCallback callback)
         {
             if (callbacks.ContainsKey(name))
+            {
+
+            }
         }
     }
 }

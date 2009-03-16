@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{116EEA5E-1844-4278-8920-45D0AE614443}</ProjectGuid>
+    <ProjectGuid>{5B759C4B-0780-44F6-8E95-EAAA0E17B278}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>clientRPC</RootNamespace>
-    <AssemblyName>clientRPC</AssemblyName>
+    <RootNamespace>Lidgren.Network.Xna</RootNamespace>
+    <AssemblyName>Lidgren.Network.Xna</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,18 +28,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="clientRPC.cs" />
+    <Compile Include="XnaSerialization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\callingParam\callingParam.csproj">
-      <Project>{8EF0FC3F-47EA-4102-ADB6-AED974330CE2}</Project>
-      <Name>callingParam</Name>
+    <ProjectReference Include="..\..\Lidgren.Network\Lidgren.Network.csproj">
+      <Project>{BA202214-F6F8-4853-BCC9-CA4F13C5F479}</Project>
+      <Name>Lidgren.Network</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
