@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Axiom;
+using Axiom.Core;
+using Axiom.Graphics;
+
 namespace _3dSpeeders
 {
     public class ConnectionInfo
@@ -12,13 +16,20 @@ namespace _3dSpeeders
         public int port = 6088;
         public string username;
         public string password;
+
+        public Root root;
+        public RenderSystem renderSystem;
     }
 
     public class ClientConfig
     {
+        public string renderer = "OpenGL";
         public int resolutionX = 1024;
         public int resolutionY = 600;
         public bool fullscreen = false;
+        public int FSAA = -1;
+        public bool vsync = false;
+
         public string username = string.Empty;
         public string password = string.Empty;
         public string lastServer = "localhost";

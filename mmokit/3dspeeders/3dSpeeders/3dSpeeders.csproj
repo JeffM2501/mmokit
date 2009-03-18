@@ -30,6 +30,22 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -68,12 +84,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Game.cs" />
-    <Compile Include="GameWindow.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GameWindow.Designer.cs">
-      <DependentUpon>GameWindow.cs</DependentUpon>
-    </Compile>
+    <Compile Include="GameVisual.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AccountSettingsDialog.resx">
@@ -84,9 +95,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GameWindow.resx">
-      <DependentUpon>GameWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -117,6 +125,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\axiom\src\Projects\Axiom\Source\Engine\Axiom.csproj">
+      <Project>{6436E2A4-0520-40CF-9481-0EB77946120A}</Project>
+      <Name>Axiom</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\axiom\src\Projects\Axiom\Source\Platforms\Win32\Axiom.Platforms.Win32.csproj">
+      <Project>{C0F2A7AA-6984-4F05-8607-5E2702130D65}</Project>
+      <Name>Axiom.Platforms.Win32</Name>
+    </ProjectReference>
     <ProjectReference Include="..\net\lidgren-network\Lidgren.Network\Lidgren.Network.csproj">
       <Project>{BA202214-F6F8-4853-BCC9-CA4F13C5F479}</Project>
       <Name>Lidgren.Network</Name>

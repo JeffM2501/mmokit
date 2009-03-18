@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
+using Axiom;
+using Axiom.Configuration;
+
 namespace _3dSpeeders
 {
     static class Program
@@ -22,8 +25,7 @@ namespace _3dSpeeders
             if (form.connectionInfo.connect)
             {
                 form.Dispose();
-
-                Application.Run(new GameWindow(new Game(form.config,form.connectionInfo)));
+                new Game(form.config,form.connectionInfo).run();
             }
         }
     }
