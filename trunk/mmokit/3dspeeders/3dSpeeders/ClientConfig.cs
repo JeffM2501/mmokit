@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 using Axiom;
 using Axiom.Core;
@@ -19,6 +20,8 @@ namespace _3dSpeeders
 
         public Root root;
         public RenderSystem renderSystem;
+
+        public DirectoryInfo dataDir;
     }
 
     public class ClientConfig
@@ -39,5 +42,7 @@ namespace _3dSpeeders
 
         public bool savePassword = false;
         public bool saveUsername = true;
+
+        public string avatar = string.Empty;
     }
 }

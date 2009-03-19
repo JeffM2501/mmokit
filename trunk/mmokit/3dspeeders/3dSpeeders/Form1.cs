@@ -231,9 +231,9 @@ namespace _3dSpeeders
             connectionInfo.connect = true;
             connectionInfo.server = ServerHost.Text;
             if (ServerPort.Text == string.Empty)
-                connectionInfo.server += ":6088";
+                connectionInfo.port = 6088;
             else
-                connectionInfo.server += ":" + ServerPort.Text;
+                connectionInfo.port = int.Parse(ServerPort.Text);
 
             Close();
         }
@@ -291,7 +291,7 @@ namespace _3dSpeeders
 
         private void accountSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (new AccountSettingsDialog(config).ShowDialog() == DialogResult.OK)
+            if (new AccountSettingsDialog(config,connectionInfo.dataDir).ShowDialog() == DialogResult.OK)
                 saveConfig();
         }
 
