@@ -1,0 +1,21 @@
+The Open Toolkit 0.9.5 Beta -- Release notes
+
+[ Overview]
+
+This release adds inline documentation to OpenTK.Graphics.GL, 
+adds support for OpenGL 3.0 on Linux, improves joystick
+support on all platforms and fixes the mapping between unsigned
+and signed OpenGL functions (e.g. Uniform1ui vs Uniform1i).
+
+Please report any issues you may encounter at http://www.opentk.com.
+
+
+
+[API changes]
+
+No breaking changes were introduced in OpenTK 0.9.5. Please note
+that binary compatibility is not preserved between beta releases.
+
+It is now possible to use joystick-like devices that contain 0 axes
+and / or buttons (e.g. tablets). Make sure that your application
+checks device capabilities before trying to use a joystick.
