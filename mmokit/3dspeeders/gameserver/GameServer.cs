@@ -119,7 +119,7 @@ namespace gameserver
         {
             ServerConfig serverConfig = getConfig(args);
 
-            NetConfiguration config = new NetConfiguration("TestApp");
+            NetConfiguration config = new NetConfiguration("3dSpeeders");
             config.MaxConnections = serverConfig.maxCon;
             config.Port = serverConfig.port;
 
