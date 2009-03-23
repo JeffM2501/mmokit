@@ -37,7 +37,7 @@
             this.Cancel = new System.Windows.Forms.Button();
             this.FullscreenList = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.RendererList = new System.Windows.Forms.ComboBox();
+            this.DisplayList = new System.Windows.Forms.ComboBox();
             this.FSAA = new System.Windows.Forms.Label();
             this.FSAAList = new System.Windows.Forms.ComboBox();
             this.VSync = new System.Windows.Forms.CheckBox();
@@ -123,19 +123,19 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(9, 12);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(51, 13);
+            this.label1.Size = new System.Drawing.Size(75, 13);
             this.label1.TabIndex = 9;
-            this.label1.Text = "Renderer";
+            this.label1.Text = "DisplayDevice";
             // 
-            // RendererList
+            // DisplayList
             // 
-            this.RendererList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.RendererList.FormattingEnabled = true;
-            this.RendererList.Location = new System.Drawing.Point(66, 9);
-            this.RendererList.Name = "RendererList";
-            this.RendererList.Size = new System.Drawing.Size(205, 21);
-            this.RendererList.TabIndex = 10;
-            this.RendererList.SelectedIndexChanged += new System.EventHandler(this.RendererList_SelectedIndexChanged);
+            this.DisplayList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.DisplayList.FormattingEnabled = true;
+            this.DisplayList.Location = new System.Drawing.Point(66, 9);
+            this.DisplayList.Name = "DisplayList";
+            this.DisplayList.Size = new System.Drawing.Size(205, 21);
+            this.DisplayList.TabIndex = 10;
+            this.DisplayList.SelectedIndexChanged += new System.EventHandler(this.RendererList_SelectedIndexChanged);
             // 
             // FSAA
             // 
@@ -174,7 +174,7 @@
             this.Controls.Add(this.VSync);
             this.Controls.Add(this.FSAAList);
             this.Controls.Add(this.FSAA);
-            this.Controls.Add(this.RendererList);
+            this.Controls.Add(this.DisplayList);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.FullscreenList);
             this.Controls.Add(this.Cancel);
@@ -203,7 +203,7 @@
         private System.Windows.Forms.Button Cancel;
         private System.Windows.Forms.ComboBox FullscreenList;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox RendererList;
+        private System.Windows.Forms.ComboBox DisplayList;
         private System.Windows.Forms.Label FSAA;
         private System.Windows.Forms.ComboBox FSAAList;
         private System.Windows.Forms.CheckBox VSync;

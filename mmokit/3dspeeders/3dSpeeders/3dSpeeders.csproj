@@ -47,6 +47,14 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OpenTK, Version=0.9.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\opentk\Binaries\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Utilities, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\opentk\Binaries\OpenTK.Utilities.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -119,6 +127,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="ResourceLoader.cs" />
+    <Compile Include="Scene.cs" />
     <Compile Include="VideoOptionsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -127,14 +136,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\axiom\src\Projects\Axiom\Source\Engine\Axiom.csproj">
-      <Project>{6436E2A4-0520-40CF-9481-0EB77946120A}</Project>
-      <Name>Axiom</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\axiom\src\Projects\Axiom\Source\Platforms\Win32\Axiom.Platforms.Win32.csproj">
-      <Project>{C0F2A7AA-6984-4F05-8607-5E2702130D65}</Project>
-      <Name>Axiom.Platforms.Win32</Name>
-    </ProjectReference>
     <ProjectReference Include="..\net\lidgren-network\Lidgren.Network\Lidgren.Network.csproj">
       <Project>{BA202214-F6F8-4853-BCC9-CA4F13C5F479}</Project>
       <Name>Lidgren.Network</Name>
