@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
+using System.Threading;
 
 namespace _3dSpeeders
 {
@@ -17,6 +18,11 @@ namespace _3dSpeeders
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            bool threadedSound = false;
+            if (threadedSound)
+               new Thread(SoundSystem.instance.threadUpdate);
+            else
+                Application.Idle += new EventHandler(appIdle);
 
             // ok find the data dir
             // check our dir
@@ -59,7 +65,14 @@ namespace _3dSpeeders
                     break;
             }
 
+            SoundSystem.instance.cleanup();
+            SoundSystem.instance.exit();
             Application.Exit();
+        }
+
+        static void appIdle(Object sender, EventArgs e)
+        {
+            SoundSystem.instance.update();
         }
     }
 }
