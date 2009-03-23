@@ -2,203 +2,130 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 
-using Axiom;
-using Axiom.Core;
-using Axiom.Graphics;
-using Axiom.Configuration;
-using Axiom.Math;
-using Axiom.Input;
-using Axiom.Overlays;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Audio;
+using OpenTK.Math;
+using OpenTK.Input;
+using OpenTK.Platform;
 
 namespace _3dSpeeders
 {
     public delegate void NewSceeneCallback();
     public delegate void NextFrameCallback(double frameTime);
 
-    public class GameVisual
+    public class GameVisual : GameWindow
     {
-        public List<NewSceeneCallback> newSceeneCallbacks = new List<NewSceeneCallback>();
-        public List<NextFrameCallback> nextFrameCallbacks = new List<NextFrameCallback>();
+        Game game;
 
-        double lastCycleTime, lastFrameTime, lastFrameDrawStart;
+        TextPrinter printer = new TextPrinter(TextQuality.High);
+        Font sans_serif = new Font(FontFamily.GenericSansSerif, 32.0f);
 
-        ConnectionInfo conInfo;
-      
-        SceneManager sceneManager;
-      
-        Root root;
-        RenderWindow window;
-        Camera camera;
+        RenderStateArgs renderState = new RenderStateArgs();
 
-        bool rebuildSceene = true;
+        Scene scene = null;
 
-        long lastOverlayUpdate = -1000;
-
-        public GameVisual (ConnectionInfo info)
+        public GameVisual(int width, int height, GraphicsMode mode, string title, GameWindowFlags options, DisplayDevice device, bool vsync, Game _game) : base(width,height,mode,title,options,device)
         {
-            root = info.root;
-            info.root = null;
+            VSync = VSyncMode.Off;
 
-            root.RenderSystem = info.renderSystem;
-            info.renderSystem = null;
+            if (vsync)
+                VSync = VSyncMode.On;
 
-            conInfo = info;
+            renderState.fullscreen = options == GameWindowFlags.Fullscreen;
+            renderState.x = width;
+            renderState.y = height;
+
+            game = _game;
+            game.Keyboard = Keyboard;
         }
 
-        public void shutdown()
+        public Scene setScene(Scene s)
         {
-            if (root == null)
-                return;
+            if (scene != null)
+                scene.unload(renderState);
+            scene = s;
 
-            Root.Instance.QueueEndRendering();
+            if (scene != null)
+             scene.load(renderState);
 
-            if (sceneManager != null)
+            return scene;
+        }
+
+        public void clearScene()
+        {
+            setScene(null);
+        }
+     
+        public override void OnUnload(EventArgs e)
+        {
+            game.unload();
+            base.OnUnload(e);
+        }
+
+        protected override void OnResize(ResizeEventArgs e)
+        {
+            base.OnResize(e);
+            GL.Viewport(0, 0, Width, Height);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.LoadIdentity();
+            Glu.Perspective(45.0, Width / (double)Height, 1.0, 64.0);
+
+            renderState.x = Width;
+            renderState.y = Height;
+        }
+
+        public override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            GL.ClearColor(System.Drawing.Color.SteelBlue);
+            GL.Enable(EnableCap.DepthTest);
+
+            game.load();
+        }
+
+        public override void OnUpdateFrame(UpdateFrameEventArgs e)
+        {
+            base.OnUpdateFrame(e);
+            if (game.update())
+                Exit();
+        }
+
+        public override void OnRenderFrame(RenderFrameEventArgs e)
+        {
+            GL.Clear(ClearBufferMask.ColorBufferBit |
+                     ClearBufferMask.DepthBufferBit);
+
+            GL.MatrixMode(MatrixMode.Modelview);
+            GL.LoadIdentity();
+
+            if (scene != null)
+                scene.draw(renderState);
+            else
             {
-                sceneManager.RemoveAllCameras();
-                sceneManager.RemoveCamera(camera);
+                Glu.LookAt(Vector3.Zero, Vector3.UnitZ, Vector3.UnitY);
+
+                GL.Begin(BeginMode.Triangles);
+
+                GL.Color3(Color.LightYellow); GL.Vertex3(-1.0f, -1.0f, 4.0f);
+                GL.Color3(Color.LightYellow); GL.Vertex3(1.0f, -1.0f, 4.0f);
+                GL.Color3(Color.LightSkyBlue); GL.Vertex3(0.0f, 1.0f, 4.0f);
+
+                GL.End();
+
+                printer.Begin();
+                printer.Print(((int)(1 / e.Time)).ToString("F0"), sans_serif, Color.SpringGreen);
+
+                printer.Print("Empty Seene man", sans_serif, Color.Wheat, new RectangleF(200, 200, 250, 250), TextPrinterOptions.Default);
+
+                printer.End();
+
             }
-            camera = null;
-            if (window != null)
-            {
-                Root.Instance.RenderSystem.DetachRenderTarget(window);
-                window.Dispose();
-            }
-
-            Root.Instance.Dispose();
-
-            root = null;
-            sceneManager = null;
-            window = null;
+            SwapBuffers();
         }
 
-        public bool init (out InputReader inputReader)
-        {
-            window = root.Initialize(true, "3dSpeeders");
-            inputReader = PlatformManager.Instance.CreateInputReader();
-            inputReader.Initialize(window, true, true, false, true);
-
-            sceneManager = root.SceneManagers.GetSceneManager(SceneType.Generic);
-
-            camera = sceneManager.CreateCamera("PlayerCam");
-            camera.Position = new Vector3(0, 0, 500);
-            camera.LookAt(new Vector3(0, 0, -300));
-            camera.Near = 5;
-
-            Viewport viewport = window.AddViewport(camera);
-            viewport.BackgroundColor = ColorEx.AliceBlue;
-
-            camera.AspectRatio = viewport.ActualWidth / viewport.ActualHeight;
-
-            TextureManager.Instance.DefaultNumMipMaps = 5;
-
-            rebuildSceene = true;
-
-            setupEvents();
-
-            return true;
-        }
-
-        public void rebuild ()
-        {
-            rebuildSceene = true;
-        }
-
-        double getNow()
-        {
-            return Root.Instance.Timer.Milliseconds * 1000.0;
-        }
-
-        void callSceeenCallbacks ()
-        {
-            foreach (NewSceeneCallback c in newSceeneCallbacks)
-                c();
-
-            rebuildSceene = false;
-        }
-
-        void callNextFrameCallbacks(double frameTime)
-        {
-            foreach (NextFrameCallback c in nextFrameCallbacks)
-                c(frameTime);
-        }
-
-        // called after the resources are loaded
-        public void setupVisuals()
-        {
-            // Create debug overlay
-            initOverlay();
-
-            callSceeenCallbacks();
-
-            lastCycleTime = getNow();
-        }
-
-        public void moveCamera (Vector2 rotateVector, Vector3 translateVector)
-        {
-            camera.Yaw(-rotateVector.x);
-            camera.Pitch(-rotateVector.y);
-            camera.MoveRelative(translateVector);
-        }
-
-        void setupEvents()
-        {
-            root.FrameStarted += updateOverlay;
-            root.FrameStarted += frameStarted;
-            root.FrameEnded += frameEnded;
-        }
-
-        void frameStarted(object source, FrameEventArgs e)
-        {
-            if (rebuildSceene)
-                callSceeenCallbacks();
-
-            double now = getNow();
-            callNextFrameCallbacks(lastCycleTime - now);
-            lastCycleTime = now;
-
-            lastFrameDrawStart = getNow();
-        }
-
-        void frameEnded(object source, FrameEventArgs e)
-        {
-            // total time for just drawing
-            lastFrameTime = getNow() - lastFrameDrawStart;
-        }
-
-        void initOverlay()
-        {
-            Overlay o = OverlayManager.Instance.GetByName("Core/DebugOverlay");
-            if (o == null)
-                throw new Exception("Could not find overlay named 'Core/DebugOverlay'.");
-            o.Show();
-        }
-
-        void updateOverlay(object source, FrameEventArgs e)
-        {
-            if (Root.Instance.Timer.Milliseconds - lastOverlayUpdate >= 1000)
-            {
-                lastOverlayUpdate = Root.Instance.Timer.Milliseconds;
-
-                OverlayElement element =
-                   OverlayElementManager.Instance.GetElement("Core/DebugText");
-                element.Text = window.DebugText;
-
-                element = OverlayElementManager.Instance.GetElement("Core/CurrFps");
-                element.Text = string.Format("Current FPS: {0}", Root.Instance.CurrentFPS);
-
-                element = OverlayElementManager.Instance.GetElement("Core/BestFps");
-                element.Text = string.Format("Best FPS: {0}", Root.Instance.BestFPS);
-
-                element = OverlayElementManager.Instance.GetElement("Core/WorstFps");
-                element.Text = string.Format("Worst FPS: {0}", Root.Instance.WorstFPS);
-
-                element = OverlayElementManager.Instance.GetElement("Core/AverageFps");
-                element.Text = string.Format("Average FPS: {0}", Root.Instance.AverageFPS);
-
-                element = OverlayElementManager.Instance.GetElement("Core/NumTris");
-                element.Text = string.Format("Triangle Count: {0}", sceneManager.TargetRenderSystem.FacesRendered);
-            }
-        }
     }
 }

@@ -4,9 +4,6 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 
-using Axiom;
-using Axiom.Configuration;
-
 namespace _3dSpeeders
 {
     static class Program
@@ -20,7 +17,6 @@ namespace _3dSpeeders
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Form1 form = new Form1();
 
             // ok find the data dir
             // check our dir
@@ -43,15 +39,24 @@ namespace _3dSpeeders
                     }
                 }
             }
-
-            form.connectionInfo.dataDir = dataDir;
-
-            Application.Run(form);
-
-            if (form.connectionInfo.connect)
+            while (true)
             {
-                form.Dispose();
-                new Game(form.config,form.connectionInfo).run();
+                Form1 form = new Form1(dataDir);
+                Application.Run(form);
+
+                if (form.connectionInfo.connect)
+                {
+                    form.Dispose();
+                    Game game = new Game(form.config, form.connectionInfo);
+                    game.run();
+                    if (game.quit)
+                        break;
+                    else if (game.disconnected)
+                        MessageBox.Show("The server unexpectedly disconnected");
+                    game = null;
+                }
+                else
+                    break;
             }
 
             Application.Exit();

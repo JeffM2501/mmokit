@@ -7,10 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-using Axiom;
-using Axiom.Graphics;
-using Axiom.Configuration;
-using Axiom.Core;
+using OpenTK.Graphics;
 
 namespace _3dSpeeders
 {
@@ -20,8 +17,6 @@ namespace _3dSpeeders
         ConnectionInfo info;
 
         bool hasFSAA = false;
-        bool hasFullscreen = false;
-        bool hasVSync = false;
 
         string fullFSSA = string.Empty;
 
@@ -35,119 +30,73 @@ namespace _3dSpeeders
 
             InitializeComponent();
 
-            int currentRenderer = 0;
-
-            foreach (RenderSystem r in Root.Instance.RenderSystems)
+            int index = 1;
+            foreach (DisplayDevice dev in DisplayDevice.AvailableDisplays)
             {
-                RendererList.Items.Add(r.Name);
-                if (r == info.renderSystem)
-                {
-                    currentRenderer = RendererList.Items.Count - 1;
-                }
+                string name = "Device " + index.ToString();
+                if (dev.IsPrimary)
+                    name += " (Primary)";
+
+                index++;
+
+                DisplayList.Items.Add(name);
             }
-            RendererList.SelectedIndex = currentRenderer;
-            RendererList.SelectedItem = RendererList.Items[RendererList.SelectedIndex];
+
+            index = 0;
+            if (config.device != string.Empty)
+                index = int.Parse(config.device)-1;
+
+            DisplayList.SelectedIndex = index;
+            DisplayList.SelectedItem = DisplayList.Items[index];
 
             xval = config.resolutionX.ToString();
             yval = config.resolutionY.ToString();
 
-            setFieldsForCurrentRenderer();
+            XRes.Text = xval;
+            YRes.Text = yval;
+
+            VSync.Checked = config.vsync;
+
+            setFieldsForCurrentDevice();
         }
 
-        RenderSystem getRS ( string name )
+        DisplayResolution getSelectedRes ( )
         {
-            foreach (RenderSystem r in Root.Instance.RenderSystems)
-            {
-                if (r.Name == name)
-                    return r;
-            }
+            int device = DisplayList.SelectedIndex;
 
-            return null;
+            if (device < 0)
+                device = 0;
+            DisplayDevice dev = DisplayDevice.AvailableDisplays[device];
+
+
+            int index = FullscreenList.SelectedIndex;
+            if (index < 0)
+                index = dev.AvailableResolutions.Length - 1;
+
+            return dev.AvailableResolutions[index];
         }
 
-        void setFieldsForCurrentRenderer ()
+        void setFieldsForCurrentDevice()
         {
-            if (RendererList.SelectedItem == null)
-                return;
+            int device = DisplayList.SelectedIndex;
 
-            RenderSystem rs = getRS(RendererList.SelectedItem.ToString());
+            if (device < 0)
+                device = 0;
+            DisplayDevice dev = DisplayDevice.AvailableDisplays[device];
 
-            FSAAList.Items.Clear();
             FullscreenList.Items.Clear();
 
-            fullFSSA = string.Empty;
-            hasFSAA = false;
-            hasFullscreen = false;
-            hasVSync = false;
-
-            foreach (ConfigOption c in rs.ConfigOptions)
+            foreach(DisplayResolution r in dev.AvailableResolutions)
             {
-                if (c.Name == "FSAA" || c.Name == "Anti aliasing")
-                {
-                    hasFSAA = true;
-                    int cur = 0;
-                    foreach( string item in c.PossibleValues)
-                    {
-                        FSAAList.Items.Add(item);
-                        if (item == c.Value)
-                            cur = FSAAList.Items.Count -  1;
-                    }
-
-                    fullFSSA = c.PossibleValues[c.PossibleValues.Count - 1];
-
-                    FSAAList.SelectedIndex = cur;
-                }
-                else if (c.Name == "Full Screen")
-                {
-                    hasFullscreen = true;
-                    Fullscreen.Checked = c.Value == "Yes";
-                }
-                else if (c.Name == "Video Mode")
-                {
-                    string[] nugs = c.Value.Split(" ".ToCharArray());
-
-                    XRes.Text = nugs[0];
-                    YRes.Text = nugs[2];
-
-                    bool filter16bit = false;
-
-                    foreach (string v in c.PossibleValues)
-                    {
-                        if (v.Contains("32-bit"))
-                        {
-                            filter16bit = true;
-                            break;
-                        }
-                    }
-
-                    // now fill out the video modes
-                    int item = -1;
-                    foreach (string v in c.PossibleValues)
-                    {
-                        if (v.Contains("16-bit") && filter16bit)
-                            continue;
-
-                        FullscreenList.Items.Add(v);
-                        if (v == c.Value)
-                            item = FullscreenList.Items.Count - 1;
-                    }
-
-                    if (item >= 0)
-                        FullscreenList.SelectedIndex = item;
-                }
-                else if (c.Name == "VSync")
-                {
-                    hasVSync = true;
-                    VSync.Enabled = c.Value == "Yes";
-                }
+                int index = FullscreenList.Items.Add(r.ToString());
+                if (r.Width.ToString() == xval && r.Height.ToString() == yval)
+                    FullscreenList.SelectedIndex = index;
             }
 
-            FullscreenList.Enabled = hasFullscreen;
-            Fullscreen.Enabled = hasFullscreen;
+            if ( (Fullscreen.Checked && FullscreenList.SelectedIndex < 0) || !Fullscreen.Checked)
+                FullscreenList.SelectedIndex = FullscreenList.Items.Count - 1;
 
-            FSAA.Enabled = hasFSAA;
-            FSAAList.Enabled = hasFSAA;
-
+            FullscreenList.SelectedItem = FullscreenList.Items[FullscreenList.SelectedIndex];
             checkFields();
         }
 
@@ -159,27 +108,15 @@ namespace _3dSpeeders
             FSAA.Enabled = hasFSAA;
             FSAAList.Enabled = hasFSAA;
 
-            VSync.Enabled = hasVSync;
+            FullscreenList.Enabled = Fullscreen.Checked;
 
-            if (hasFullscreen && Fullscreen.Checked)
-            {
-                string[] nugs = FullscreenList.SelectedItem.ToString().Split(" ".ToCharArray());
+            if (Fullscreen.Checked)
+                setResFromPulldown();
 
-                XRes.Text = nugs[0];
-                YRes.Text = nugs[2];
-
-                XRes.Enabled = false;
-                Xlabel.Enabled = false;
-                YRes.Enabled = false;
-                YLabel.Enabled = false;
-            }
-            else
-            {
-                XRes.Enabled = true;
-                Xlabel.Enabled = true;
-                YRes.Enabled = true;
-                YLabel.Enabled = true;
-            }
+            XRes.Enabled = !Fullscreen.Checked;
+            Xlabel.Enabled = !Fullscreen.Checked;
+            YRes.Enabled = !Fullscreen.Checked;
+            YLabel.Enabled = !Fullscreen.Checked;
         }
 
         private void Cancel_Click(object sender, EventArgs e)
@@ -189,95 +126,46 @@ namespace _3dSpeeders
 
         private void OK_Click(object sender, EventArgs e)
         {
-
-            string rendName = RendererList.SelectedItem.ToString();
-
-            RenderSystem rs = null;
-
-            foreach (RenderSystem r in Root.Instance.RenderSystems)
-            {
-                if (r.Name == rendName)
-                    rs = r;
-            }
-            if (rs == null)
-            {
-                // something went bad, bail
-                return;
-            }
-
-            info.renderSystem = rs;
-
-            config.renderer = rs.Name;
-
+            config.device = DisplayList.SelectedIndex.ToString();
             config.fullscreen = Fullscreen.Checked;
             config.resolutionX = int.Parse(XRes.Text);
             config.resolutionY = int.Parse(YRes.Text);
+            config.vsync = VSync.Checked;
 
-            if (hasFSAA)
+            if (config.fullscreen)
             {
-                if (FSAAList.SelectedIndex == FSAAList.Items.Count - 1)
-                    config.FSAA = -1;
-                else
-                    config.FSAA = int.Parse(FSAAList.SelectedItem.ToString());
+                DisplayResolution r = getSelectedRes();
+
+                config.refresh = r.RefreshRate;
             }
             else
-                config.FSAA = 0;
-
-            if (hasVSync)
-                config.vsync = VSync.Checked;
-            else
-                config.vsync = false;
-
-
-            foreach (ConfigOption c in rs.ConfigOptions)
-            {
-                if (c.Name == "FSAA" || c.Name == "Anti aliasing")
-                    c.Value = FSAAList.SelectedItem.ToString();
-                else if (c.Name == "Video Mode")
-                {
-                    if (config.fullscreen)
-                        c.Value = FullscreenList.SelectedItem.ToString();
-                    else
-                        c.Value = XRes.Text + " x " + YRes.Text + " @ 32-bit colour";
-                }
-                else if (c.Name == "Full Screen")
-                {
-                    if (config.fullscreen)
-                        c.Value = "Yes";
-                    else
-                        c.Value = "No";
-                }
-                else if (c.Name == "VSync")
-                {
-                    if (VSync.Checked)
-                        c.Value = "Yes";
-                    else
-                        c.Value = "No";
-                }
-            }          
+                config.refresh = 0;
         }
 
         private void Fullscreen_CheckedChanged(object sender, EventArgs e)
         {
-            if (Fullscreen.Checked)
-            {
-                xval = XRes.Text;
-                yval = YRes.Text;
-            }
+            FullscreenList.Enabled = Fullscreen.Checked;
             checkFields();
         }
 
         private void RendererList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            setFieldsForCurrentRenderer();
+            setFieldsForCurrentDevice();
+        }
+
+        void setResFromPulldown ()
+        {
+            DisplayResolution r = getSelectedRes();
+
+            XRes.Text = r.Width.ToString();
+            YRes.Text = r.Height.ToString();
+            xval = XRes.Text;
+            yval = YRes.Text;
         }
 
         private void FullscreenList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string[] nugs = FullscreenList.SelectedItem.ToString().Split(" ".ToCharArray());
-
-            XRes.Text = nugs[0];
-            YRes.Text = nugs[2];
+            setResFromPulldown();
         }
 
         private void FSAAList_SelectedIndexChanged(object sender, EventArgs e)

@@ -2,20 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
+
+using OpenTK;
+using OpenTK.Graphics;
 
 using Lidgren;
 using Lidgren.Network;
 
-using Axiom;
-using Axiom.Core;
-using Axiom.Graphics;
-using Axiom.Overlays;
-
 namespace _3dSpeeders
 {
-    public class LoadingScreen
+    public class LoadingScreen : Scene
     {
         NetClient client;
+
+        string message;
+
+        TextPrinter printer = new TextPrinter(TextQuality.High);
+        Font sans_serif = new Font(FontFamily.GenericSansSerif, 32.0f);
 
         public LoadingScreen (NetClient c)
         {
@@ -24,7 +28,7 @@ namespace _3dSpeeders
 
         public void reload()
         {
-            string message = "Please Stand By:";
+            message = "Please Stand By:";
 
             if (client.Status == NetConnectionStatus.Connecting)
                 message += "Connecting to ";
@@ -40,25 +44,20 @@ namespace _3dSpeeders
                 message += "Unknown status for ";
 
             message += client.ServerConnection.RemoteEndpoint.ToString();
+        }
 
-            Overlay o = OverlayManager.Instance.GetByName("3dSpeeders/ConnectionOverlay");
-            if (o == null)
-                throw new Exception("Could not find overlay named 'Core/DebugOverlay'.");
-            o.Show();
+        public override void draw(RenderStateArgs e)
+        {
+            base.draw(e);
 
-            OverlayElement element = OverlayElementManager.Instance.GetElement("3dSpeeders/Connection/StatusLine");
-            if (element != null)
-                element.Text = message;
+            printer.Begin();
+            printer.Print(message, sans_serif, Color.Wheat, new RectangleF(0, 0, e.x, e.y), TextPrinterOptions.Default, TextAlignment.Center);
 
+            printer.End();
         }
 
         public void unload()
         {
-            Overlay o = OverlayManager.Instance.GetByName("3dSpeeders/ConnectionOverlay");
-            if (o == null)
-                throw new Exception("Could not find overlay named 'Core/DebugOverlay'.");
-
-            o.Dispose();
         }
     }
 }

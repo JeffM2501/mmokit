@@ -4,10 +4,6 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-using Axiom;
-using Axiom.Core;
-using Axiom.Graphics;
-
 namespace _3dSpeeders
 {
     public class ConnectionInfo
@@ -18,17 +14,15 @@ namespace _3dSpeeders
         public string username;
         public string password;
 
-        public Root root;
-        public RenderSystem renderSystem;
-
         public DirectoryInfo dataDir;
     }
 
     public class ClientConfig
     {
-        public string renderer = "OpenGL";
+        public string device = string.Empty;
         public int resolutionX = 1024;
         public int resolutionY = 600;
+        public float refresh = 0;
         public bool fullscreen = false;
         public int FSAA = -1;
         public bool vsync = false;

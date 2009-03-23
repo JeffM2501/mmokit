@@ -12,13 +12,6 @@ using System.Diagnostics;
 using System.Xml;
 using System.Xml.Serialization;
 
-using Axiom;
-using Axiom.Configuration;
-using Axiom.Graphics;
-using Axiom.Core;
-
-
-
 namespace _3dSpeeders
 {
     public partial class Form1 : Form
@@ -27,18 +20,17 @@ namespace _3dSpeeders
 
         public ClientConfig config;
 
-        public Form1()
+        public Form1( DirectoryInfo dir)
         {
+            connectionInfo.dataDir = dir;
+
             InitializeComponent();
-            connectionInfo.root = new Root("3dSpeedersConfig.xml", "3dSpeeders.log");
             Play.Enabled = false;
             Login.Enabled = false;
 
             ResizeRedraw = true;
 
             loadConfig();
-
-            setupRenderSystem();
         }
 
         void checkButtons ()
@@ -101,88 +93,6 @@ namespace _3dSpeeders
             loadServerList();
 
             checkButtons();
-        }
-
-        void setupRenderSystem()
-        {
-            connectionInfo.renderSystem = null;
-            foreach( RenderSystem r in Root.Instance.RenderSystems)
-            {
-                if (r.Name.Contains(config.renderer))
-                {
-                    connectionInfo.renderSystem = r;
-                    break;
-                }
-            }
-
-            if (connectionInfo.renderSystem == null)
-            {
-                connectionInfo.renderSystem = Root.Instance.RenderSystems[0];
-                config.renderer = connectionInfo.renderSystem.Name;
-            }
-
-            foreach( ConfigOption c in connectionInfo.renderSystem.ConfigOptions)
-            {
-                if (c.Name == "Full Screen")
-                {
-                    if (config.fullscreen)
-                        c.Value = "Yes";
-                    else
-                        c.Value = "No";
-                }
-
-                if (c.Name == "FSAA")
-                {
-                    if (config.FSAA == -1)
-                        c.Value = c.PossibleValues[c.PossibleValues.Count - 1];
-                    else if (config.FSAA == 0)
-                        c.Value = c.PossibleValues[0];
-                    else
-                    {
-                        // see if what we have is in the possible values
-                        if (c.PossibleValues.Contains(config.FSAA.ToString()))
-                            c.Value = config.FSAA.ToString();
-                        else
-                            c.Value = c.PossibleValues[0];
-                    }
-                }
-
-                if (c.Name == "Video Mode")
-                {
-                    string mode = config.resolutionX.ToString() + " x " + config.resolutionY.ToString() + " @ 32-bit colour";
-                    if (c.PossibleValues.Contains(mode))
-                        c.Value = mode;
-                    else
-                    {
-                        mode = string.Empty;
-                        foreach(string m in c.PossibleValues)
-                        {
-                            if (m.Contains(config.resolutionX.ToString()) && m.Contains(config.resolutionY.ToString()) && m.Contains("32"))
-                            {
-                                mode = m;
-                                break;
-                            }
-                        }
-
-                        if (mode == string.Empty)
-                        {
-                            foreach (string m in c.PossibleValues)
-                            {
-                                if (m.Contains(config.resolutionX.ToString()) && m.Contains(config.resolutionY.ToString()))
-                                {
-                                    mode = m;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (mode == string.Empty)
-                            mode = c.PossibleValues[c.PossibleValues.Count - 1];
-
-                        c.Value = mode;
-                    }
-                }
-            }
         }
 
         void saveConfig ()
