@@ -137,6 +137,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GameLogic\GameLogic.csproj">
+      <Project>{FED336F3-3956-4090-8CD3-1E662BFE78FA}</Project>
+      <Name>GameLogic</Name>
+    </ProjectReference>
     <ProjectReference Include="..\net\lidgren-network\Lidgren.Network\Lidgren.Network.csproj">
       <Project>{BA202214-F6F8-4853-BCC9-CA4F13C5F479}</Project>
       <Name>Lidgren.Network</Name>

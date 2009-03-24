@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lidgren.Network", "..\net\l
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkMessages", "..\net\NetworkMessages\NetworkMessages.csproj", "{CB26F044-3519-43ED-9415-1C2AC719D288}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLogic", "..\GameLogic\GameLogic.csproj", "{FED336F3-3956-4090-8CD3-1E662BFE78FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,12 @@ Global
 		{CB26F044-3519-43ED-9415-1C2AC719D288}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB26F044-3519-43ED-9415-1C2AC719D288}.Release|x86.ActiveCfg = Release|x86
 		{CB26F044-3519-43ED-9415-1C2AC719D288}.Release|x86.Build.0 = Release|x86
+		{FED336F3-3956-4090-8CD3-1E662BFE78FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FED336F3-3956-4090-8CD3-1E662BFE78FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FED336F3-3956-4090-8CD3-1E662BFE78FA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FED336F3-3956-4090-8CD3-1E662BFE78FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FED336F3-3956-4090-8CD3-1E662BFE78FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FED336F3-3956-4090-8CD3-1E662BFE78FA}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
