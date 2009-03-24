@@ -50,9 +50,9 @@
             this.oToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.videoSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.audioSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.accountSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.inputSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.networkSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.accountSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -134,13 +134,13 @@
             // Login
             // 
             this.Login.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Login.Enabled = false;
             this.Login.Location = new System.Drawing.Point(90, 86);
             this.Login.Name = "Login";
             this.Login.Size = new System.Drawing.Size(75, 23);
             this.Login.TabIndex = 7;
             this.Login.Text = "Login";
             this.Login.UseVisualStyleBackColor = true;
+            this.Login.Click += new System.EventHandler(this.Login_Click);
             // 
             // NewAccount
             // 
@@ -279,6 +279,13 @@
             this.audioSettingsToolStripMenuItem.Text = "Audio Settings...";
             this.audioSettingsToolStripMenuItem.Click += new System.EventHandler(this.audioSettingsToolStripMenuItem_Click);
             // 
+            // accountSettingsToolStripMenuItem
+            // 
+            this.accountSettingsToolStripMenuItem.Name = "accountSettingsToolStripMenuItem";
+            this.accountSettingsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.accountSettingsToolStripMenuItem.Text = "Account Settings...";
+            this.accountSettingsToolStripMenuItem.Click += new System.EventHandler(this.accountSettingsToolStripMenuItem_Click);
+            // 
             // inputSettingsToolStripMenuItem
             // 
             this.inputSettingsToolStripMenuItem.Enabled = false;
@@ -292,13 +299,6 @@
             this.networkSettingsToolStripMenuItem.Name = "networkSettingsToolStripMenuItem";
             this.networkSettingsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.networkSettingsToolStripMenuItem.Text = "Network Settings...";
-            // 
-            // accountSettingsToolStripMenuItem
-            // 
-            this.accountSettingsToolStripMenuItem.Name = "accountSettingsToolStripMenuItem";
-            this.accountSettingsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
-            this.accountSettingsToolStripMenuItem.Text = "Account Settings...";
-            this.accountSettingsToolStripMenuItem.Click += new System.EventHandler(this.accountSettingsToolStripMenuItem_Click);
             // 
             // Form1
             // 
