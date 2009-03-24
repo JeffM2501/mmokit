@@ -11,7 +11,6 @@ using System.IO;
 using System.Diagnostics;
 using System.Xml;
 using System.Xml.Serialization;
-
 namespace _3dSpeeders
 {
     public partial class Form1 : Form
@@ -26,11 +25,13 @@ namespace _3dSpeeders
 
             InitializeComponent();
             Play.Enabled = false;
-            Login.Enabled = false;
+           // Login.Enabled = false;
 
             ResizeRedraw = true;
 
             loadConfig();
+
+            SoundSystem.instance.setMasterVolume(config.volume * 0.1f);
         }
 
         void checkButtons ()
@@ -195,8 +196,11 @@ namespace _3dSpeeders
         private void audioSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (new AudioOptionsDialog(config).ShowDialog() == DialogResult.OK)
-                saveConfig();
+            {
+                SoundSystem.instance.setMasterVolume(config.volume * 0.1f);
 
+                saveConfig();
+            }
         }
 
         private void accountSettingsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -207,6 +211,16 @@ namespace _3dSpeeders
 
         private void Form1_ResizeEnd(object sender, EventArgs e)
         {
+        }
+
+        private void Login_Click(object sender, EventArgs e)
+        {
+            FileInfo file = new FileInfo(Path.Combine(Path.Combine(connectionInfo.dataDir.FullName, "Sounds"), "Login.wav"));
+            if (!file.Exists)
+                return;
+
+            SoundSystem sound = SoundSystem.instance;
+            sound.playSound(sound.addSound(file));
         }
     }
 }
