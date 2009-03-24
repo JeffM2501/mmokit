@@ -12,6 +12,7 @@ using OpenTK.Platform;
 using OpenTK.Input;
 
 using NetworkMessages;
+using GameLogic;
 
 namespace _3dSpeeders
 {
@@ -28,6 +29,8 @@ namespace _3dSpeeders
 
         public KeyboardDevice Keyboard;
 
+        Logic logic = new Logic();
+
         NetClient client;
 
         Dictionary<MessageTypes, List<NetworkMessageCallback>> messageHanders = new Dictionary<MessageTypes, List<NetworkMessageCallback>>();
@@ -36,7 +39,6 @@ namespace _3dSpeeders
 
         public Game (ClientConfig _clientConfig, ConnectionInfo _conInfo )
         {
-
             config = _clientConfig;
             conInfo = _conInfo;
 
