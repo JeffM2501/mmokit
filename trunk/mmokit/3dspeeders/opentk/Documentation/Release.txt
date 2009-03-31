@@ -1,0 +1,24 @@
+The Open Toolkit 0.9.7 Beta -- Release notes
+
+[ Overview]
+
+This release introduces:
+* OpenGL 3.1 support
+* improved OpenGL 3.0 bindings (type-safety)
+* improved automatic error checking (stack traces, better coverage)
+
+Please report any issues you may encounter at http://www.opentk.com.
+
+
+[Known issues]
+
+This release cannot be compiled on Mono due to a compiler bug (https://bugzilla.novell.com/show_bug.cgi?id=488960). Please use the precompiled binaries included in the release package.
+
+
+[API changes]
+
+Please note that binary compatibility is not preserved between beta releases.
+
+OpenTK 0.9.7 replaces several instances of the "All" and "Version30" enums with strongly-typed equivalents. This is a breaking change that potentially affects programs using OpenGL 3.0 functionality. If you are affected by this change, please replace the relevant instances of "All" or "Version30" with the correct enum, as reported by your IDE.
+
+OpenTK 0.9.7 also fixes the naming of several core and extension functions ending in "Instanced", "Indexed" or "Varyings". If you are affected by this change, please add the missing 'd' or 's' to the relevant functions.

@@ -1,0 +1,29 @@
+[General]
++ Split OpenTK.Utilities from the core OpenTK.
++ Change all public APIs to conform to the class library interface guidelines.
++ Revisit all classes and make sure IDisposable is correctly implemented.
+
+[OpenTK.Graphics.GL]
++ Improve performance for functions that return StringBuilders.
++ Enforce PureValue constraint in generic classes.
++ Improve performance for functions that take generic arrays.
++ Fix documentation - parameter mismatches.
+
+[OpenTK.Graphics.GraphicsContext]
++ FSAA support (very simple, now that GL3 support has been added.)
++ Implement GL3 support on Mac OS X.
+
+[OpenTK.GLControl]
++ Improve the designer interface.
+
+[OpenTK.Input]
++ Implement joystick support on Mac OS X.
++ Implement GameWindow-independent input drivers.
++ Implement support for multiple mice and keyboards.
+
+[Examples]
++ Add GL3 examples.
++ Add more comprehensive Graphics and Audio tutorials.
+
+[OpenTK.Compute]
++ Begin the implementation.
