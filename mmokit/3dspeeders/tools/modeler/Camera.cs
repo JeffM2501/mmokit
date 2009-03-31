@@ -12,8 +12,7 @@ namespace modeler
     public class Camera : GLListable
     {
         Vector3 position = new Vector3();
-        Vector3 target = new Vector3();
-        Vector3 up = new Vector3(0,0,1);
+        float tilt = 0, spin = 0, pullback = 0;
 
         public bool ZIsUp = true;
 
@@ -23,16 +22,24 @@ namespace modeler
             Invalidate();
         }
 
-        public void moveTarget(Vector3 tar )
+        public void pushpull( float dist )
         {
-            target += tar;
+            pullback += dist;
+        }
+
+        public void pan( float _tilt, float _spin )
+        {
+            tilt += _tilt;
+            spin += _spin;
             Invalidate();
         }
 
-        public void set ( Vector3 pos, Vector3 tar )
+        public void set(Vector3 pos, float _tilt, float _spin, float _pullback)
         {
             position = pos;
-            target = tar;
+            tilt = _tilt;
+            spin = _spin;
+            pullback = _pullback;
             Invalidate();
         }
 
@@ -40,8 +47,11 @@ namespace modeler
         {
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
-           // GL.Translate(-position.X,-position.Z,position.Y);
-            Glu.LookAt(position, target, up);
+
+            GL.Translate(0, 0, -pullback);				// pull back on allong the zoom vector
+			GL.Rotate(tilt, 1.0f, 0.0f, 0.0f);			// pops us to the tilt
+            GL.Rotate(-spin, 0.0f, 1.0f, 0.0f);			// gets us on our rot
+            GL.Translate(-position.X, -position.Z, position.Y);
 
             GL.Rotate(-90,1,0,0);
         }
