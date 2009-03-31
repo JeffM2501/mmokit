@@ -34,15 +34,18 @@ namespace modeler
 
             for (float i = -gridSize; i <= gridSize; i+= majorSpacing )
             {
-                GL.Vertex3(i, -gridSize,0);
-                GL.Vertex3(i, gridSize, 0);
-                GL.Vertex3(-gridSize, i, 0);
-                GL.Vertex3(gridSize, i, 0);
+                if (i != 0)
+                {
+                    GL.Vertex3(i, -gridSize,0);
+                    GL.Vertex3(i, gridSize, 0);
+                    GL.Vertex3(-gridSize, i, 0);
+                    GL.Vertex3(gridSize, i, 0);
+                }
             }
 
             GL.Color3(minorColor);
 
-            for (float i = -gridSize; i <= gridSize; i += majorSpacing)
+            for (float i = -gridSize; i < gridSize; i += majorSpacing)
             {
                 for (float j = i + minorSpacing; j < i + majorSpacing; j += minorSpacing)
                 {
@@ -52,6 +55,16 @@ namespace modeler
                     GL.Vertex3(gridSize, j, 0);
                 }
             }
+
+            GL.Color3(xColor);
+            GL.Vertex3(0, -gridSize, 0);
+            GL.Vertex3(0, gridSize, 0);
+            GL.Color3(yColor);
+            GL.Vertex3(-gridSize, 0, 0);
+            GL.Vertex3(gridSize, 0, 0);
+            GL.Color3(zColor);
+            GL.Vertex3(0, 0, -gridSize);
+            GL.Vertex3(0, 0, gridSize);
             GL.End();
         }        
     }
