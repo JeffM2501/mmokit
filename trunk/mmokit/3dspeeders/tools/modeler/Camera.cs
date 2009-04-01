@@ -22,9 +22,19 @@ namespace modeler
             Invalidate();
         }
 
+
+        public void move(float x, float y, float z)
+        {
+            position.X += x;
+            position.Y += y;
+            position.Z += z;
+            Invalidate();
+        }
+
         public void pushpull( float dist )
         {
             pullback += dist;
+            Invalidate();
         }
 
         public void pan( float _tilt, float _spin )
