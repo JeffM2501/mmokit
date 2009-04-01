@@ -49,11 +49,16 @@ namespace modeler
             this.glControl1.BackColor = System.Drawing.Color.Black;
             this.glControl1.Location = new System.Drawing.Point(12, 27);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(353, 365);
+            this.glControl1.Size = new System.Drawing.Size(606, 459);
             this.glControl1.TabIndex = 0;
             this.glControl1.VSync = false;
+            this.glControl1.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseWheel);
             this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
+            this.glControl1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseMove);
+            this.glControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseDown);
             this.glControl1.Resize += new System.EventHandler(this.glControl1_Resize);
+            this.glControl1.MouseHover += new System.EventHandler(this.glControl1_MouseHover);
+            this.glControl1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseUp);
             // 
             // MainMenu
             // 
@@ -61,7 +66,7 @@ namespace modeler
             this.fileToolStripMenuItem});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(537, 24);
+            this.MainMenu.Size = new System.Drawing.Size(790, 24);
             this.MainMenu.TabIndex = 1;
             this.MainMenu.Text = "MainMenu";
             // 
@@ -93,6 +98,7 @@ namespace modeler
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
             this.importToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.importToolStripMenuItem.Text = "Import";
+            this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
@@ -104,16 +110,16 @@ namespace modeler
             // 
             this.Sidebar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.Sidebar.Location = new System.Drawing.Point(371, 27);
+            this.Sidebar.Location = new System.Drawing.Point(624, 27);
             this.Sidebar.Name = "Sidebar";
-            this.Sidebar.Size = new System.Drawing.Size(166, 377);
+            this.Sidebar.Size = new System.Drawing.Size(166, 471);
             this.Sidebar.TabIndex = 2;
             // 
             // ModelerDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(537, 404);
+            this.ClientSize = new System.Drawing.Size(790, 498);
             this.Controls.Add(this.Sidebar);
             this.Controls.Add(this.glControl1);
             this.Controls.Add(this.MainMenu);

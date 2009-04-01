@@ -18,7 +18,7 @@ namespace modeler
         float axisSize = 3;
 
         Color majorColor = Color.Wheat;
-        Color minorColor = Color.Gray;
+        Color minorColor = Color.Peru;
         Color xColor = Color.Red;
         Color yColor = Color.Green;
         Color zColor = Color.Blue;
@@ -56,15 +56,43 @@ namespace modeler
                 }
             }
 
+            // draw the major axes
+            // X
             GL.Color3(xColor);
-            GL.Vertex3(0, -gridSize, 0);
-            GL.Vertex3(0, gridSize, 0);
-            GL.Color3(yColor);
             GL.Vertex3(-gridSize, 0, 0);
             GL.Vertex3(gridSize, 0, 0);
+            GL.Vertex3(gridSize, 0, 0);
+            GL.Vertex3(gridSize - axisSize, 0, axisSize);
+
+            GL.Vertex3(gridSize + axisSize, axisSize, 0);
+            GL.Vertex3(gridSize + axisSize+axisSize, -axisSize, 0);
+
+            GL.Vertex3(gridSize + axisSize+axisSize, axisSize, 0);
+            GL.Vertex3(gridSize + axisSize, -axisSize, 0);
+
+
+            // Y
+            GL.Color3(yColor);
+            GL.Vertex3(0, -gridSize, 0);
+            GL.Vertex3(0, gridSize, 0);
+            GL.Vertex3(0, gridSize, 0);
+            GL.Vertex3(0, gridSize - axisSize, axisSize);
+
+            GL.Vertex3(0, gridSize + axisSize, 0);
+            GL.Vertex3(0, gridSize + axisSize+ axisSize, 0);
+
+            GL.Vertex3(0, gridSize + axisSize + axisSize, 0);
+            GL.Vertex3(axisSize/2.0f, gridSize + axisSize + axisSize + axisSize, 0);
+            GL.Vertex3(0, gridSize + axisSize + axisSize, 0);
+            GL.Vertex3(-axisSize/2.0f, gridSize + axisSize + axisSize + axisSize, 0);
+
+            // Z
             GL.Color3(zColor);
-            GL.Vertex3(0, 0, -gridSize);
+            GL.Vertex3(0, 0, -gridSize/2);
             GL.Vertex3(0, 0, gridSize);
+            GL.Vertex3(0, 0, gridSize);
+            GL.Vertex3(0, axisSize ,gridSize - axisSize);
+         
             GL.End();
         }        
     }
