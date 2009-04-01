@@ -44,7 +44,7 @@ namespace _3dSpeeders
 
             index = 0;
             if (config.device != string.Empty)
-                index = int.Parse(config.device)-1;
+                index = int.Parse(config.device);
 
             DisplayList.SelectedIndex = index;
             DisplayList.SelectedItem = DisplayList.Items[index];
