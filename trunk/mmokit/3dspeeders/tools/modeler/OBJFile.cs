@@ -57,7 +57,7 @@ namespace modeler
             if (n.Length > 1)
             {
                 v.X = float.Parse(n[0]);
-                v.Y = float.Parse(n[1]);
+                v.Y = 1.0f - float.Parse(n[1]);
             }
             return v;
         }
@@ -115,7 +115,7 @@ namespace modeler
                     else if (currentMat != null)
                     {
                         if (code == "map_Kd")
-                            currentMat.texture = nubs[1];
+                            currentMat.texture = Path.Combine(Path.GetDirectoryName(file.FullName),nubs[1]);
                         else if (code == "Kd")
                             currentMat.baseColor = readColor(nubs[1]);
                         else if (code == "Ka")
