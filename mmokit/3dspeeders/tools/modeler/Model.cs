@@ -7,6 +7,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Math;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace modeler
 {
@@ -15,6 +16,17 @@ namespace modeler
         public int vert = -1;
         public int normal = -1;
         public int uv = -1;
+
+        public FaceVert()
+        {
+        }
+
+        public FaceVert( int v, int n, int u)
+        {
+            vert = v;
+            normal = n;
+            uv = u;
+        }
     }
 
     public class Face
@@ -51,14 +63,19 @@ namespace modeler
 
             foreach(Face f in group)
             {
-                GL.Begin(BeginMode.Triangles);
-
+                GL.Begin(BeginMode.Polygon);
                 foreach (FaceVert v in f.verts)
                 {
-                  //  GL.TexCoord2(uvs[v.normal]);
-                    GL.Normal3(normals[v.normal]);
-                    GL.Vertex3(verts[v.vert]);
-                }   
+                    if (v.vert >= 0 && v.vert < verts.Count)
+                    {
+                        if (v.uv >= 0 && v.uv < uvs.Count)
+                            GL.TexCoord2(uvs[v.uv]);
+
+                        if (v.normal >= 0 && v.normal < normals.Count)
+                            GL.Normal3(normals[v.normal]);
+                        GL.Vertex3(verts[v.vert]);
+                    }
+                }
                 GL.End();
             }
         }
@@ -82,7 +99,7 @@ namespace modeler
             if (!verts.Contains(v))
             {
                 verts.Add(v);
-                return verts.Count;
+                return verts.Count-1;
             }
 
             return verts.IndexOf(v);
@@ -93,7 +110,7 @@ namespace modeler
             if (!normals.Contains(v))
             {
                 normals.Add(v);
-                return normals.Count;
+                return normals.Count-1;
             }
 
             return normals.IndexOf(v);
@@ -104,7 +121,7 @@ namespace modeler
             if (!uvs.Contains(v))
             {
                 uvs.Add(v);
-                return uvs.Count;
+                return uvs.Count-1;
             }
 
             return uvs.IndexOf(v);
@@ -120,10 +137,23 @@ namespace modeler
         public Color emmision = Color.Transparent;
         public float shine = 0;
 
-        public string texture;
+        public string texture = string.Empty;
 
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         int textureID = -1;
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         int listID = -1;
+
+        bool textureIsValid (string t)
+        {
+            if (t == string.Empty)
+                return false;
+            string extension = Path.GetExtension(t);
+            if (extension != ".png" && extension != ".jpg" && extension != ".jpeg")
+                return false;
+
+            return new FileInfo(t).Exists;
+        }
 
         int getTextureID ()
         {
@@ -131,7 +161,7 @@ namespace modeler
                 return textureID;
 
             Bitmap bitmap = new Bitmap(texture);
-
+            
             GL.GenTextures(1, out textureID);
             GL.BindTexture(TextureTarget.Texture2D, textureID);
 
@@ -168,7 +198,7 @@ namespace modeler
             {
                 listID = GL.GenLists(1);
                 GL.NewList(listID,ListMode.Compile);
-                if (texture != string.Empty)
+                if (textureIsValid(texture))
                 {
                     GL.Enable(EnableCap.Texture2D);
                     GL.BindTexture(TextureTarget.Texture2D, getTextureID());
@@ -192,6 +222,7 @@ namespace modeler
     {
         public Dictionary<Material, Mesh> meshes = new Dictionary<Material,Mesh>();
 
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         Dictionary<Material, int> geoLists = new Dictionary<Material, int>();
 
         public void Invalidate ()
@@ -228,12 +259,12 @@ namespace modeler
             if (meshes.Count == 0)
                 return;
 
-         //   Rebuild();
+            Rebuild();
             foreach (KeyValuePair<Material, Mesh> m in meshes)
             {
-               // m.Key.Execute();
-               // GL.CallList(geoLists[m.Key]);
-                m.Value.build();
+               m.Key.Execute();
+                GL.CallList(geoLists[m.Key]);
+               // m.Value.build();
             }
         }
 
@@ -251,6 +282,19 @@ namespace modeler
                     return m.Value;
             }
             return null;
+        }
+
+        public void swapYZ()
+        {
+            Invalidate();
+
+            foreach (KeyValuePair<Material, Mesh> m in meshes)
+            {
+                Mesh mesh = m.Value;
+
+                for (int i = 0; i < mesh.verts.Count; i++ )
+                    mesh.verts[i] = new Vector3(mesh.verts[i].X,-mesh.verts[i].Z,mesh.verts[i].Y);                
+            }
         }
     }
 }
