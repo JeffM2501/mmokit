@@ -11,6 +11,51 @@ using System.IO;
 
 namespace modeler
 {
+
+    public class GLColor
+    {
+        public float r = 1.0f;
+        public float g = 1.0f;
+        public float b = 1.0f;
+        public float a = 1.0f;
+
+        public GLColor()
+        {}
+
+        public GLColor(float red, float green, float blue, float alpha )
+        {
+            r = red;
+            g = green;
+            b = blue;
+            a = alpha;
+        }
+
+        public void glColor()
+        {
+            GL.Color4(r, g, b, a);
+        }
+
+        public GLColor (Color color, float alpha)
+        {
+            r = color.R / 255.0f;
+            g = color.G / 255.0f;
+            b = color.B / 255.0f;
+            a = alpha;
+        }
+
+        public GLColor(Color color)
+        {
+            r = color.R/255.0f;
+            g = color.G/255.0f;
+            b = color.B/255.0f;
+            a = color.A/255.0f;
+        }
+
+        public static GLColor Transparent = new GLColor(1.0f, 1.0f, 1.0f, 0.0f);
+        public static GLColor White = new GLColor(1.0f, 1.0f, 1.0f, 1.0f);
+        public static GLColor Black = new GLColor(0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
     public class FaceVert
     {
         public int vert = -1;
@@ -35,33 +80,59 @@ namespace modeler
         public int normal = -1;
     }
 
+    public class MeshGroup
+    {
+        public string name = string.Empty;
+        public List<Face> faces = new List<Face>();
+    }
+
     public class Mesh
     {
+        public Material material = new Material();
         public List<Vector3> verts = new List<Vector3>();
         public List<Vector3> normals = new List<Vector3>();
         public List<Vector2> uvs = new List<Vector2>();
-        public Dictionary<string, List<Face>> faces = new Dictionary<string, List<Face>>();
+        public List<MeshGroup> groups = new List<MeshGroup>();
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        public Dictionary<string, MeshGroup> groupMap = new Dictionary<string, MeshGroup>();
+
+        private void checkGroupMap ()
+        {
+            if (groupMap.Count == groups.Count)
+                return;
+
+            groupMap.Clear();
+            foreach (MeshGroup group in groups)
+                groupMap.Add(group.name,group);
+        }
 
         public void build ( )
         {
-            foreach (KeyValuePair<string, List<Face>> group in faces)
-                build(group.Key);
+            foreach (MeshGroup group in groups)
+                build(group);
+        }
+
+        public void buildDisplayNormals()
+        {
+            foreach (MeshGroup group in groups)
+                buildDisplayNormals(group);
         }
 
         public void build ( string[] hiddenGroups )
         {
-            foreach (KeyValuePair<string, List<Face>> group in faces)
+            checkGroupMap();
+
+            foreach (KeyValuePair<string, MeshGroup> group in groupMap)
             {
                 if (!hiddenGroups.Contains(group.Key))
-                    build(group.Key);
+                    build(group.Value);
             }
         }
 
-        public void build ( string groupName )
+        public void build ( MeshGroup group )
         {
-            List<Face> group = faces[groupName];
-
-            foreach(Face f in group)
+            foreach (Face f in group.faces)
             {
                 GL.Begin(BeginMode.Polygon);
                 foreach (FaceVert v in f.verts)
@@ -80,18 +151,61 @@ namespace modeler
             }
         }
 
-        public void addFace ( string group, Face face )
+        public void buildDisplayNormals(MeshGroup group)
         {
-            List<Face> faceGroup;
-            if (!faces.ContainsKey(group))
+            GL.Begin(BeginMode.Lines);
+            foreach (Face f in group.faces)
             {
-                faceGroup = new List<Face>();
-                faces.Add(group, faceGroup);
-            }
-            else
-                faceGroup = faces[group];
+                foreach (FaceVert v in f.verts)
+                {
+                    if (v.vert >= 0 && v.vert < verts.Count)
+                    {
+                        if (v.normal >= 0 && v.normal < normals.Count)
+                        {
+                            Vector3 normalEP = verts[v.vert] + normals[v.normal];
+                            Vector3 normalSP = verts[v.vert];
 
-            faceGroup.Add(face);
+                            GL.Vertex3(normalSP);
+                            GL.Vertex3(normalEP);
+                        }
+                    }
+                }
+            }
+            GL.End();
+        }
+
+        public void build ( string groupName )
+        {
+            checkGroupMap();
+   
+            build(groupMap[groupName]);
+        }
+
+        protected MeshGroup getGroup ( string name )
+        {
+            if (groupMap.ContainsKey(name))
+                return groupMap[name];
+
+            foreach( MeshGroup group in groups)
+            {
+                if (group.name == name)
+                {
+                    // it wasn't in the name map
+                    groupMap[name] = group;
+                    return group;
+                }
+            }
+
+            MeshGroup g = new MeshGroup();
+            g.name = name;
+            groups.Add(g);
+            groupMap.Add(name, g);
+            return g;
+        }
+
+        public void addFace ( string groupName, Face face )
+        {
+            getGroup(groupName).faces.Add(face);
         }
 
         public int addVert(Vector3 v)
@@ -131,10 +245,10 @@ namespace modeler
     public class Material
     {
         public string name = "Default";
-        public Color baseColor = Color.White;
-        public Color ambinent = Color.Black;
-        public Color specular = Color.Transparent;
-        public Color emmision = Color.Transparent;
+        public GLColor baseColor = GLColor.White;
+        public GLColor ambinent = GLColor.Black;
+        public GLColor specular = GLColor.Transparent;
+        public GLColor emmision = GLColor.Transparent;
         public float shine = 0;
 
         public string texture = string.Empty;
@@ -206,7 +320,7 @@ namespace modeler
                 else
                     GL.Disable(EnableCap.Texture2D);
 
-                GL.Color4(baseColor);
+                baseColor.glColor();
                 GL.EndList();
             }
         }
@@ -220,20 +334,88 @@ namespace modeler
 
     public class Model 
     {
-        public Dictionary<Material, Mesh> meshes = new Dictionary<Material,Mesh>();
+        public List<Mesh> meshes = new List<Mesh>();
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        public Dictionary<Material, Mesh> meshMap = new Dictionary<Material, Mesh>();
 
         [System.Xml.Serialization.XmlIgnoreAttribute]
         Dictionary<Material, int> geoLists = new Dictionary<Material, int>();
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        int displayNormalsList = -1;
+
+        public void addMaterial (Material mat)
+        {
+            if (meshMap.ContainsKey(mat))
+                return;
+
+            foreach (Mesh m in meshes)
+            {
+                if (m.material == mat)
+                {
+                    meshMap.Add(m.material, m);
+                    return;
+                }
+            }
+
+            Mesh mesh = new Mesh();
+            mesh.material = mat;
+            meshes.Add(mesh);
+            meshMap.Add(mesh.material, mesh);
+            return;
+        }
+
+        public Mesh getMesh (Material mat)
+        {
+            if (meshMap.ContainsKey(mat))
+                return meshMap[mat];
+
+            foreach(Mesh m in meshes)
+            {
+                if (m.material == mat)
+                {
+                    meshMap.Add(m.material, m);
+                    return m;
+                }
+            }
+
+            Mesh mesh = new Mesh();
+            mesh.material = mat;
+            meshes.Add(mesh);
+            meshMap.Add(mesh.material, mesh);
+            return mesh;
+        }
+
+        public Mesh getMeshForMaterial(string name)
+        {
+            foreach (KeyValuePair<Material, Mesh> m in meshMap)
+            {
+                if (m.Key.name == name)
+                    return m.Value;
+            }
+
+            foreach (Mesh m in meshes)
+            {
+                if (m.material.name == name)
+                {
+                    meshMap.Add(m.material, m);
+                    return m;
+                }
+            }
+            return null;
+        }
 
         public void Invalidate ()
         {
             foreach (KeyValuePair<Material, int> m in geoLists)
                 GL.DeleteLists(m.Value, 1);
-
             geoLists.Clear();
 
-            foreach (KeyValuePair<Material, Mesh> m in meshes)
-                m.Key.Invalidate();
+            if (displayNormalsList != -1)
+                GL.DeleteLists(displayNormalsList, 1);
+
+            foreach (Mesh m in meshes)
+                m.material.Invalidate();
        }
 
         void Rebuild ()
@@ -244,14 +426,21 @@ namespace modeler
             // make sure it's clear
             Invalidate();
 
-            foreach (KeyValuePair<Material, Mesh> m in meshes)
+            foreach (Mesh m in meshes)
             {
                 int list = GL.GenLists(1);
                 GL.NewList(list, ListMode.Compile);
-                m.Value.build();
+                m.build();
                 GL.EndList();
-                geoLists.Add(m.Key, list);
+                geoLists.Add(m.material, list);
             }
+
+            displayNormalsList = GL.GenLists(1);
+            GL.NewList(displayNormalsList, ListMode.Compile);
+            foreach (Mesh m in meshes)
+                m.buildDisplayNormals();
+            GL.EndList();
+
         }
 
         public void drawAll ( )
@@ -260,13 +449,32 @@ namespace modeler
                 return;
 
             Rebuild();
-            foreach (KeyValuePair<Material, Mesh> m in meshes)
+            foreach (Mesh m in meshes)
             {
-               m.Key.Execute();
-                GL.CallList(geoLists[m.Key]);
-               // m.Value.build();
+               m.material.Execute();
+               GL.CallList(geoLists[m.material]);
             }
         }
+
+        public void drawAll ( bool normals )
+        {
+            if (meshes.Count == 0)
+                return;
+            drawAll();
+            if (normals)
+            {
+                GL.Disable(EnableCap.Texture2D);
+                GL.Disable(EnableCap.Lighting);
+
+                GL.Color4(Color.Red);
+
+                GL.CallList(displayNormalsList);
+
+                GL.Enable(EnableCap.Texture2D);
+                GL.Enable(EnableCap.Lighting);
+            }
+        }
+
 
         public void clear ()
         {
@@ -274,26 +482,16 @@ namespace modeler
             meshes.Clear();
         }
 
-        public Mesh getMeshForMaterial( string name )
-        {
-            foreach(KeyValuePair<Material,Mesh> m in meshes)
-            {
-                if (m.Key.name == name)
-                    return m.Value;
-            }
-            return null;
-        }
-
         public void swapYZ()
         {
             Invalidate();
 
-            foreach (KeyValuePair<Material, Mesh> m in meshes)
+            foreach (Mesh mesh in meshes)
             {
-                Mesh mesh = m.Value;
-
-                for (int i = 0; i < mesh.verts.Count; i++ )
-                    mesh.verts[i] = new Vector3(mesh.verts[i].X,-mesh.verts[i].Z,mesh.verts[i].Y);                
+                for (int i = 0; i < mesh.verts.Count; i++)
+                    mesh.verts[i] = new Vector3(mesh.verts[i].X, -mesh.verts[i].Z, mesh.verts[i].Y);
+                for (int i = 0; i < mesh.normals.Count; i++)
+                    mesh.normals[i] = new Vector3(mesh.normals[i].X, -mesh.normals[i].Z, mesh.normals[i].Y);
             }
         }
     }
