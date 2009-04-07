@@ -33,21 +33,21 @@ namespace modeler
             return v;
         }
 
-        Color readColor(string data)
+        GLColor readColor(string data)
         {
             string[] n = splitOnDelim(data, " ", 5);
             if (n.Length > 2)
             {
-                Byte R = (Byte)(double.Parse(n[0]) * 255);
-                Byte G = (Byte)(double.Parse(n[1]) * 255);
-                Byte B = (Byte)(double.Parse(n[2]) * 255);
-                Byte A = 255;
+                float R = float.Parse(n[0]);
+                float G = float.Parse(n[1]);
+                float B = float.Parse(n[2]);
+                float A = 1.0f;
                 if (n.Length > 3)
-                    A = (Byte)(double.Parse(n[3]) * 255);
+                    A = float.Parse(n[3]);
 
-                return Color.FromArgb(A, R, G, B);
+                return new GLColor(R, G, B, A);
             }
-            return Color.White;
+            return GLColor.White;
         }
 
         Vector2 readV2D(string data)
@@ -107,8 +107,8 @@ namespace modeler
                     string code = nubs[0];
                     if (code == "newmtl")
                     {
-                        if (currentMat != null) 
-                            model.meshes.Add(currentMat, new Mesh());
+                        if (currentMat != null)
+                            model.addMaterial(currentMat);
                         currentMat = new Material();
                         currentMat.name = nubs[1];
                     }
@@ -129,8 +129,8 @@ namespace modeler
                     }
                 }
             }
-            if (currentMat != null) 
-                model.meshes.Add(currentMat, new Mesh());
+            if (currentMat != null)
+                model.addMaterial(currentMat);
 
             return true;
         }
@@ -205,10 +205,7 @@ namespace modeler
                         else if (code == "f")
                         {
                             if (currentMesh == null) // this means that the geometry has no material, so make it white
-                            {
-                                currentMesh = new Mesh();
-                                model.meshes.Add(new Material(), currentMesh);
-                            }
+                                currentMesh = model.getMesh(new Material());
 
                             Face face = new Face();
 

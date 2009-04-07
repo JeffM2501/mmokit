@@ -89,17 +89,16 @@ namespace modeler
             GL.Disable(EnableCap.Lighting);
             GL.Disable(EnableCap.Texture2D);
             camera.Execute();
-            GL.Lightv(LightName.Light0, LightParameter.Position, new Vector4(-10, -10, 10, 0.0f));
             grid.Execute();
 
             GL.Enable(EnableCap.Light0);
-
+            GL.Lightv(LightName.Light0, LightParameter.Position, new Vector4(-10, -10, 10, 0.0f));
             GL.Enable(EnableCap.Lighting);
-            GL.Color4(Color.Red);
+        //    GL.Color4(Color.Red);
 
             GL.PushMatrix();
           //  GL.Rotate(90, 1, 0, 0);
-            model.drawAll();
+            model.drawAll(true);
             GL.PopMatrix();
 
             if (false)
@@ -136,8 +135,8 @@ namespace modeler
                  camera.pushpull(e.Delta / zoomFactor);
                 if (e.Button == MouseButtons.Right)
                     camera.pan(delta.Y / rotFactor, -delta.X / rotFactor);
-                if (e.Button == MouseButtons.Left)
-                    camera.move(-delta.X / moveFactor, delta.Y / moveFactor,0);
+              //  if (e.Button == MouseButtons.Left)
+             //       camera.move(-delta.X / moveFactor, delta.Y / moveFactor,0);
 
                 Invalidate(true);
             }
@@ -231,15 +230,25 @@ namespace modeler
             {
                 XmlSerializer xml = new XmlSerializer(typeof(Model));
                 StreamReader sr = new StreamReader(ofd.OpenFile());
+               
+                // free the old lists and materials
                 model.Invalidate();
                 model = (Model)xml.Deserialize(sr);
                 sr.Close();
+                
+                // setup the new model to draw
+                model.Invalidate();
 
                 if (model.meshes.Count > 0)
                     setDocName(Path.GetFileNameWithoutExtension(ofd.FileName));
 
                 Invalidate(true);
             }
+        }
+
+        private void scaleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
