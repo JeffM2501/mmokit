@@ -82,6 +82,9 @@
     <EmbeddedResource Include="ScaleDialog.resx">
       <DependentUpon>ScaleDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SingleItemQuery.resx">
+      <DependentUpon>SingleItemQuery.cs</DependentUpon>
+    </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -100,6 +103,12 @@
     </Compile>
     <Compile Include="ScaleDialog.Designer.cs">
       <DependentUpon>ScaleDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SingleItemQuery.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SingleItemQuery.Designer.cs">
+      <DependentUpon>SingleItemQuery.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

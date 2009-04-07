@@ -119,7 +119,13 @@ namespace modeler
                 buildDisplayNormals(group);
         }
 
-        public void build ( string[] hiddenGroups )
+        public void buildWireframe()
+        {
+            foreach (MeshGroup group in groups)
+                buildWireframe(group);
+        }
+
+        public void build ( List<string> hiddenGroups )
         {
             checkGroupMap();
 
@@ -172,6 +178,22 @@ namespace modeler
                 }
             }
             GL.End();
+        }
+
+        public void buildWireframe(MeshGroup group)
+        {
+            GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
+            foreach (Face f in group.faces)
+            {
+                GL.Begin(BeginMode.Polygon);
+                foreach (FaceVert v in f.verts)
+                {
+                    if (v.vert >= 0 && v.vert < verts.Count)
+                        GL.Vertex3(verts[v.vert]);
+                }
+                GL.End();
+            }
+            GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill);
         }
 
         public void build ( string groupName )
@@ -306,7 +328,7 @@ namespace modeler
             textureID = -1;
         }
 
-        public void Generate ()
+        public int Generate ()
         {
             if (listID == -1)
             {
@@ -323,12 +345,194 @@ namespace modeler
                 baseColor.glColor();
                 GL.EndList();
             }
+            return listID;
         }
 
         public void Execute ()
         {
-            Generate();
-            GL.CallList(listID);
+            GL.CallList(Generate());
+        }
+    }
+    public class MeshOverride
+    {
+        public string origonalMatName = string.Empty;
+        public Material newMaterial = new Material();
+        public List<string> hiddenGroups = new List<string>();
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        public int geometryList = -1;
+
+        public void Invalidate()
+        {
+            newMaterial.Invalidate();
+            if (geometryList == -1)
+                GL.DeleteLists(geometryList, 1);
+            geometryList = -1;
+        }
+    }
+
+    public class MaterialOverride
+    {
+        public List<MeshOverride> materials = new List<MeshOverride>();
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        Dictionary<Material, MeshOverride> materialReplacements = new Dictionary<Material, MeshOverride>();
+
+        public List<string> getHiddenGroups (Material mat)
+        {
+            if (materialReplacements.ContainsKey(mat))
+                return materialReplacements[mat].hiddenGroups;
+
+            MeshOverride m = findOverride(mat.name);
+            if (m != null)
+            {
+                materialReplacements.Add(mat,m);
+                return m.hiddenGroups;
+            }
+
+            return new List<string>();
+        }
+
+        public MeshOverride getOverride (Material mat)
+        {
+            if (materialReplacements.ContainsKey(mat))
+                return materialReplacements[mat];
+            else
+            {
+                foreach (MeshOverride m in materials)
+                {
+                    if (m.origonalMatName == mat.name)
+                    {
+                        materialReplacements[mat] = m;
+                        return m;
+                    }
+                }
+
+                MeshOverride mesh = new MeshOverride();
+                mesh.origonalMatName = mat.name;
+                materials.Add(mesh);
+                materialReplacements[mat] = mesh;
+
+                return mesh;
+            }
+        }
+
+        public int getGeoListID(Material mat)
+        {
+            if (materialReplacements.ContainsKey(mat))
+                return materialReplacements[mat].geometryList;
+            return -1;
+        }
+
+        public void setGeoListID(Material mat, int id)
+        {
+            getOverride(mat).geometryList = id;
+        }
+
+        public MeshOverride findOverride(string matName)
+        {
+            foreach (MeshOverride m in materials)
+            {
+                if (m.origonalMatName == matName)
+                    return m;
+            }
+
+            return null;
+        }
+
+        public void hideGroup(string matName, string name)
+        {
+            MeshOverride ovd = findOverride(matName);
+            if (ovd == null)
+                return;
+            if (!ovd.hiddenGroups.Contains(name))
+                ovd.hiddenGroups.Add(name);
+        }
+
+        public void showGroup(string matName, string name)
+        {
+            MeshOverride ovd = findOverride(matName);
+            if (ovd == null)
+                return;
+            
+            if (ovd.hiddenGroups.Contains(name))
+                ovd.hiddenGroups.Remove(name);
+        }
+
+        public void addMaterial(string matName, Material mat)
+        {
+            MeshOverride mesh = findOverride(matName);
+            if (mesh == null)
+                mesh = new MeshOverride();
+
+            mesh.origonalMatName = matName;
+            mat.Invalidate();
+            if (mesh.newMaterial != null)
+                mesh.newMaterial.Invalidate();
+
+            mesh.newMaterial = mat;
+            mesh.newMaterial.name = matName;
+
+            materials.Add(mesh);
+        }
+       
+        public void removeMaterial(string name)
+        {
+            Invalidate();
+
+            foreach (MeshOverride m in materials)
+            {
+                if (m.origonalMatName == name)
+                {
+                    materials.Remove(m);
+                    break;
+                }
+            }
+
+            foreach(KeyValuePair<Material,MeshOverride> m in materialReplacements)
+            {
+                if (m.Key.name == name)
+                    materialReplacements.Remove(m.Key);
+            }
+        }
+
+        public void Invalidate()
+        {
+            // kill the old materials
+            foreach (KeyValuePair<Material, MeshOverride> m in materialReplacements)
+                m.Key.Invalidate();
+            materialReplacements.Clear();
+
+            foreach (MeshOverride m in materials)
+                m.Invalidate();
+        }
+
+        public void Execute( Material mat )
+        {
+            if (materialReplacements.ContainsKey(mat))
+            {
+                Material ovrd = materialReplacements[mat].newMaterial;
+                if (ovrd != null)
+                    ovrd.Execute();
+                else
+                    mat.Execute();
+            }
+            else
+            {
+                foreach (MeshOverride m in materials)
+                {
+                    if (m.origonalMatName == mat.name)
+                    {
+                        materialReplacements.Add(mat, m);
+                        if (m != null)
+                            m.newMaterial.Execute();
+                        else
+                            mat.Execute();
+                        return;
+                    }
+                }
+                mat.Execute();
+            }
         }
     }
 
@@ -343,6 +547,8 @@ namespace modeler
         Dictionary<Material, int> geoLists = new Dictionary<Material, int>();
         [System.Xml.Serialization.XmlIgnoreAttribute]
         int displayNormalsList = -1;
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        int displayWireframeList = -1;
 
         public void addMaterial (Material mat)
         {
@@ -413,6 +619,8 @@ namespace modeler
 
             if (displayNormalsList != -1)
                 GL.DeleteLists(displayNormalsList, 1);
+            if (displayWireframeList != -1)
+                GL.DeleteLists(displayWireframeList, 1);
 
             foreach (Mesh m in meshes)
                 m.material.Invalidate();
@@ -441,6 +649,14 @@ namespace modeler
                 m.buildDisplayNormals();
             GL.EndList();
 
+            displayWireframeList = GL.GenLists(1);
+            GL.NewList(displayWireframeList, ListMode.Compile);
+            GL.Enable(EnableCap.PolygonOffsetLine);
+            GL.PolygonOffset(-1.0f, 0.05f);
+            foreach (Mesh m in meshes)
+                m.buildWireframe();
+            GL.Disable(EnableCap.PolygonOffsetLine);
+            GL.EndList();
         }
 
         public void drawAll ( )
@@ -456,30 +672,74 @@ namespace modeler
             }
         }
 
-        public void drawAll ( bool normals )
+        public void drawAll(MaterialOverride matOverride)
+        {
+            if (meshes.Count == 0)
+                return;
+
+            foreach (Mesh m in meshes)
+            {
+                int listID = matOverride.getGeoListID(m.material);
+                if (listID < 0)
+                {
+                    listID = GL.GenLists(1);
+                    GL.NewList(listID, ListMode.Compile);
+                    m.build(matOverride.getHiddenGroups(m.material));
+                    GL.EndList();
+                    matOverride.setGeoListID(m.material, listID);
+                }
+
+                matOverride.Execute(m.material);
+                GL.CallList(listID);
+            }
+        }
+
+        protected void drawAllExtras ( bool normals, bool wireframe )
+        {
+            GL.Disable(EnableCap.Texture2D);
+            GL.Disable(EnableCap.Lighting);
+            if (normals)
+            {
+                GL.Color4(Color.Red);
+                GL.CallList(displayNormalsList);
+            }
+
+            if (wireframe)
+            {
+                GL.Color4(Color.White);
+                GL.CallList(displayWireframeList);
+            }
+            GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Lighting);
+        }
+
+        public void drawAll ( bool normals, bool wireframe )
         {
             if (meshes.Count == 0)
                 return;
             drawAll();
-            if (normals)
-            {
-                GL.Disable(EnableCap.Texture2D);
-                GL.Disable(EnableCap.Lighting);
 
-                GL.Color4(Color.Red);
-
-                GL.CallList(displayNormalsList);
-
-                GL.Enable(EnableCap.Texture2D);
-                GL.Enable(EnableCap.Lighting);
-            }
+            drawAllExtras(normals, wireframe);
         }
 
+        public void drawAll(bool normals, bool wireframe, MaterialOverride matOverride)
+        {
+            if (meshes.Count == 0)
+                return;
+            drawAll(matOverride);
+
+            drawAllExtras(normals, wireframe);
+        }
 
         public void clear ()
         {
             Invalidate();
             meshes.Clear();
+        }
+
+        public bool valid ()
+        {
+            return meshes.Count > 0;
         }
 
         public void swapYZ()
@@ -492,6 +752,17 @@ namespace modeler
                     mesh.verts[i] = new Vector3(mesh.verts[i].X, -mesh.verts[i].Z, mesh.verts[i].Y);
                 for (int i = 0; i < mesh.normals.Count; i++)
                     mesh.normals[i] = new Vector3(mesh.normals[i].X, -mesh.normals[i].Z, mesh.normals[i].Y);
+            }
+        }
+
+        public void scale( float factor)
+        {
+            Invalidate();
+
+            foreach (Mesh mesh in meshes)
+            {
+                for (int i = 0; i < mesh.verts.Count; i++)
+                    mesh.verts[i] = new Vector3(mesh.verts[i].X * factor, mesh.verts[i].Y * factor, mesh.verts[i].Z * factor);
             }
         }
     }
