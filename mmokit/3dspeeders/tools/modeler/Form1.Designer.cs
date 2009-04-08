@@ -38,23 +38,27 @@ namespace modeler
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.swapYZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.scaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Sidebar = new System.Windows.Forms.Panel();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showNormalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gridToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.normalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wireframeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.SkinView = new System.Windows.Forms.TreeView();
-            this.label1 = new System.Windows.Forms.Label();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.headlightToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.NewSkin = new System.Windows.Forms.Button();
+            this.backgroundColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.swapYZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.Sidebar = new System.Windows.Forms.Panel();
             this.RemoveSkin = new System.Windows.Forms.Button();
+            this.NewSkin = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.SkinView = new System.Windows.Forms.TreeView();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.MaterialGroup = new System.Windows.Forms.GroupBox();
             this.MainMenu.SuspendLayout();
             this.Sidebar.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // glControl1
@@ -65,7 +69,7 @@ namespace modeler
             this.glControl1.BackColor = System.Drawing.Color.Black;
             this.glControl1.Location = new System.Drawing.Point(12, 27);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(606, 459);
+            this.glControl1.Size = new System.Drawing.Size(614, 463);
             this.glControl1.TabIndex = 0;
             this.glControl1.VSync = false;
             this.glControl1.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseWheel);
@@ -84,7 +88,7 @@ namespace modeler
             this.toolsToolStripMenuItem});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(790, 24);
+            this.MainMenu.Size = new System.Drawing.Size(798, 24);
             this.MainMenu.TabIndex = 1;
             this.MainMenu.Text = "MainMenu";
             // 
@@ -126,6 +130,61 @@ namespace modeler
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showNormalsToolStripMenuItem,
+            this.headlightToolStripMenuItem,
+            this.backgroundColorToolStripMenuItem});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "View";
+            // 
+            // showNormalsToolStripMenuItem
+            // 
+            this.showNormalsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.gridToolStripMenuItem,
+            this.normalsToolStripMenuItem,
+            this.wireframeToolStripMenuItem});
+            this.showNormalsToolStripMenuItem.Name = "showNormalsToolStripMenuItem";
+            this.showNormalsToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.showNormalsToolStripMenuItem.Text = "Show";
+            // 
+            // gridToolStripMenuItem
+            // 
+            this.gridToolStripMenuItem.Name = "gridToolStripMenuItem";
+            this.gridToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.gridToolStripMenuItem.Text = "Grid";
+            this.gridToolStripMenuItem.Click += new System.EventHandler(this.gridToolStripMenuItem_Click);
+            // 
+            // normalsToolStripMenuItem
+            // 
+            this.normalsToolStripMenuItem.Name = "normalsToolStripMenuItem";
+            this.normalsToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.normalsToolStripMenuItem.Text = "Normals";
+            this.normalsToolStripMenuItem.Click += new System.EventHandler(this.normalsToolStripMenuItem_Click);
+            // 
+            // wireframeToolStripMenuItem
+            // 
+            this.wireframeToolStripMenuItem.Name = "wireframeToolStripMenuItem";
+            this.wireframeToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.wireframeToolStripMenuItem.Text = "Wireframe Overlay";
+            this.wireframeToolStripMenuItem.Click += new System.EventHandler(this.wireframeToolStripMenuItem_Click);
+            // 
+            // headlightToolStripMenuItem
+            // 
+            this.headlightToolStripMenuItem.Name = "headlightToolStripMenuItem";
+            this.headlightToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.headlightToolStripMenuItem.Text = "Headlight";
+            this.headlightToolStripMenuItem.Click += new System.EventHandler(this.headlightToolStripMenuItem_Click);
+            // 
+            // backgroundColorToolStripMenuItem
+            // 
+            this.backgroundColorToolStripMenuItem.Name = "backgroundColorToolStripMenuItem";
+            this.backgroundColorToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.backgroundColorToolStripMenuItem.Text = "Background Color";
+            this.backgroundColorToolStripMenuItem.Click += new System.EventHandler(this.backgroundColorToolStripMenuItem_Click);
+            // 
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -153,63 +212,34 @@ namespace modeler
             // 
             this.Sidebar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.Sidebar.Controls.Add(this.RemoveSkin);
-            this.Sidebar.Controls.Add(this.NewSkin);
+            this.Sidebar.Controls.Add(this.MaterialGroup);
+            this.Sidebar.Controls.Add(this.groupBox1);
             this.Sidebar.Controls.Add(this.label1);
             this.Sidebar.Controls.Add(this.SkinView);
-            this.Sidebar.Location = new System.Drawing.Point(624, 27);
+            this.Sidebar.Location = new System.Drawing.Point(632, 27);
             this.Sidebar.Name = "Sidebar";
-            this.Sidebar.Size = new System.Drawing.Size(166, 471);
+            this.Sidebar.Size = new System.Drawing.Size(166, 475);
             this.Sidebar.TabIndex = 2;
             // 
-            // viewToolStripMenuItem
+            // RemoveSkin
             // 
-            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.showNormalsToolStripMenuItem,
-            this.headlightToolStripMenuItem});
-            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.viewToolStripMenuItem.Text = "View";
+            this.RemoveSkin.Location = new System.Drawing.Point(71, 19);
+            this.RemoveSkin.Name = "RemoveSkin";
+            this.RemoveSkin.Size = new System.Drawing.Size(59, 23);
+            this.RemoveSkin.TabIndex = 3;
+            this.RemoveSkin.Text = "Remove";
+            this.RemoveSkin.UseVisualStyleBackColor = true;
+            this.RemoveSkin.Click += new System.EventHandler(this.RemoveSkin_Click);
             // 
-            // showNormalsToolStripMenuItem
+            // NewSkin
             // 
-            this.showNormalsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.gridToolStripMenuItem,
-            this.normalsToolStripMenuItem,
-            this.wireframeToolStripMenuItem});
-            this.showNormalsToolStripMenuItem.Name = "showNormalsToolStripMenuItem";
-            this.showNormalsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.showNormalsToolStripMenuItem.Text = "Show";
-            // 
-            // gridToolStripMenuItem
-            // 
-            this.gridToolStripMenuItem.Name = "gridToolStripMenuItem";
-            this.gridToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.gridToolStripMenuItem.Text = "Grid";
-            this.gridToolStripMenuItem.Click += new System.EventHandler(this.gridToolStripMenuItem_Click);
-            // 
-            // normalsToolStripMenuItem
-            // 
-            this.normalsToolStripMenuItem.Name = "normalsToolStripMenuItem";
-            this.normalsToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.normalsToolStripMenuItem.Text = "Normals";
-            this.normalsToolStripMenuItem.Click += new System.EventHandler(this.normalsToolStripMenuItem_Click);
-            // 
-            // wireframeToolStripMenuItem
-            // 
-            this.wireframeToolStripMenuItem.Name = "wireframeToolStripMenuItem";
-            this.wireframeToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.wireframeToolStripMenuItem.Text = "Wireframe Overlay";
-            this.wireframeToolStripMenuItem.Click += new System.EventHandler(this.wireframeToolStripMenuItem_Click);
-            // 
-            // SkinView
-            // 
-            this.SkinView.Location = new System.Drawing.Point(7, 23);
-            this.SkinView.Name = "SkinView";
-            this.SkinView.Size = new System.Drawing.Size(154, 209);
-            this.SkinView.TabIndex = 0;
-            this.SkinView.DoubleClick += new System.EventHandler(this.SkinView_DoubleClick);
-            this.SkinView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SkinView_AfterSelect);
+            this.NewSkin.Location = new System.Drawing.Point(6, 19);
+            this.NewSkin.Name = "NewSkin";
+            this.NewSkin.Size = new System.Drawing.Size(59, 23);
+            this.NewSkin.TabIndex = 2;
+            this.NewSkin.Text = "New";
+            this.NewSkin.UseVisualStyleBackColor = true;
+            this.NewSkin.Click += new System.EventHandler(this.NewSkin_Click);
             // 
             // label1
             // 
@@ -220,48 +250,52 @@ namespace modeler
             this.label1.TabIndex = 1;
             this.label1.Text = "Skins";
             // 
-            // headlightToolStripMenuItem
+            // SkinView
             // 
-            this.headlightToolStripMenuItem.Name = "headlightToolStripMenuItem";
-            this.headlightToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.headlightToolStripMenuItem.Text = "Headlight";
-            this.headlightToolStripMenuItem.Click += new System.EventHandler(this.headlightToolStripMenuItem_Click);
+            this.SkinView.Location = new System.Drawing.Point(7, 23);
+            this.SkinView.Name = "SkinView";
+            this.SkinView.Size = new System.Drawing.Size(154, 209);
+            this.SkinView.TabIndex = 0;
+            this.SkinView.DoubleClick += new System.EventHandler(this.SkinView_DoubleClick);
+            this.SkinView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SkinView_AfterSelect);
             // 
-            // NewSkin
+            // groupBox1
             // 
-            this.NewSkin.Location = new System.Drawing.Point(7, 238);
-            this.NewSkin.Name = "NewSkin";
-            this.NewSkin.Size = new System.Drawing.Size(75, 23);
-            this.NewSkin.TabIndex = 2;
-            this.NewSkin.Text = "New Skin";
-            this.NewSkin.UseVisualStyleBackColor = true;
-            this.NewSkin.Click += new System.EventHandler(this.NewSkin_Click);
+            this.groupBox1.Controls.Add(this.RemoveSkin);
+            this.groupBox1.Controls.Add(this.NewSkin);
+            this.groupBox1.Location = new System.Drawing.Point(7, 238);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(136, 53);
+            this.groupBox1.TabIndex = 4;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Skins";
             // 
-            // RemoveSkin
+            // MaterialGroup
             // 
-            this.RemoveSkin.Location = new System.Drawing.Point(86, 238);
-            this.RemoveSkin.Name = "RemoveSkin";
-            this.RemoveSkin.Size = new System.Drawing.Size(75, 23);
-            this.RemoveSkin.TabIndex = 3;
-            this.RemoveSkin.Text = "Remove Skin";
-            this.RemoveSkin.UseVisualStyleBackColor = true;
-            this.RemoveSkin.Click += new System.EventHandler(this.RemoveSkin_Click);
+            this.MaterialGroup.Location = new System.Drawing.Point(7, 297);
+            this.MaterialGroup.Name = "MaterialGroup";
+            this.MaterialGroup.Size = new System.Drawing.Size(154, 157);
+            this.MaterialGroup.TabIndex = 5;
+            this.MaterialGroup.TabStop = false;
+            this.MaterialGroup.Text = "Material";
             // 
             // ModelerDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(790, 498);
+            this.ClientSize = new System.Drawing.Size(798, 502);
             this.Controls.Add(this.Sidebar);
             this.Controls.Add(this.glControl1);
             this.Controls.Add(this.MainMenu);
             this.MainMenuStrip = this.MainMenu;
             this.Name = "ModelerDialog";
             this.Text = "Modeler";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ModelerDialog_FormClosed);
             this.MainMenu.ResumeLayout(false);
             this.MainMenu.PerformLayout();
             this.Sidebar.ResumeLayout(false);
             this.Sidebar.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -291,6 +325,9 @@ namespace modeler
         private System.Windows.Forms.ToolStripMenuItem headlightToolStripMenuItem;
         private System.Windows.Forms.Button RemoveSkin;
         private System.Windows.Forms.Button NewSkin;
+        private System.Windows.Forms.ToolStripMenuItem backgroundColorToolStripMenuItem;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox MaterialGroup;
 
     }
 }

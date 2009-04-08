@@ -51,6 +51,11 @@ namespace modeler
             a = color.A/255.0f;
         }
 
+        public Color ToColor()
+        {
+            return Color.FromArgb((byte)(a * 255), (byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
+        }
+
         public static GLColor Transparent = new GLColor(1.0f, 1.0f, 1.0f, 0.0f);
         public static GLColor White = new GLColor(1.0f, 1.0f, 1.0f, 1.0f);
         public static GLColor Black = new GLColor(0.0f, 0.0f, 0.0f, 1.0f);

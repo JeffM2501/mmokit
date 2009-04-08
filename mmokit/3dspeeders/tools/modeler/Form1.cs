@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -27,31 +26,66 @@ namespace modeler
         Model model = new Model();
         Dictionary<string, MaterialOverride> skins = new Dictionary<string, MaterialOverride>();
 
+        Prefrences prefs = new Prefrences();
+
         string docName = string.Empty;
 
-        bool showNormals = false;
-        bool showGrid = true;
-        bool showWireframe = false;
         bool useHeadlight = false;
 
         public ModelerDialog()
         {
+            loadPrefs();
+
             InitializeComponent();
 
-            gridToolStripMenuItem.Checked = showGrid;
-            normalsToolStripMenuItem.Checked = showNormals;
-            wireframeToolStripMenuItem.Checked = showWireframe;
+            gridToolStripMenuItem.Checked = prefs.showGrid;
+            normalsToolStripMenuItem.Checked = prefs.showNormals;
+            wireframeToolStripMenuItem.Checked = prefs.showWireframe;
             headlightToolStripMenuItem.Checked = useHeadlight;
+        }
+        
+        protected void loadPrefs ()
+        {
+            DirectoryInfo configDir = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "3dModeler"));
+            if (!configDir.Exists)
+                configDir.Create();
+            FileInfo prefsFile = new FileInfo(Path.Combine(configDir.FullName, "prefs.xml"));
+            if (prefsFile.Exists)
+                prefs = (Prefrences)new XmlSerializer(typeof(Prefrences)).Deserialize(prefsFile.OpenText());
+        }
+
+        protected void savePrefs ()
+        {
+            prefs.windowSize = this.Size;
+            prefs.windowPos  = DesktopLocation;
+
+            DirectoryInfo configDir = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "3dModeler"));
+            if (!configDir.Exists)
+                configDir.Create();
+            FileInfo prefsFile = new FileInfo(Path.Combine(configDir.FullName, "prefs.xml"));
+            new XmlSerializer(typeof(Prefrences)).Serialize(prefsFile.CreateText(),prefs);
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
+            if (prefs.windowSize.Width > 0 && prefs.windowSize.Height > 0)
+            {
+                SetDesktopLocation(prefs.windowPos.X, prefs.windowPos.Y);
+                this.Height = prefs.windowSize.Height;
+                this.Width = prefs.windowSize.Width;
+            }
+
             setupDisplay();
             camera.move(new Vector3(0, 0, 0));
             camera.pushpull(5);
             camera.pan(45, 15);
+        }
+
+        private void ModelerDialog_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            savePrefs();
         }
 
         protected void invalidateView()
@@ -69,7 +103,7 @@ namespace modeler
 
         void setupDisplay()
         {
-            GL.ClearColor(Color.DarkGray);
+            GL.ClearColor(prefs.bgColor.r, prefs.bgColor.g, prefs.bgColor.b, 1);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
@@ -122,7 +156,7 @@ namespace modeler
 
             camera.Execute();
 
-            if (showGrid)
+            if (prefs.showGrid)
                 grid.Execute();
 
             if(!useHeadlight)
@@ -134,9 +168,9 @@ namespace modeler
           //  GL.Rotate(90, 1, 0, 0);
             MaterialOverride ovd = getMatOverride();
             if (ovd == null)
-                model.drawAll(showNormals, showWireframe);
+                model.drawAll(prefs.showNormals, prefs.showWireframe);
             else
-                model.drawAll(showNormals, showWireframe, ovd);
+                model.drawAll(prefs.showNormals, prefs.showWireframe, ovd);
 
             GL.PopMatrix();
 
@@ -290,22 +324,22 @@ namespace modeler
 
         private void gridToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            showGrid = !showGrid;
-            gridToolStripMenuItem.Checked = showGrid;
+            prefs.showGrid = !prefs.showGrid;
+            gridToolStripMenuItem.Checked = prefs.showGrid;
             invalidateView();
         }
 
         private void normalsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            showNormals = !showNormals;
-            normalsToolStripMenuItem.Checked = showNormals;
+            prefs.showNormals = !prefs.showNormals;
+            normalsToolStripMenuItem.Checked = prefs.showNormals;
             invalidateView();
         }
 
         private void wireframeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            showWireframe = !showWireframe;
-            wireframeToolStripMenuItem.Checked = showWireframe;
+            prefs.showWireframe = !prefs.showWireframe;
+            wireframeToolStripMenuItem.Checked = prefs.showWireframe;
             invalidateView();
         }
 
@@ -540,5 +574,28 @@ namespace modeler
                 invalidateView();
             }
         }
+
+        private void backgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ColorDialog dlg = new ColorDialog();
+            dlg.Color = prefs.bgColor.ToColor();
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                prefs.bgColor = new GLColor(dlg.Color);
+                GL.ClearColor(dlg.Color);
+                invalidateView();
+            }
+        }
+    }
+
+    public class Prefrences
+    {
+        public Size windowSize = new Size();
+        public Point windowPos = new Point();
+
+        public GLColor bgColor = new GLColor(Color.DarkGray);
+        public bool showGrid = true;
+        public bool showNormals = false;
+        public bool showWireframe = false;
     }
 }
