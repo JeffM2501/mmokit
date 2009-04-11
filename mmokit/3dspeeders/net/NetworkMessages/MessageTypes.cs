@@ -11,6 +11,7 @@ namespace NetworkMessages
         PlayerList = 2,
         RemoveUser = 3,
         AddUser = 4,
+        Login = 5,
     }
 
     static public class Channels
