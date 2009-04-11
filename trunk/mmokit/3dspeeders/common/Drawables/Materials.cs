@@ -8,6 +8,7 @@ using OpenTK.Graphics;
 using System.Drawing.Imaging;
 
 using Drawables.Textures;
+using Drawables.DisplayLists;
 
 namespace Drawables.Materials
 {
@@ -20,6 +21,31 @@ namespace Drawables.Materials
 
         public GLColor()
         { }
+
+        public override int GetHashCode()
+        {
+            return r.GetHashCode() ^ g.GetHashCode() ^ b.GetHashCode() ^ a.GetHashCode();
+        }
+
+        public override bool Equals(System.Object obj)
+        {
+            if (obj == null)
+                return false;
+
+            GLColor p = obj as GLColor;
+            if ((System.Object)p == null)
+                return false;
+
+            return r == p.r && g == p.g && b == p.b && a == p.a;
+        }
+
+        public bool Equals(GLColor obj)
+        {
+            if (obj == null)
+                return false;
+
+            return r == obj.r && g == obj.g && b == obj.b && a == obj.a;
+        }
 
         public static bool operator == (GLColor c1, GLColor c2)
         {
@@ -86,45 +112,36 @@ namespace Drawables.Materials
         Texture texture;
 
         [System.Xml.Serialization.XmlIgnoreAttribute]
-        int listID = -1;
+        DisplayList displayList = DisplayListSystem.system.newList();
 
         public void Invalidate()
         {
             if (texture != null)
                 texture.Invalidate();
-            if (listID != -1)
-                GL.DeleteLists(listID, 1);
-
-            listID = -1;
+            displayList.Invalidate();
         }
 
-        public int Generate()
+        public void Generate()
         {
-            if (!texture.Valid())
-                Invalidate();
+            Invalidate();
 
-            if (texture == null)
-            {
-                texture = TextureSystem.system.getTexture(textureName);
+            texture = TextureSystem.system.getTexture(textureName);
 
-                //execute just so we are sure it has a list before we put it in another list
-                texture.Execute();
-            }
+            //execute just so we are sure it has a list before we put it in another list
+            texture.Execute();
 
-            if (listID == -1)
-            {
-                listID = GL.GenLists(1);
-                texture.Execute();
-
-                baseColor.glColor();
-                GL.EndList();
-            }
-            return listID;
+            displayList.Start();
+            texture.Execute();
+            baseColor.glColor();
+            displayList.End();
         }
 
         public void Execute()
         {
-            GL.CallList(Generate());
+            if (!texture.Valid() || !displayList.Valid())
+                Generate();
+
+            displayList.Call();
         }
     }
 
@@ -135,14 +152,12 @@ namespace Drawables.Materials
         public List<string> hiddenGroups = new List<string>();
 
         [System.Xml.Serialization.XmlIgnoreAttribute]
-        public int geometryList = -1;
+        public DisplayList displayList = DisplayListSystem.system.newList();
 
         public void Invalidate()
         {
             newMaterial.Invalidate();
-            if (geometryList == -1)
-                GL.DeleteLists(geometryList, 1);
-            geometryList = -1;
+            displayList.Invalidate();
         }
 
         public void LinkToSystem (MaterialSystem system)
@@ -204,16 +219,11 @@ namespace Drawables.Materials
             }
         }
 
-        public int getGeoListID(Material mat)
+        public DisplayList getGeoList(Material mat)
         {
             if (materialReplacements.ContainsKey(mat))
-                return materialReplacements[mat].geometryList;
-            return -1;
-        }
-
-        public void setGeoListID(Material mat, int id)
-        {
-            getOverride(mat).geometryList = id;
+                return materialReplacements[mat].displayList;
+            return null;
         }
 
         public MeshOverride findOverride(string matName)
