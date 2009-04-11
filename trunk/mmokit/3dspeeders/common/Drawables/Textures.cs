@@ -7,12 +7,13 @@ using System.Drawing.Imaging;
 using System.IO;
 
 using OpenTK.Graphics;
+using Drawables.DisplayLists;
 
 namespace Drawables.Textures
 {
     public class Texture
     {
-        int listID = -1;
+        DisplayList listID = new DisplayList();
         int boundID = -1;
 
         public bool mipmap = true;
@@ -26,15 +27,12 @@ namespace Drawables.Textures
 
         public bool Valid ()
         {
-            return listID != -1;
+            return listID.Valid();
         }
 
         public void Invalidate()
         {
-            if (listID != -1)
-                GL.DeleteLists(listID, 1);
-
-            listID = -1;
+            listID.Invalidate();
 
             if(boundID != -1)
                 GL.DeleteTexture(boundID);
@@ -44,17 +42,17 @@ namespace Drawables.Textures
         public void Execute()
         {
             // easy out, do this most of the time
-            if (listID != -1)
+            if (listID.Valid())
             {
                 if (boundID != -1)
                     GL.Enable(EnableCap.Texture2D);
                 else
                     GL.Disable(EnableCap.Texture2D);
-                GL.CallList(listID);
+                listID.Call();
                 return;
             }
 
-            if (boundID == -1 || listID == -1)
+            if (boundID == -1 || !listID.Valid())
                 Invalidate(); // we know one is bad, so make sure all is free;
 
             if (file != null && file.Exists)
@@ -77,11 +75,10 @@ namespace Drawables.Textures
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             }
 
-            listID = GL.GenLists(1);
-            GL.NewList(listID,ListMode.CompileAndExecute);
+            listID.Start(true);
             if (boundID != -1)
                 GL.BindTexture(TextureTarget.Texture2D, boundID);
-            GL.EndList();
+            listID.End();
         }
     }
 
@@ -110,7 +107,7 @@ namespace Drawables.Textures
                 return textures[file.FullName];
 
             Texture texture = null;
-            if (!textureIsValid(file.FullName))
+            if (textureIsValid(file.FullName))
             {
                 if (file.Exists)
                     texture = new Texture(file);
