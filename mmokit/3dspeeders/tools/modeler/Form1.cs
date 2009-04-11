@@ -17,6 +17,7 @@ using OpenTK.Math;
 
 using Drawables.Models;
 using Drawables.Models.OBJ;
+using Drawables.Models.XMDL;
 using Drawables.Materials;
 
 namespace modeler
@@ -245,12 +246,12 @@ namespace modeler
 
             if (fd.ShowDialog() == DialogResult.OK)
             {
-                clearModel();
+                model.clear();
 
                 OBJFile objReader = new OBJFile();
-                objReader.read(new FileInfo(fd.FileName), model);
+                model = objReader.read(new FileInfo(fd.FileName));
 
-                if (model.meshes.Count > 0)
+                if (model.valid())
                     setDocName(Path.GetFileNameWithoutExtension(fd.FileName));
 
                 setupSkins();
@@ -263,36 +264,6 @@ namespace modeler
         {
             model.swapYZ();
             invalidateView();
-        }
-
-        private string makePathRelitive ( string rootpath, string outpath )
-        {
-            string[] rootChunks = Path.GetDirectoryName(rootpath).Split(Path.DirectorySeparatorChar.ToString().ToCharArray());
-            string[] outchunks = outpath.Split(Path.DirectorySeparatorChar.ToString().ToCharArray());
-
-            string relPath = string.Empty;
-
-            int i = 0;
-            for (i = 0; i < rootChunks.Length; i++)
-            {
-                if (i >= outchunks.Length)
-                    return outpath;
-
-                if (rootChunks[i] != outchunks[i])
-                {
-                    relPath += ".." + Path.DirectorySeparatorChar.ToString();
-                }
-            }
-
-            for (;i < outchunks.Length; i++)
-            {
-                relPath += outchunks[i];
-                if (i != outchunks.Length - 1)
-                    relPath += Path.DirectorySeparatorChar.ToString();
-
-            }
-
-            return relPath;
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -308,33 +279,8 @@ namespace modeler
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                // make the texture paths relative to the file.
-
-                foreach(Mesh m in model.meshes)
-                    m.material.textureName = makePathRelitive(sfd.FileName, m.material.textureName);
-
-                foreach(MaterialOverride m in model.skins)
-                {
-                    foreach (MeshOverride mesh in m.materials)
-                        mesh.newMaterial.textureName = makePathRelitive(sfd.FileName, mesh.newMaterial.textureName);
-                }
-
-                XmlSerializer xml = new XmlSerializer(typeof(Model));
-                GZipStream zip = new GZipStream(sfd.OpenFile(), CompressionMode.Compress, true);
-                StreamWriter sr = new StreamWriter(zip);
-                xml.Serialize(sr, model);
-                sr.Close();
-                zip.Close();
-
-                // make the texture paths relative to the file.
-                foreach (Mesh m in model.meshes)
-                    m.material.textureName = Path.Combine(Path.GetDirectoryName(sfd.FileName), m.material.textureName);
-
-                foreach (MaterialOverride m in model.skins)
-                {
-                    foreach (MeshOverride mesh in m.materials)
-                        mesh.newMaterial.textureName = Path.Combine(Path.GetDirectoryName(sfd.FileName), mesh.newMaterial.textureName);
-                }
+                XMDLFile writer = new XMDLFile();
+                writer.write(new FileInfo(sfd.FileName), model);
             }
         }
 
@@ -346,31 +292,11 @@ namespace modeler
             ofd.RestoreDirectory = true;
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                XmlSerializer xml = new XmlSerializer(typeof(Model));
-                GZipStream zip = new GZipStream(ofd.OpenFile(), CompressionMode.Decompress, false);
-                StreamReader sr = new StreamReader(zip);
-
-                // free the old lists and materials
-                clearModel();
-                model = (Model)xml.Deserialize(sr);
-                sr.Close();
-                zip.Close();
-
-
-                // make the texture paths relative to the file.
-                foreach (Mesh m in model.meshes)
-                    m.material.textureName = Path.Combine(Path.GetDirectoryName(ofd.FileName), m.material.textureName);
-
-                foreach (MaterialOverride m in model.skins)
-                {
-                    foreach (MeshOverride mesh in m.materials)
-                        mesh.newMaterial.textureName = Path.Combine(Path.GetDirectoryName(ofd.FileName), mesh.newMaterial.textureName);
-                }
-
-                // setup the new model to draw
-                model.Invalidate();
-
-                if (model.meshes.Count > 0)
+                model.clear();
+                XMDLFile reader = new XMDLFile();
+                
+                model = reader.read(new FileInfo(ofd.FileName));
+                if (model.valid())
                     setDocName(Path.GetFileNameWithoutExtension(ofd.FileName));
 
                 setupSkins();
