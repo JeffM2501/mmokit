@@ -67,8 +67,6 @@
     </Compile>
     <Compile Include="GLListable.cs" />
     <Compile Include="Grid.cs" />
-    <Compile Include="Model.cs" />
-    <Compile Include="OBJFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -110,6 +108,12 @@
     <Compile Include="SingleItemQuery.Designer.cs">
       <DependentUpon>SingleItemQuery.cs</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Drawables\Drawables.csproj">
+      <Project>{71452148-876E-4B8E-9244-A8F014CF72E6}</Project>
+      <Name>Drawables</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
