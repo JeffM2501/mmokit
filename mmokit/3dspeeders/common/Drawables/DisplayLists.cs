@@ -7,7 +7,7 @@ using OpenTK.Graphics;
 
 namespace Drawables.DisplayLists
 {
-    class DisplayList
+    public class DisplayList
     {
         int listID = -1;
 
@@ -64,8 +64,28 @@ namespace Drawables.DisplayLists
         }
     }
 
-    class DisplayListSystem
+    public class DisplayListSystem
     {
         public static DisplayListSystem system = new DisplayListSystem();
+
+        List<DisplayList> displayLists = new List<DisplayList>();
+
+        public void Invalidate()
+        {
+            foreach (DisplayList d in displayLists)
+                d.Invalidate();
+        }
+
+        public DisplayList newList ()
+        {
+            DisplayList d = new DisplayList();
+            displayLists.Add(d);
+            return d;
+        }
+
+        public void deleteList( DisplayList d)
+        {
+            displayLists.Remove(d);
+        }
     }
 }

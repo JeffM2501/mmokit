@@ -9,6 +9,7 @@ using OpenTK.Math;
 using System.IO;
 
 using Drawables.Materials;
+using Drawables.DisplayLists;
 
 namespace Drawables.Models
 {
@@ -230,11 +231,11 @@ namespace Drawables.Models
         public Dictionary<Material, Mesh> meshMap = new Dictionary<Material, Mesh>();
 
         [System.Xml.Serialization.XmlIgnoreAttribute]
-        Dictionary<Material, int> geoLists = new Dictionary<Material, int>();
+        Dictionary<Material, DisplayList> geoLists = new Dictionary<Material, DisplayList>();
         [System.Xml.Serialization.XmlIgnoreAttribute]
-        int displayNormalsList = -1;
+        DisplayList displayNormalsList = DisplayListSystem.system.newList();
         [System.Xml.Serialization.XmlIgnoreAttribute]
-        int displayWireframeList = -1;
+        DisplayList displayWireframeList = DisplayListSystem.system.newList();
 
         public void LinkToSystem(MaterialSystem system)
         {
@@ -341,14 +342,12 @@ namespace Drawables.Models
 
         public void Invalidate ()
         {
-            foreach (KeyValuePair<Material, int> m in geoLists)
-                GL.DeleteLists(m.Value, 1);
+            foreach (KeyValuePair<Material, DisplayList> m in geoLists)
+                m.Value.Invalidate();
             geoLists.Clear();
 
-            if (displayNormalsList != -1)
-                GL.DeleteLists(displayNormalsList, 1);
-            if (displayWireframeList != -1)
-                GL.DeleteLists(displayWireframeList, 1);
+            displayNormalsList.Invalidate();
+            displayWireframeList.Invalidate();
 
             foreach (Mesh m in meshes)
                 m.material.Invalidate();
@@ -364,27 +363,25 @@ namespace Drawables.Models
 
             foreach (Mesh m in meshes)
             {
-                int list = GL.GenLists(1);
-                GL.NewList(list, ListMode.Compile);
+                DisplayList list = DisplayListSystem.system.newList();
+                list.Start();
                 m.build();
-                GL.EndList();
+                list.End();
                 geoLists.Add(m.material, list);
             }
 
-            displayNormalsList = GL.GenLists(1);
-            GL.NewList(displayNormalsList, ListMode.Compile);
+            displayNormalsList.Start();
             foreach (Mesh m in meshes)
                 m.buildDisplayNormals();
-            GL.EndList();
+            displayNormalsList.End();
 
-            displayWireframeList = GL.GenLists(1);
-            GL.NewList(displayWireframeList, ListMode.Compile);
+            displayWireframeList.Start();
             GL.Enable(EnableCap.PolygonOffsetLine);
             GL.PolygonOffset(-1.0f, 0.05f);
             foreach (Mesh m in meshes)
                 m.buildWireframe();
             GL.Disable(EnableCap.PolygonOffsetLine);
-            GL.EndList();
+            displayWireframeList.End();
         }
 
         public void drawAll ( )
@@ -396,8 +393,29 @@ namespace Drawables.Models
             foreach (Mesh m in meshes)
             {
                m.material.Execute();
-               GL.CallList(geoLists[m.material]);
+               geoLists[m.material].Call();
             }
+        }
+
+        public void draw(MeshOverride matOverride)
+        {
+            draw(getMeshForMaterial(matOverride.origonalMatName), matOverride);
+        }
+
+        public void draw(Mesh mesh, MeshOverride matOverride)
+        {
+            if (mesh == null)
+                return;
+
+            DisplayList list = matOverride.displayList;
+            if (!list.Valid())
+            {
+                list.Start();
+                mesh.build(matOverride.hiddenGroups);
+                list.End();
+            }
+
+            list.Call();
         }
 
         public void drawAll(MaterialOverride matOverride)
@@ -407,18 +425,8 @@ namespace Drawables.Models
 
             foreach (Mesh m in meshes)
             {
-                int listID = matOverride.getGeoListID(m.material);
-                if (listID < 0)
-                {
-                    listID = GL.GenLists(1);
-                    GL.NewList(listID, ListMode.Compile);
-                    m.build(matOverride.getHiddenGroups(m.material));
-                    GL.EndList();
-                    matOverride.setGeoListID(m.material, listID);
-                }
-
                 matOverride.Execute(m.material);
-                GL.CallList(listID);
+                draw(m, matOverride.getOverride(m.material));         
             }
         }
 
@@ -429,13 +437,13 @@ namespace Drawables.Models
             if (normals)
             {
                 GL.Color4(Color.Red);
-                GL.CallList(displayNormalsList);
+                displayNormalsList.Call();
             }
 
             if (wireframe)
             {
                 GL.Color4(Color.White);
-                GL.CallList(displayWireframeList);
+                displayWireframeList.Call();
             }
             GL.Enable(EnableCap.Texture2D);
             GL.Enable(EnableCap.Lighting);
