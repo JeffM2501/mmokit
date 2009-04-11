@@ -11,7 +11,7 @@ using Drawables.Materials;
 
 namespace Drawables.Models.OBJ
 {
-    class OBJFile
+    public class OBJFile
     {
         string[] splitOnDelim(string data, string delim, int count)
         {

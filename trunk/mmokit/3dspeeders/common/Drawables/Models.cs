@@ -225,7 +225,7 @@ namespace Drawables.Models
     {
         public List<Mesh> meshes = new List<Mesh>();
 
-        List<MaterialOverride> skins = new List<MaterialOverride>();
+        public List<MaterialOverride> skins = new List<MaterialOverride>();
 
         [System.Xml.Serialization.XmlIgnoreAttribute]
         public Dictionary<Material, Mesh> meshMap = new Dictionary<Material, Mesh>();
@@ -351,6 +351,9 @@ namespace Drawables.Models
 
             foreach (Mesh m in meshes)
                 m.material.Invalidate();
+
+            foreach (MaterialOverride m in skins)
+                m.Invalidate();
        }
 
         void Rebuild ()
@@ -471,6 +474,7 @@ namespace Drawables.Models
         {
             Invalidate();
             meshes.Clear();
+            skins.Clear();
         }
 
         public bool valid ()
