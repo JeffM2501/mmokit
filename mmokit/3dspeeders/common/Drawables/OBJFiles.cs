@@ -160,9 +160,9 @@ namespace Drawables.Models.OBJ
             return list[index - 1];
         }
 
-        public bool read(FileInfo file, Model model)
+        public Model read(FileInfo file)
         {
-            model.clear();
+            Model model = new Model();
 
             FileStream fs = file.OpenRead();
             StreamReader sr = new StreamReader(fs);
@@ -224,7 +224,7 @@ namespace Drawables.Models.OBJ
                     }
                 }
             }
-            return model.meshes.Count > 0;
+            return model;
         }
     }
 }
