@@ -125,20 +125,28 @@ namespace Drawables.Materials
         {
             Invalidate();
 
-            texture = TextureSystem.system.getTexture(textureName);
+            if (texture != null)
+                texture.Invalidate();
 
-            //execute just so we are sure it has a list before we put it in another list
-            texture.Execute();
+            if (textureName != string.Empty)
+            {
+                texture = TextureSystem.system.getTexture(textureName);
+                //execute just so we are sure it has a list before we put it in another list
+                texture.Execute();
+            }
+            else
+                texture = null;
 
             displayList.Start();
-            texture.Execute();
+            if (texture != null)
+                texture.Execute();
             baseColor.glColor();
             displayList.End();
         }
 
         public void Execute()
         {
-            if (!texture.Valid() || !displayList.Valid())
+            if (texture == null || !texture.Valid() || !displayList.Valid())
                 Generate();
 
             displayList.Call();
