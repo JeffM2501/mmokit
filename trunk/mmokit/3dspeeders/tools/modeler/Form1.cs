@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.IO.Compression;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -264,6 +265,36 @@ namespace modeler
             invalidateView();
         }
 
+        private string makePathRelitive ( string rootpath, string outpath )
+        {
+            string[] rootChunks = Path.GetDirectoryName(rootpath).Split(Path.DirectorySeparatorChar.ToString().ToCharArray());
+            string[] outchunks = outpath.Split(Path.DirectorySeparatorChar.ToString().ToCharArray());
+
+            string relPath = string.Empty;
+
+            int i = 0;
+            for (i = 0; i < rootChunks.Length; i++)
+            {
+                if (i >= outchunks.Length)
+                    return outpath;
+
+                if (rootChunks[i] != outchunks[i])
+                {
+                    relPath += ".." + Path.DirectorySeparatorChar.ToString();
+                }
+            }
+
+            for (;i < outchunks.Length; i++)
+            {
+                relPath += outchunks[i];
+                if (i != outchunks.Length - 1)
+                    relPath += Path.DirectorySeparatorChar.ToString();
+
+            }
+
+            return relPath;
+        }
+
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (model.meshes.Count < 1)
@@ -277,10 +308,33 @@ namespace modeler
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
+                // make the texture paths relative to the file.
+
+                foreach(Mesh m in model.meshes)
+                    m.material.textureName = makePathRelitive(sfd.FileName, m.material.textureName);
+
+                foreach(MaterialOverride m in model.skins)
+                {
+                    foreach (MeshOverride mesh in m.materials)
+                        mesh.newMaterial.textureName = makePathRelitive(sfd.FileName, mesh.newMaterial.textureName);
+                }
+
                 XmlSerializer xml = new XmlSerializer(typeof(Model));
-                StreamWriter sr = new StreamWriter(sfd.OpenFile());
+                GZipStream zip = new GZipStream(sfd.OpenFile(), CompressionMode.Compress, true);
+                StreamWriter sr = new StreamWriter(zip);
                 xml.Serialize(sr, model);
                 sr.Close();
+                zip.Close();
+
+                // make the texture paths relative to the file.
+                foreach (Mesh m in model.meshes)
+                    m.material.textureName = Path.Combine(Path.GetDirectoryName(sfd.FileName), m.material.textureName);
+
+                foreach (MaterialOverride m in model.skins)
+                {
+                    foreach (MeshOverride mesh in m.materials)
+                        mesh.newMaterial.textureName = Path.Combine(Path.GetDirectoryName(sfd.FileName), mesh.newMaterial.textureName);
+                }
             }
         }
 
@@ -293,12 +347,25 @@ namespace modeler
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 XmlSerializer xml = new XmlSerializer(typeof(Model));
-                StreamReader sr = new StreamReader(ofd.OpenFile());
+                GZipStream zip = new GZipStream(ofd.OpenFile(), CompressionMode.Decompress, false);
+                StreamReader sr = new StreamReader(zip);
 
                 // free the old lists and materials
                 clearModel();
                 model = (Model)xml.Deserialize(sr);
                 sr.Close();
+                zip.Close();
+
+
+                // make the texture paths relative to the file.
+                foreach (Mesh m in model.meshes)
+                    m.material.textureName = Path.Combine(Path.GetDirectoryName(ofd.FileName), m.material.textureName);
+
+                foreach (MaterialOverride m in model.skins)
+                {
+                    foreach (MeshOverride mesh in m.materials)
+                        mesh.newMaterial.textureName = Path.Combine(Path.GetDirectoryName(ofd.FileName), mesh.newMaterial.textureName);
+                }
 
                 // setup the new model to draw
                 model.Invalidate();
