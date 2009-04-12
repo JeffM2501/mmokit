@@ -224,6 +224,9 @@ namespace Drawables.Models.OBJ
                     }
                 }
             }
+
+            sr.Close();
+            fs.Close();
             return model;
         }
     }

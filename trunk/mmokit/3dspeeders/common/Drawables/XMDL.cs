@@ -19,12 +19,14 @@ namespace Drawables.Models.XMDL
             Model model = new Model();
 
             XmlSerializer xml = new XmlSerializer(typeof(Model));
-            GZipStream zip = new GZipStream(file.OpenRead(), CompressionMode.Decompress, false);
+            FileStream fs = file.OpenRead();
+            GZipStream zip = new GZipStream(fs, CompressionMode.Decompress, false);
             StreamReader sr = new StreamReader(zip);
 
             model = (Model)xml.Deserialize(sr);
             sr.Close();
             zip.Close();
+            fs.Close();
 
             // make the texture paths relative to the file.
             foreach (Mesh m in model.meshes)
@@ -88,11 +90,13 @@ namespace Drawables.Models.XMDL
             }
 
             XmlSerializer xml = new XmlSerializer(typeof(Model));
-            GZipStream zip = new GZipStream(file.OpenWrite(), CompressionMode.Compress, true);
+            FileStream fs = file.OpenWrite();
+            GZipStream zip = new GZipStream(fs, CompressionMode.Compress, true);
             StreamWriter sr = new StreamWriter(zip);
             xml.Serialize(sr, model);
             sr.Close();
             zip.Close();
+            fs.Close();
 
             // make the texture paths relative to the file.
             foreach (Mesh m in model.meshes)
