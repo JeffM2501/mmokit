@@ -49,15 +49,24 @@ namespace modeler
             this.swapYZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scaleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Sidebar = new System.Windows.Forms.Panel();
+            this.CurrentSkin = new System.Windows.Forms.ComboBox();
+            this.MaterialGroup = new System.Windows.Forms.GroupBox();
+            this.HiddenGroups = new System.Windows.Forms.ListView();
+            this.ColorPanel = new System.Windows.Forms.Panel();
+            this.SetColor = new System.Windows.Forms.Button();
+            this.ColorLable = new System.Windows.Forms.Label();
+            this.BrowseTexture = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.TextureBox = new System.Windows.Forms.TextBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.RemoveSkin = new System.Windows.Forms.Button();
             this.NewSkin = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.SkinView = new System.Windows.Forms.TreeView();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.MaterialGroup = new System.Windows.Forms.GroupBox();
             this.MainMenu.SuspendLayout();
             this.Sidebar.SuspendLayout();
+            this.MaterialGroup.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -212,6 +221,7 @@ namespace modeler
             // 
             this.Sidebar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.Sidebar.Controls.Add(this.CurrentSkin);
             this.Sidebar.Controls.Add(this.MaterialGroup);
             this.Sidebar.Controls.Add(this.groupBox1);
             this.Sidebar.Controls.Add(this.label1);
@@ -221,9 +231,109 @@ namespace modeler
             this.Sidebar.Size = new System.Drawing.Size(166, 475);
             this.Sidebar.TabIndex = 2;
             // 
+            // CurrentSkin
+            // 
+            this.CurrentSkin.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CurrentSkin.FormattingEnabled = true;
+            this.CurrentSkin.Location = new System.Drawing.Point(9, 19);
+            this.CurrentSkin.Name = "CurrentSkin";
+            this.CurrentSkin.Size = new System.Drawing.Size(154, 21);
+            this.CurrentSkin.TabIndex = 6;
+            this.CurrentSkin.SelectedIndexChanged += new System.EventHandler(this.CurrentSkin_SelectedIndexChanged);
+            // 
+            // MaterialGroup
+            // 
+            this.MaterialGroup.Controls.Add(this.HiddenGroups);
+            this.MaterialGroup.Controls.Add(this.ColorPanel);
+            this.MaterialGroup.Controls.Add(this.SetColor);
+            this.MaterialGroup.Controls.Add(this.ColorLable);
+            this.MaterialGroup.Controls.Add(this.BrowseTexture);
+            this.MaterialGroup.Controls.Add(this.label2);
+            this.MaterialGroup.Controls.Add(this.TextureBox);
+            this.MaterialGroup.Location = new System.Drawing.Point(9, 262);
+            this.MaterialGroup.Name = "MaterialGroup";
+            this.MaterialGroup.Size = new System.Drawing.Size(154, 201);
+            this.MaterialGroup.TabIndex = 5;
+            this.MaterialGroup.TabStop = false;
+            this.MaterialGroup.Text = "Material";
+            // 
+            // HiddenGroups
+            // 
+            this.HiddenGroups.CheckBoxes = true;
+            this.HiddenGroups.Location = new System.Drawing.Point(6, 98);
+            this.HiddenGroups.Name = "HiddenGroups";
+            this.HiddenGroups.Size = new System.Drawing.Size(142, 97);
+            this.HiddenGroups.TabIndex = 6;
+            this.HiddenGroups.UseCompatibleStateImageBehavior = false;
+            this.HiddenGroups.View = System.Windows.Forms.View.List;
+            // 
+            // ColorPanel
+            // 
+            this.ColorPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ColorPanel.Location = new System.Drawing.Point(44, 66);
+            this.ColorPanel.Name = "ColorPanel";
+            this.ColorPanel.Size = new System.Drawing.Size(20, 19);
+            this.ColorPanel.TabIndex = 5;
+            // 
+            // SetColor
+            // 
+            this.SetColor.Location = new System.Drawing.Point(70, 64);
+            this.SetColor.Name = "SetColor";
+            this.SetColor.Size = new System.Drawing.Size(37, 23);
+            this.SetColor.TabIndex = 4;
+            this.SetColor.Text = "Set";
+            this.SetColor.UseVisualStyleBackColor = true;
+            // 
+            // ColorLable
+            // 
+            this.ColorLable.AutoSize = true;
+            this.ColorLable.Location = new System.Drawing.Point(7, 69);
+            this.ColorLable.Name = "ColorLable";
+            this.ColorLable.Size = new System.Drawing.Size(31, 13);
+            this.ColorLable.TabIndex = 3;
+            this.ColorLable.Text = "Color";
+            // 
+            // BrowseTexture
+            // 
+            this.BrowseTexture.Location = new System.Drawing.Point(89, 35);
+            this.BrowseTexture.Name = "BrowseTexture";
+            this.BrowseTexture.Size = new System.Drawing.Size(59, 23);
+            this.BrowseTexture.TabIndex = 2;
+            this.BrowseTexture.Text = "Browse";
+            this.BrowseTexture.UseVisualStyleBackColor = true;
+            this.BrowseTexture.Click += new System.EventHandler(this.BrowseTexture_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(7, 19);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(43, 13);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "Texture";
+            // 
+            // TextureBox
+            // 
+            this.TextureBox.Location = new System.Drawing.Point(6, 36);
+            this.TextureBox.Name = "TextureBox";
+            this.TextureBox.ReadOnly = true;
+            this.TextureBox.Size = new System.Drawing.Size(77, 20);
+            this.TextureBox.TabIndex = 0;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.RemoveSkin);
+            this.groupBox1.Controls.Add(this.NewSkin);
+            this.groupBox1.Location = new System.Drawing.Point(9, 203);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(154, 53);
+            this.groupBox1.TabIndex = 4;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Skins";
+            // 
             // RemoveSkin
             // 
-            this.RemoveSkin.Location = new System.Drawing.Point(71, 19);
+            this.RemoveSkin.Location = new System.Drawing.Point(86, 19);
             this.RemoveSkin.Name = "RemoveSkin";
             this.RemoveSkin.Size = new System.Drawing.Size(59, 23);
             this.RemoveSkin.TabIndex = 3;
@@ -252,32 +362,12 @@ namespace modeler
             // 
             // SkinView
             // 
-            this.SkinView.Location = new System.Drawing.Point(7, 23);
+            this.SkinView.Location = new System.Drawing.Point(9, 43);
             this.SkinView.Name = "SkinView";
-            this.SkinView.Size = new System.Drawing.Size(154, 209);
+            this.SkinView.Size = new System.Drawing.Size(154, 154);
             this.SkinView.TabIndex = 0;
-            this.SkinView.DoubleClick += new System.EventHandler(this.SkinView_DoubleClick);
+            this.SkinView.DoubleClick += new System.EventHandler(this.SkinView_DoubleClick_1);
             this.SkinView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SkinView_AfterSelect);
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.RemoveSkin);
-            this.groupBox1.Controls.Add(this.NewSkin);
-            this.groupBox1.Location = new System.Drawing.Point(7, 238);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(136, 53);
-            this.groupBox1.TabIndex = 4;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Skins";
-            // 
-            // MaterialGroup
-            // 
-            this.MaterialGroup.Location = new System.Drawing.Point(7, 297);
-            this.MaterialGroup.Name = "MaterialGroup";
-            this.MaterialGroup.Size = new System.Drawing.Size(154, 157);
-            this.MaterialGroup.TabIndex = 5;
-            this.MaterialGroup.TabStop = false;
-            this.MaterialGroup.Text = "Material";
             // 
             // ModelerDialog
             // 
@@ -295,6 +385,8 @@ namespace modeler
             this.MainMenu.PerformLayout();
             this.Sidebar.ResumeLayout(false);
             this.Sidebar.PerformLayout();
+            this.MaterialGroup.ResumeLayout(false);
+            this.MaterialGroup.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -328,6 +420,14 @@ namespace modeler
         private System.Windows.Forms.ToolStripMenuItem backgroundColorToolStripMenuItem;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox MaterialGroup;
+        private System.Windows.Forms.ComboBox CurrentSkin;
+        private System.Windows.Forms.Panel ColorPanel;
+        private System.Windows.Forms.Button SetColor;
+        private System.Windows.Forms.Label ColorLable;
+        private System.Windows.Forms.Button BrowseTexture;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox TextureBox;
+        private System.Windows.Forms.ListView HiddenGroups;
 
     }
 }
