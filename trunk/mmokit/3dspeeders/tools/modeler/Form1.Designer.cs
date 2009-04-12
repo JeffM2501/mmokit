@@ -283,6 +283,7 @@ namespace modeler
             this.SetColor.TabIndex = 4;
             this.SetColor.Text = "Set";
             this.SetColor.UseVisualStyleBackColor = true;
+            this.SetColor.Click += new System.EventHandler(this.SetColor_Click);
             // 
             // ColorLable
             // 
