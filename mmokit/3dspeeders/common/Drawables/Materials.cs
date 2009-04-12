@@ -86,6 +86,14 @@ namespace Drawables.Materials
             a = color.A / 255.0f;
         }
 
+        public GLColor(GLColor color)
+        {
+            r = color.r;
+            g = color.g;
+            b = color.b;
+            a = color.a;
+        }
+
         public Color ToColor()
         {
             return Color.FromArgb((byte)(a * 255), (byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
@@ -113,6 +121,21 @@ namespace Drawables.Materials
 
         [System.Xml.Serialization.XmlIgnoreAttribute]
         DisplayList displayList = DisplayListSystem.system.newList();
+
+        public Material()
+        {}
+
+        public Material( Material mat)
+        {
+            name = string.Copy(mat.name);
+            baseColor = new GLColor(mat.baseColor);
+            ambinent = new GLColor(mat.ambinent);
+            specular = new GLColor(mat.specular);
+            emmision = new GLColor(mat.emmision);
+            shine = mat.shine;
+
+            textureName = string.Copy(mat.textureName);
+        }
 
         public void Invalidate()
         {
@@ -275,8 +298,7 @@ namespace Drawables.Materials
             if (mesh.newMaterial != null)
                 mesh.newMaterial.Invalidate();
 
-            mesh.newMaterial = mat;
-            mesh.newMaterial.name = matName;
+            mesh.newMaterial = new Material(mat);
 
             materials.Add(mesh);
         }
