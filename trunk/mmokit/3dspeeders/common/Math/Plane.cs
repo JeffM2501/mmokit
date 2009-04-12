@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 using OpenTK.Math;
@@ -63,7 +61,7 @@ namespace Math3D
 
         public PlaneIntersectionType Intersects(BoundingSphere sphere)
         {
-            float d = (Normal.X * sphere.CenterPoint.X + Normal.Y * sphere.CenterPoint.Y + Normal.Z * sphere.CenterPoint.Z + D);
+            float d = Distance(sphere.CenterPoint);
             if (Math.Abs(d) < sphere.Radius)
                 return PlaneIntersectionType.Intersecting;
            
@@ -75,13 +73,56 @@ namespace Math3D
 
         public PlaneIntersectionType Intersects(Vector3 point)
         {
-            float d = (Normal.X * point.X + Normal.Y * point.Y + Normal.Z * point.Z + D);
+            float d = Distance(point);
             if (Math.Abs(d) < Plane.SmallNumber)
                 return PlaneIntersectionType.Intersecting;
             if (d < 0)
                 return PlaneIntersectionType.Back;
 
             return PlaneIntersectionType.Front;
+        }
+
+        public float Distance(Vector3 point)
+        {
+            return (Normal.X * point.X + Normal.Y * point.Y + Normal.Z * point.Z + D);
+        }
+
+        public float Distance(BoundingSphere sphere)
+        {
+            return (Normal.X * sphere.CenterPoint.X + Normal.Y * sphere.CenterPoint.Y + Normal.Z * sphere.CenterPoint.Z + D) - sphere.Radius;
+        }
+
+        public static bool operator !=(Plane a, Plane b)
+        {
+            return a.Normal != b.Normal || a.D != b.D;
+        }
+
+        public static bool operator ==(Plane a, Plane b)
+        {
+            return a.Normal == b.Normal && a.D == b.D;
+        }
+
+        public bool Equals(Plane other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            Plane other = obj as Plane;
+            if (other == null)
+                return false;
+            return this == other;
+        }
+
+        public override int GetHashCode()
+        {
+            return Normal.GetHashCode() ^ D.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Normal.ToString() + D.ToString(); ;
         }
     }
 }

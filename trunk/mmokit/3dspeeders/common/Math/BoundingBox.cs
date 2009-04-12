@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-
-using OpenTK;
 using OpenTK.Math;
 
 namespace Math3D
@@ -96,19 +93,19 @@ namespace Math3D
             if(doRadTests)
             {
                 Vector3 dist = Center-box.Center;
-                float mag = dist.Length;
-                if (mag > Radius+box.Radius)
+                float mag = dist.LengthSquared;
+                if (mag > Radius*Radius+box.Radius*Radius)
                     return ContainmentType.Disjoint; // the rads are outside, so it MUST be Disjoint;
             }
 
             // check to see our axes are outside of his axes;
             bool xIn = true, yIn = true, zIn = true;
 
-            if ((Center.X - Size.X > box.Center.X + Size.X) && (Center.X + Size.X < box.Center.X - Size.X))
+            if ((Min.X > box.Max.X) && (Max.X < box.Min.X))
                 xIn = false;
-            if ((Center.Y - Size.Y > box.Center.Y + Size.Y) && (Center.Y + Size.Y < box.Center.Y - Size.Y))
+            if ((Min.Y > box.Max.Y) && (Max.Y < box.Min.Y))
                 yIn = false;
-            if ((Center.Z - Size.Z > box.Center.Z + Size.Z) && (Center.Z + Size.Z < box.Center.Z - Size.Z))
+            if ((Min.Z > box.Max.Z) && (Max.Z < box.Min.Z))
                 zIn = false;
 
             if (zIn && yIn && xIn) // all of them are inside of me
@@ -151,6 +148,70 @@ namespace Math3D
             return frustum.Contains(this) != ContainmentType.Disjoint;
         }
 
+        public bool Intersects(BoundingBox box)
+        {
+            return box.Contains(this) != ContainmentType.Disjoint;
+        }
+
+        public bool Intersects(BoundingSphere sphere)
+        {
+            return sphere.Contains(this) != ContainmentType.Disjoint;
+        }
+
+        public PlaneIntersectionType Intersects(Plane plane)
+        {
+            Vector3 inside = new Vector3();  // inside point  (assuming partial)
+            Vector3 outside = new Vector3(); // outside point (assuming partial)
+            float len = 0.0f;
+
+            // setup the inside/outside corners
+            // this can be determined easily based
+            // on the normal vector for the plane
+            if (plane.Normal.X > 0.0f)
+            {
+                inside.X = Max.X;
+                outside.X = Min.X;
+            }
+            else
+            {
+                inside.X = Min.X;
+                outside.X = Max.X;
+            }
+            if (plane.Normal.Y > 0.0f)
+            {
+                inside.Y = Max.Y;
+                outside.Y = Min.X;
+            }
+            else
+            {
+                inside.Y = Min.Y;
+                outside.Y = Max.Y;
+            }
+
+            if (plane.Normal.Z > 0.0f)
+            {
+                inside.Z = Max.Z;
+                outside.Z = Min.Z;
+            }
+            else
+            {
+                inside.Z = Min.Z;
+                outside.Z = Max.Z;
+            }
+
+            // check the inside length
+            len = Vector3.Dot(inside, plane.Normal) + plane.D;
+            if (len < -1.0f)
+                return PlaneIntersectionType.Back; // box is fully outside the frustum
+
+            // check the outside length
+            len = Vector3.Dot(outside, plane.Normal) + plane.D;
+            if (len < -1.0f)
+                return PlaneIntersectionType.Intersecting; // partial containment at best
+
+            return PlaneIntersectionType.Front;
+        }
+       
         public Vector3 Corner( int index )
         {
             if (index < 1)
@@ -172,6 +233,12 @@ namespace Math3D
                    return new Vector3(Max.X, Min.Y, Max.Z);
            }
            return Max;
+        }
+
+        public void GetCorners(Vector3[] corners)
+        {
+            for (int i = 0; i < corners.Length; i++)
+                corners[i] = Corner(i);
         }
 
         public static BoundingBox CreateMerged ( BoundingBox b1, BoundingBox b2 )
@@ -199,6 +266,43 @@ namespace Math3D
             }
 
             return new BoundingBox(ref min, ref max);
+        }
+
+        public static BoundingBox CreateFromPoints(IEnumerable<Vector3> points)
+        {
+            Vector3 min = new Vector3();
+            Vector3 max = new Vector3();
+            foreach(Vector3 p in points)
+            {
+                if (p.X < min.X)
+                    min.X = p.X;
+                if (p.X > max.X)
+                    max.X = p.X;
+
+                if (p.Y < min.Y)
+                    min.Y = p.Y;
+                if (p.Y > max.Y)
+                    max.Y = p.Y;
+
+                if (p.Z < min.Z)
+                    min.Z = p.Z;
+                if (p.Z > max.Z)
+                    max.Z = p.Z;
+            }
+
+            return new BoundingBox(min, max);
+        }
+       
+        public static BoundingBox CreateFromSphere(BoundingSphere sphere)
+        {
+            Vector3 min = sphere.CenterPoint * -sphere.Radius;
+            Vector3 max = sphere.CenterPoint * sphere.Radius;
+            return new BoundingBox(min, max);
+        }
+
+        public override string ToString()
+        {
+            return Min.ToString() + Max.ToString();
         }
     }
 }
