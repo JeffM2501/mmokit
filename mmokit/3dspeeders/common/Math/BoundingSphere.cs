@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-using OpenTK;
 using OpenTK.Math;
 
 namespace Math3D
@@ -18,7 +16,6 @@ namespace Math3D
             get { return Center; }
         }
 
-
         public BoundingSphere(ref Vector3 center, float radius)
         {
             Center = center;
@@ -29,16 +26,6 @@ namespace Math3D
         {
             Center = center;
             Radius = radius;
-        }
-  
-        public static bool operator !=(BoundingSphere a, BoundingSphere b)
-        {
-            return a.Center != b.Center || a.Radius != b.Radius;
-        }
-
-        public static bool operator ==(BoundingSphere a, BoundingSphere b)
-        {
-            return a.Center == b.Center && a.Radius == b.Radius;
         }
 
         public ContainmentType Contains(BoundingBox box)
@@ -55,10 +42,10 @@ namespace Math3D
         public ContainmentType Contains(BoundingSphere sphere)
         {
             Vector3 dist = Center-sphere.Center;
-            float mag = dist.Length;
-            if ( mag+sphere.Radius < Radius)
+            float mag = dist.LengthSquared;
+            if (mag + sphere.Radius * sphere.Radius < Radius * Radius)
                 return ContainmentType.Contains;
-            if ( mag > sphere.Radius+Radius)
+            if (mag > sphere.Radius * sphere.Radius + Radius * Radius)
                 return ContainmentType.Disjoint;
             return ContainmentType.Intersects;
         }
@@ -66,9 +53,21 @@ namespace Math3D
         public ContainmentType Contains(Vector3 point)
         {
             Vector3 dist = Center-point;
-            if (dist.Length > Radius)
+            if (dist.LengthSquared > Radius * Radius)
                 return ContainmentType.Disjoint;
             return ContainmentType.Contains;
+        }
+
+        public float Distance (BoundingSphere sphere)
+        {
+            Vector3 dist = Center - sphere.Center;
+            return dist.Length - sphere.Radius - Radius;
+        }
+
+        public float Distance(Vector3 point)
+        {
+            Vector3 dist = Center - point;
+            return dist.Length-Radius;
         }
        
         public static BoundingSphere CreateFromBoundingBox(BoundingBox box)
@@ -80,7 +79,16 @@ namespace Math3D
         {
             return new BoundingSphere(new Vector3(),0);
         }
-      
+
+        public static bool operator !=(BoundingSphere a, BoundingSphere b)
+        {
+            return a.Center != b.Center || a.Radius != b.Radius;
+        }
+
+        public static bool operator ==(BoundingSphere a, BoundingSphere b)
+        {
+            return a.Center == b.Center && a.Radius == b.Radius;
+        }
         public bool Equals(BoundingSphere other)
         {
             return Center==other.Center && Radius == other.Radius;
@@ -98,7 +106,11 @@ namespace Math3D
         {
             return Center.GetHashCode() ^ Radius.GetHashCode();
         }
-       
+
+        public override string ToString()
+        {
+            return Center.ToString() + Radius.ToString();
+        }
     }
 }
 

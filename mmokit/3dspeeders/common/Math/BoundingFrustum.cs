@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 using OpenTK.Math;
@@ -22,7 +21,6 @@ namespace Math3D
         public Plane Right = new Plane(-1, 0, 0, 0);
         public Plane Top = new Plane(0, -1, 0, 0);
         public Plane Bottom = new Plane(0, 1, 0, 0);
-
 
         Plane GetPlane( int index )
         {
@@ -181,30 +179,30 @@ namespace Math3D
 
         void computeMatrix ()
         {
-            // 0, 1, 2, 3
-            // 4, 5, 6, 7
-            // 8, 9, 10, 11
-            // 12,13, 14, 15
+            // 0, 4, 8, 12
+            // 1, 5, 9, 13
+            // 2, 6, 10, 14
+            // 3, 7, 11, 15
 
-            matrix[0] = viewMatrix[0]*viewMatrix[1]*viewMatrix[2]*viewMatrix[3]+projectionMatrix[0]*projectionMatrix[4]*projectionMatrix[8]*projectionMatrix[12];
-            matrix[1] = viewMatrix[0]*viewMatrix[1]*viewMatrix[2]*viewMatrix[3]+projectionMatrix[1]*projectionMatrix[5]*projectionMatrix[9]*projectionMatrix[13];
-            matrix[2] = viewMatrix[0]*viewMatrix[1]*viewMatrix[2]*viewMatrix[3]+projectionMatrix[2]*projectionMatrix[6]*projectionMatrix[10]*projectionMatrix[14];
-            matrix[3] = viewMatrix[0]*viewMatrix[1]*viewMatrix[2]*viewMatrix[3]+projectionMatrix[3]*projectionMatrix[7]*projectionMatrix[11]*projectionMatrix[15];
+            matrix[0] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
+            matrix[4] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
+            matrix[8] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
+            matrix[12] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
 
-            matrix[4] = viewMatrix[4]*viewMatrix[5]*viewMatrix[6]*viewMatrix[7]+projectionMatrix[0]*projectionMatrix[4]*projectionMatrix[8]*projectionMatrix[12];
-            matrix[5] = viewMatrix[4]*viewMatrix[5]*viewMatrix[6]*viewMatrix[7]+projectionMatrix[1]*projectionMatrix[5]*projectionMatrix[9]*projectionMatrix[13];
-            matrix[6] = viewMatrix[4]*viewMatrix[5]*viewMatrix[6]*viewMatrix[7]+projectionMatrix[2]*projectionMatrix[6]*projectionMatrix[10]*projectionMatrix[14];
-            matrix[7] = viewMatrix[4]*viewMatrix[5]*viewMatrix[6]*viewMatrix[7]+projectionMatrix[3]*projectionMatrix[7]*projectionMatrix[11]*projectionMatrix[15];
+            matrix[1] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
+            matrix[5] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
+            matrix[9] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
+            matrix[13] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
 
-            matrix[8] = viewMatrix[8]*viewMatrix[9]*viewMatrix[10]*viewMatrix[11]+projectionMatrix[0]*projectionMatrix[4]*projectionMatrix[8]*projectionMatrix[12];
-            matrix[9] = viewMatrix[8]*viewMatrix[9]*viewMatrix[10]*viewMatrix[11]+projectionMatrix[1]*projectionMatrix[5]*projectionMatrix[9]*projectionMatrix[13];
-            matrix[10] = viewMatrix[8]*viewMatrix[9]*viewMatrix[10]*viewMatrix[11]+projectionMatrix[2]*projectionMatrix[6]*projectionMatrix[10]*projectionMatrix[14];
-            matrix[11] = viewMatrix[8]*viewMatrix[9]*viewMatrix[10]*viewMatrix[11]+projectionMatrix[3]*projectionMatrix[7]*projectionMatrix[11]*projectionMatrix[15];
+            matrix[2] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
+            matrix[6] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
+            matrix[10] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
+            matrix[14] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
 
-            matrix[12] = viewMatrix[12]*viewMatrix[13]*viewMatrix[14]*viewMatrix[15]+projectionMatrix[0]*projectionMatrix[4]*projectionMatrix[8]*projectionMatrix[12];
-            matrix[13] = viewMatrix[12]*viewMatrix[13]*viewMatrix[14]*viewMatrix[15]+projectionMatrix[1]*projectionMatrix[5]*projectionMatrix[9]*projectionMatrix[13];
-            matrix[14] = viewMatrix[12]*viewMatrix[13]*viewMatrix[14]*viewMatrix[15]+projectionMatrix[2]*projectionMatrix[6]*projectionMatrix[10]*projectionMatrix[14];
-            matrix[15] = viewMatrix[12]*viewMatrix[13]*viewMatrix[14]*viewMatrix[15]+projectionMatrix[3]*projectionMatrix[7]*projectionMatrix[11]*projectionMatrix[15];
+            matrix[3] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
+            matrix[7] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
+            matrix[11] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
+            matrix[15] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
 
             ExtractPlane(Left, 1);
             ExtractPlane(Right, -1);
@@ -212,6 +210,59 @@ namespace Math3D
             ExtractPlane(Top, -2);
             ExtractPlane(Near, 3);
             ExtractPlane(Far, -3);
+        }
+
+        static bool matrixEqual ( float[] m1, float[] m2)
+        {
+            if (m1.Length != m2.Length)
+                return false;
+
+            for (int i = 0; i < m1.Length; i++)
+            {
+                if (m1[i] != m2[i])
+                    return false;
+            }
+            return true;
+        }
+
+        public static bool operator !=(BoundingFrustum a, BoundingFrustum b)
+        {
+            return !matrixEqual(a.matrix, b.matrix);
+        }
+
+        public static bool operator ==(BoundingFrustum a, BoundingFrustum b)
+        {
+            return matrixEqual(a.matrix, b.matrix);
+        }
+
+        public bool Equals(BoundingFrustum other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            BoundingFrustum other = obj as BoundingFrustum;
+            if (other == null)
+                return false;
+            return this == other;
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            for (int i = 0; i < matrix.Length; i++)
+                hash ^= matrix[i].GetHashCode();
+            return hash;
+        }
+
+        public override string ToString()
+        {
+            string s = string.Empty;
+            for (int i = 0; i < matrix.Length; i++)
+                s += matrix[i].ToString();
+
+            return s;
         }
     }
 }
