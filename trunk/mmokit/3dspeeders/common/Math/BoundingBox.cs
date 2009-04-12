@@ -119,9 +119,36 @@ namespace Math3D
             return ContainmentType.Intersects;
         }
 
+        public ContainmentType Contains(BoundingSphere sphere)
+        {
+            ContainmentType[] status = new ContainmentType[3] { ContainmentType.Intersects, ContainmentType.Intersects, ContainmentType.Intersects };
+
+            Vector3 vec = sphere.CenterPoint - CenterPoint;
+
+            if (Math.Abs(vec.X) > Size.X + sphere.Radius)
+                status[0] = ContainmentType.Disjoint;
+            else if (Math.Abs(vec.X) < Size.X - sphere.Radius)
+                status[0] = ContainmentType.Contains;
+
+            if (Math.Abs(vec.Y) > Size.Y + sphere.Radius)
+                status[1] = ContainmentType.Disjoint;
+            else if (Math.Abs(vec.Y) < Size.Y - sphere.Radius)
+                status[1] = ContainmentType.Contains;
+
+            if (Math.Abs(vec.Z) > Size.Z + sphere.Radius)
+                status[2] = ContainmentType.Disjoint;
+            else if (Math.Abs(vec.Z) < Size.Z - sphere.Radius)
+                status[2] = ContainmentType.Contains;
+
+            if (status[0] == status[1] && status[0] == status[2])
+                return status[0];
+
+            return ContainmentType.Intersects;
+        }
+
         public bool Intersects ( BoundingFrustum frustum )
         {
-            return true;
+            return frustum.Contains(this) != ContainmentType.Disjoint;
         }
 
         public Vector3 Corner( int index )
