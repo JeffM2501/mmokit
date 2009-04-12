@@ -343,98 +343,26 @@ namespace modeler
             invalidateView();
         }
 
-        void setupSkinNode(MaterialOverride ovd)
-        {
-            TreeNode skinNode = SkinView.Nodes.Add(ovd.name);
-            skinNode.Tag = ovd;
-
-            foreach (Mesh m in model.meshes)
-            {
-                MeshOverride meshOvd = ovd.getOverride(m.material);
-
-                string name = m.material.name;
-                if (meshOvd.newMaterial != null && meshOvd.newMaterial.textureName != string.Empty)
-                    name += " (" + Path.GetFileName(meshOvd.newMaterial.textureName) + ")";
-                TreeNode matNode = skinNode.Nodes.Add(name);
-
-                matNode.Tag = meshOvd;
-                foreach (MeshGroup g in m.groups)
-                {
-                    TreeNode groupNode = matNode.Nodes.Add(g.name);
-                    groupNode.Tag = g;
-                    if (meshOvd.hiddenGroups.Contains(g.name))
-                        groupNode.ForeColor = Color.Gray;
-                }
-            }
-        }
-
         void setupSkins()
         {
-            SkinView.Nodes.Clear();
-
             if (!model.valid())
                 return;
 
-            // add the default node
-            TreeNode defaultNode = SkinView.Nodes.Add(docName);
-            defaultNode.Tag = null;
-            foreach (Mesh m in model.meshes)
-            {
-                string name = m.material.name;
-                if (m.material.textureName != string.Empty)
-                    name += " (" + Path.GetFileName(m.material.textureName) + ")";
-                TreeNode matNode = defaultNode.Nodes.Add(name);
-                matNode.Tag = null;
-
-                foreach (MeshGroup g in m.groups)
-                    matNode.Nodes.Add(g.name).Tag = null;
-            }
+            CurrentSkin.Items.Clear();
+            CurrentSkin.Items.Add("Default");
 
             foreach (MaterialOverride s in model.skins)
-            {
-                setupSkinNode(s);
-            }
-        }
+                CurrentSkin.Items.Add(s.name);
 
-        string currentOverideName()
-        {
-            if (SkinView.SelectedNode.Tag == null)
-                return string.Empty;
-
-            Type tagType = SkinView.SelectedNode.Tag.GetType();
-
-            if (tagType == typeof(MaterialOverride))
-                return ((MaterialOverride)SkinView.SelectedNode.Tag).name;
-
-            if (tagType == typeof(MeshOverride))
-            {
-                TreeNode root = SkinView.SelectedNode.Parent;
-                return ((MaterialOverride)root.Tag).name;
-            }
-
-            if (tagType == typeof(MeshGroup))
-            {
-                TreeNode root = SkinView.SelectedNode.Parent.Parent;
-                return ((MaterialOverride)root.Tag).name;
-            }
-
-            return string.Empty;
-        }
-
-        MaterialOverride currentOveride()
-        {
-            return model.findSkin(currentOverideName());
+            CurrentSkin.SelectedIndex = 0;
         }
 
         MaterialOverride getMatOverride()
         {
-            if (SkinView.SelectedNode == null)
+            if (CurrentSkin.SelectedIndex < 1)
                 return null;
 
-            if (SkinView.SelectedNode.Tag == null)
-                return null;
-
-            return currentOveride();
+            return model.skins[CurrentSkin.SelectedIndex - 1];
         }
 
         private void NewSkin_Click(object sender, EventArgs e)
@@ -443,114 +371,25 @@ namespace modeler
             foreach (Mesh m in model.meshes)
                 ovd.addMaterial(m.material.name, m.material);
 
-            setupSkinNode(ovd);
+            setupSkins();
+            CurrentSkin.SelectedIndex = CurrentSkin.Items.Count - 1;
         }
 
         private void RemoveSkin_Click(object sender, EventArgs e)
         {
-            MaterialOverride ovd = currentOveride();
+            MaterialOverride ovd = getMatOverride();
             if (ovd == null)
                 return;
 
-            foreach (TreeNode t in SkinView.Nodes)
-            {
-                if (t.Tag != null && t.Tag == ovd)
-                {
-                    SkinView.Nodes.Remove(t);
-                    break;
-                }
-            }
-
             model.removeSkin(ovd.name);
+
+            setupSkins();
         }
 
         private void SkinView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-
-        }
-
-        private void SkinView_DoubleClick(object sender, EventArgs e)
-        {
-            if (SkinView.SelectedNode.Tag == null)
-            {
-                invalidateView();
-                return;
-            }
-
-            Type tagType = SkinView.SelectedNode.Tag.GetType();
-            if (tagType == typeof(MaterialOverride))
-            {
-                MaterialOverride ovd = (MaterialOverride)SkinView.SelectedNode.Tag;
-
-                SingleItemQuery siq = new SingleItemQuery();
-                siq.Title = "Group Name";
-                siq.MessageLabel = "New Group Name";
-                siq.Value = SkinView.SelectedNode.Text;
-
-                if (siq.ShowDialog() == DialogResult.OK)
-                {
-                    if (model.findSkin(siq.Value) != null)
-                    {
-                        MessageBox.Show("Name Exists");
-                        return;
-                    }
-                    ovd.name = siq.Value;
-                    ovd.name = siq.Value;
-                    SkinView.SelectedNode.Text = siq.Value;
-                }
-            }
-            else if (tagType == typeof(MeshOverride))
-            {
-                MeshOverride movd = (MeshOverride)SkinView.SelectedNode.Tag;
-
-                SingleItemQuery siq = new SingleItemQuery();
-                siq.Title = "Texture File";
-                siq.MessageLabel = "Texture Path";
-                string matName = string.Empty;
-                if (movd == null)
-                    return;
-
-                if (movd.newMaterial != null)
-                    siq.Value = movd.newMaterial.textureName;
-
-                if (siq.ShowDialog() == DialogResult.OK)
-                {
-                    if (movd.newMaterial == null)
-                        movd.newMaterial = new Material();
-
-                    movd.newMaterial.Invalidate();
-                    movd.newMaterial.textureName = siq.Value;
-
-                    SkinView.SelectedNode.Text = matName + " (" + Path.GetFileName(siq.Value) + ")";
-
-                    invalidateView();
-                }
-            }
-            else if (tagType == typeof(MeshGroup))
-            {
-                MeshGroup mgroup = (MeshGroup)SkinView.SelectedNode.Tag;
-
-                if (mgroup == null)
-                    return;
-
-                MeshOverride movd = (MeshOverride)SkinView.SelectedNode.Parent.Tag;
-                MaterialOverride ovd = (MaterialOverride)SkinView.SelectedNode.Parent.Parent.Tag;
-
-                movd.Invalidate();
-
-                if (movd.hiddenGroups.Contains(mgroup.name))
-                {
-                    ovd.showGroup(movd.origonalMatName, mgroup.name);
-                    SkinView.SelectedNode.ForeColor = Color.Black;
-                }
-                else
-                {
-                    ovd.hideGroup(movd.origonalMatName, mgroup.name);
-                    SkinView.SelectedNode.ForeColor = Color.Gray;
-                }
-
-                invalidateView();
-            }
+            buildMaterialView();
+            invalidateView();
         }
 
         private void backgroundColorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -563,6 +402,213 @@ namespace modeler
                 GL.ClearColor(dlg.Color);
                 invalidateView();
             }
+        }
+
+        private void CurrentSkin_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            buildSkinTree();
+            buildMaterialView();
+            invalidateView();
+        }
+
+        private void buildMaterialInteface( Material material, Mesh mesh, MeshOverride meshovd )
+        {
+            TextureBox.Text = Path.GetFileName(material.textureName);
+            ColorPanel.BackColor = material.baseColor.ToColor();
+            foreach (MeshGroup g in mesh.groups)
+            {
+                ListViewItem item = HiddenGroups.Items.Add(g.name);
+                if (meshovd != null)
+                    item.Checked = !meshovd.hiddenGroups.Contains(g.name);
+            }
+        }
+
+        private Mesh getSelectedMesh ()
+        {
+            Mesh mesh = null;
+            TreeNode matNode = SkinView.SelectedNode;
+            if (matNode == null || matNode.Tag == null)
+                return mesh;
+
+            if (matNode.Tag.GetType() == typeof(Mesh))
+                mesh = matNode.Tag as Mesh;
+            else if (matNode.Tag.GetType() == typeof(MeshGroup))
+                mesh = matNode.Parent.Tag as Mesh;
+            else if (matNode.Tag.GetType() == typeof(Material))
+                mesh = matNode.Parent.Tag as Mesh;
+
+            return mesh;
+        }
+
+        private Material getSelectedMaterial()
+        {
+            MaterialOverride ovd = getMatOverride();
+            Mesh mesh = getSelectedMesh();
+            if (mesh == null)
+                return null;
+
+            if (ovd != null)
+            {
+                MeshOverride movd = ovd.getOverride(mesh.material);
+                if (movd != null && movd.newMaterial != null)
+                    return movd.newMaterial;
+            }
+
+            return mesh.material;
+        }
+
+        private void buildMaterialView ()
+        {
+            TextureBox.Text = string.Empty;
+            ColorPanel.BackColor = Color.White;
+            HiddenGroups.Items.Clear();
+
+            MaterialOverride ovd = getMatOverride();
+            TreeNode matNode = SkinView.SelectedNode;
+            if (matNode == null || matNode.Tag == null)
+                return;
+
+            Mesh mesh = getSelectedMesh();
+            MeshOverride movd = null;
+            Material mat = getSelectedMaterial();
+
+            if (ovd != null && mesh != null)
+                movd = ovd.getOverride(mesh.material);
+
+            if (mesh != null && mat != null)
+                buildMaterialInteface(mat, mesh, movd);
+
+        }
+
+        private void buildSkinTree ()
+        {
+            SkinView.Nodes.Clear();
+
+            MaterialOverride ovd = getMatOverride();
+            if (ovd == null)
+            {
+                TreeNode rootNode = SkinView.Nodes.Add("Default");
+                rootNode.Tag = null;
+
+                foreach(Mesh m in model.meshes)
+                {
+                    TreeNode meshNode = rootNode.Nodes.Add(m.material.name);
+                    meshNode.Tag = m;
+                    meshNode.Nodes.Add(Path.GetFileName(m.material.textureName)).Tag = m.material;
+
+                    foreach(MeshGroup g in m.groups)
+                        meshNode.Nodes.Add(g.name).Tag = g;
+                }
+            }
+            else
+            {
+                TreeNode rootNode = SkinView.Nodes.Add(ovd.name);
+                rootNode.Tag = ovd;
+
+                foreach (Mesh m in model.meshes)
+                {
+                    MeshOverride movd = ovd.getOverride(m.material);
+                    TreeNode meshNode = rootNode.Nodes.Add(movd.origonalMatName);
+                    meshNode.Tag = m;
+                    if (movd.newMaterial != null)
+                        meshNode.Nodes.Add(Path.GetFileName(movd.newMaterial.textureName)).Tag = movd.newMaterial;
+
+                    foreach (MeshGroup g in m.groups)
+                    {
+                        TreeNode node = meshNode.Nodes.Add(g.name);
+                        node.Tag = g;
+                        if (movd.hiddenGroups.Contains(g.name))
+                            node.ForeColor = Color.Gray;
+                    }
+                }
+            }
+            SkinView.ExpandAll();
+        }
+
+        private void SkinView_DoubleClick_1(object sender, EventArgs e)
+        {
+            MaterialOverride ovd = getMatOverride();
+            if (ovd == null)
+                return;
+
+            SingleItemQuery query = new SingleItemQuery();
+            query.Value = ovd.name;
+            query.Title = "Set Skin Name";
+            query.MessageLabel = "Skin Name:";
+
+            if (query.ShowDialog() == DialogResult.OK && query.Value != string.Empty)
+            {
+                if (model.findSkin(query.Value) != null)
+                {
+                    MessageBox.Show("Skin " + query.Value + " already exists");
+                    return;
+                }
+
+                int index = CurrentSkin.SelectedIndex;
+                CurrentSkin.Items.Insert(CurrentSkin.SelectedIndex, query.Value);
+                CurrentSkin.Items.RemoveAt(CurrentSkin.SelectedIndex);
+                CurrentSkin.SelectedIndex = index;
+
+                ovd.name = query.Value;
+                SkinView.Nodes[0].Text = ovd.name;
+                SkinView.Invalidate(true);
+            }
+
+            invalidateView();
+        }
+
+        private void BrowseTexture_Click(object sender, EventArgs e)
+        {
+            MaterialOverride ovd = getMatOverride();
+            Material mat = getSelectedMaterial();
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            if (mat == null)
+                return;
+
+            ofd.Multiselect = false;
+            ofd.ShowReadOnly = false;
+            ofd.Filter = "Portable Network Graphics files (*.PNG)|*.PNG|Joing Phogtographic Experts Group files (*.JPG)|*.JPG|All files (*.*)|*.*";
+            if (mat.textureName != string.Empty)
+            {
+                ofd.InitialDirectory = Path.GetDirectoryName(mat.textureName);
+                ofd.FileName = Path.GetFileName(mat.textureName);
+            }
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                if (ovd != null)
+                {
+                    MeshOverride movd = ovd.findOverride(mat.name);
+                    if (movd.newMaterial == null)
+                    {
+                        mat.Invalidate();
+                        movd.newMaterial = new Material(mat);
+                        mat = movd.newMaterial;
+                    }
+                }
+                mat.textureName = ofd.FileName;
+                mat.Invalidate();
+
+                // find the texture item in the material
+                foreach(TreeNode meshNode in SkinView.Nodes[0].Nodes)
+                {
+                    if (meshNode.Text == mat.name)
+                    {
+                        if (meshNode.Nodes[0].Tag.GetType() == typeof(Material))
+                        {
+                            meshNode.Nodes[0].Tag = mat;
+                            meshNode.Nodes[0].Text =Path.GetFileName(mat.textureName);
+                        }
+                        else
+                            meshNode.Nodes.Insert(0, Path.GetFileName(mat.textureName)).Tag = mat;
+                    }
+                }
+                TextureBox.Text = Path.GetFileName(mat.textureName);
+
+                invalidateView();
+            }
+
         }
     }
 
