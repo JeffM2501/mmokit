@@ -12,6 +12,8 @@ namespace Math3D
         public float D;
         public Vector3 Normal;
 
+        static float SmallNumber = 0.00001f;
+
         public Plane(Vector3 norm, float d )
         {
             D = d;
@@ -23,27 +25,63 @@ namespace Math3D
             Vector3 v1 = p2 - p1;
             Vector3 v2 = p3 - p1;
             Normal = Vector3.Cross(v1, v2);
+            Normal.Normalize();
+
+            D = Vector3.Dot(Normal * -1.0f, p1);
         }
 
         public Plane(float a, float b, float c, float d)
         {
+            Normal = new Vector3(a, b, c);
+            D = d;
+        }
 
+        public void Set (float a, float b, float c, float d)
+        {
+            Normal.X = a;
+            Normal.Y = b;
+            Normal.Z = c;
+            Normal.Normalize();
+            D = d;
         }
 
         public PlaneIntersectionType Intersects(BoundingBox box)
         {
-            return PlaneIntersectionType.Intersecting;
+            PlaneIntersectionType first = Intersects(box.Corner(0));
+            for (int i = 1; i < 8; i++)
+            {
+                if (first != Intersects(box.Corner(i)))
+                    return PlaneIntersectionType.Intersecting;
+            }
+            return first;
         }
 
         public PlaneIntersectionType Intersects(BoundingFrustum frustum)
         {
             return PlaneIntersectionType.Intersecting;
-
         }
 
         public PlaneIntersectionType Intersects(BoundingSphere sphere)
         {
-            return PlaneIntersectionType.Intersecting;
+            float d = (Normal.X * sphere.CenterPoint.X + Normal.Y * sphere.CenterPoint.Y + Normal.Z * sphere.CenterPoint.Z + D);
+            if (Math.Abs(d) < sphere.Radius)
+                return PlaneIntersectionType.Intersecting;
+           
+            if (d < 0)
+                return PlaneIntersectionType.Back;
+
+            return PlaneIntersectionType.Front;
+        }
+
+        public PlaneIntersectionType Intersects(Vector3 point)
+        {
+            float d = (Normal.X * point.X + Normal.Y * point.Y + Normal.Z * point.Z + D);
+            if (Math.Abs(d) < Plane.SmallNumber)
+                return PlaneIntersectionType.Intersecting;
+            if (d < 0)
+                return PlaneIntersectionType.Back;
+
+            return PlaneIntersectionType.Front;
         }
     }
 }

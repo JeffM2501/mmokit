@@ -13,6 +13,12 @@ namespace Math3D
         public float Radius;
         protected Vector3 Center;
 
+        public Vector3 CenterPoint
+        {
+            get { return Center; }
+        }
+
+
         public BoundingSphere(ref Vector3 center, float radius)
         {
             Center = center;
@@ -37,14 +43,15 @@ namespace Math3D
 
         public ContainmentType Contains(BoundingBox box)
         {
-            return ContainmentType.Disjoint;
+            ContainmentType first = Contains(box.Corner(0));
+            for (int i = 1; i < 8; i++)
+            {
+                if (first != Contains(box.Corner(i)))
+                    return ContainmentType.Intersects;
+            }
+            return first;
         }
         
-        public ContainmentType Contains(BoundingFrustum frustum)
-        {
-            return ContainmentType.Disjoint;
-        }
-
         public ContainmentType Contains(BoundingSphere sphere)
         {
             Vector3 dist = Center-sphere.Center;
