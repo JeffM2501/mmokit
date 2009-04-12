@@ -610,6 +610,39 @@ namespace modeler
             }
 
         }
+
+        private void SetColor_Click(object sender, EventArgs e)
+        {
+            MaterialOverride ovd = getMatOverride();
+            Material mat = getSelectedMaterial();
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            if (mat == null)
+                return;
+
+            ColorDialog colorDlog = new ColorDialog();
+            colorDlog.Color = mat.baseColor.ToColor();
+
+            if (colorDlog.ShowDialog() == DialogResult.OK)
+            {
+                if (ovd != null)
+                {
+                    MeshOverride movd = ovd.findOverride(mat.name);
+                    if (movd.newMaterial == null)
+                    {
+                        mat.Invalidate();
+                        movd.newMaterial = new Material(mat);
+                        mat = movd.newMaterial;
+                    }
+                }
+                mat.baseColor = new GLColor(colorDlog.Color);
+                mat.Invalidate();
+
+                ColorPanel.BackColor = colorDlog.Color;
+
+                invalidateView();
+            }
+        }
     }
 
     public class Prefrences
