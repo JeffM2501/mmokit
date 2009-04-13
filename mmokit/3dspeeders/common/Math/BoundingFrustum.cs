@@ -51,6 +51,10 @@ namespace Math3D
             plane.Set(matrix[3] + scale * matrix[row],matrix[7] + scale * matrix[row + 4],matrix[11] + scale * matrix[row + 8],matrix[15] + scale * matrix[row + 12]);
         }
 
+        public BoundingFrustum()
+        {
+        }
+
         public BoundingFrustum(float[] value)
         {
             if (value.Length >= 16)

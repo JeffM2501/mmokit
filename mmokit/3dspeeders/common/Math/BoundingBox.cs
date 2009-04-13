@@ -88,32 +88,29 @@ namespace Math3D
             return Max.GetHashCode() ^ Min.GetHashCode();
         }
 
+        bool touches(BoundingBox test) 
+        {
+            if ((Min.X > test.Max.X) || (Max.X < test.Min.X) || (Min.Y > test.Max.Y) || (Max.Y < test.Min.Y) || (Min.Z > test.Max.Z) || (Max.Z < test.Min.Z))
+                return false;
+          return true;
+        }
+
+        bool contains(BoundingBox test) 
+        {
+            if ((Min.X < test.Min.X) && (Max.X > test.Max.X) && (Min.Y < test.Min.Y) && (Max.Y > test.Max.Y) && (Min.Z < test.Min.Z) && (Max.Z > test.Max.Z))
+                return true;
+            return false;
+        }
+
         public ContainmentType Contains(BoundingBox box)
         {
-            if(doRadTests)
-            {
-                Vector3 dist = Center-box.Center;
-                float mag = dist.LengthSquared;
-                if (mag > Radius*Radius+box.Radius*Radius)
-                    return ContainmentType.Disjoint; // the rads are outside, so it MUST be Disjoint;
-            }
-
-            // check to see our axes are outside of his axes;
-            bool xIn = true, yIn = true, zIn = true;
-
-            if ((Min.X > box.Max.X) && (Max.X < box.Min.X))
-                xIn = false;
-            if ((Min.Y > box.Max.Y) && (Max.Y < box.Min.Y))
-                yIn = false;
-            if ((Min.Z > box.Max.Z) && (Max.Z < box.Min.Z))
-                zIn = false;
-
-            if (zIn && yIn && xIn) // all of them are inside of me
+            if (contains(box))
                 return ContainmentType.Contains;
-            if (!zIn && !yIn && !xIn) // all of them are inside of me
-                return ContainmentType.Disjoint;
 
-            return ContainmentType.Intersects;
+            if (touches(box))
+               return ContainmentType.Intersects;
+
+            return ContainmentType.Disjoint;
         }
 
         public ContainmentType Contains(BoundingSphere sphere)
@@ -261,7 +258,24 @@ namespace Math3D
                     max.Y = vec.Y;
                 if (vec.Z < min.Z)
                     min.Z = vec.Z;
-                if (vec.Z > max.Y)
+                if (vec.Z > max.Z)
+                    max.Z = vec.Z;
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 vec = b2.Corner(i);
+                if (vec.X < min.X)
+                    min.X = vec.X;
+                if (vec.X > max.X)
+                    max.X = vec.X;
+                if (vec.Y < min.Y)
+                    min.Y = vec.Y;
+                if (vec.Y > max.Y)
+                    max.Y = vec.Y;
+                if (vec.Z < min.Z)
+                    min.Z = vec.Z;
+                if (vec.Z > max.Z)
                     max.Z = vec.Z;
             }
 
@@ -295,8 +309,8 @@ namespace Math3D
        
         public static BoundingBox CreateFromSphere(BoundingSphere sphere)
         {
-            Vector3 min = sphere.CenterPoint * -sphere.Radius;
-            Vector3 max = sphere.CenterPoint * sphere.Radius;
+            Vector3 min = new Vector3(sphere.CenterPoint.X - sphere.Radius,sphere.CenterPoint.Y - sphere.Radius,sphere.CenterPoint.Z - sphere.Radius);
+            Vector3 max = new Vector3(sphere.CenterPoint.X + sphere.Radius, sphere.CenterPoint.Y + sphere.Radius, sphere.CenterPoint.Z + sphere.Radius);
             return new BoundingBox(min, max);
         }
 
