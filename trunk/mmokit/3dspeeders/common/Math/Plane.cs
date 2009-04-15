@@ -124,5 +124,26 @@ namespace Math3D
         {
             return Normal.ToString() + D.ToString(); ;
         }
+
+        public static Vector3 Intersection (Plane p1, Plane p2, Plane p3)
+        {
+            Vector3 point = new Vector3();
+
+            if (p1.Normal == p2.Normal || p1.Normal == p3.Normal || p2.Normal == p3.Normal)
+                return point;
+
+            Matrix4 matrix = new Matrix4(new Vector4(p1.Normal),new Vector4(p2.Normal),new Vector4(p3.Normal),new Vector4(0,0,0,1f));
+            matrix.Invert();
+
+            Matrix4 dMatrix = new Matrix4(new Vector4(-p1.D,0,0,0),new Vector4(-p2.D,0,0,1f),new Vector4(-p3.D,0,1f,0),new Vector4(0,0,0,1f));
+
+            Matrix4 result = matrix * dMatrix;
+
+            point.X = result.Column0.X;
+            point.Y = result.Column0.Y;
+            point.Z = result.Column0.Z;
+
+            return point;
+        }
     }
 }

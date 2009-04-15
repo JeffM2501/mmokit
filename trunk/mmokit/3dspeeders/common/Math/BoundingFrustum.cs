@@ -9,11 +9,14 @@ namespace Math3D
     public class BoundingFrustum
     {
         public const int CornerCount = 8;
-        float[] matrix = identity;
-        float[] viewMatrix = identity;
-        float[] projectionMatrix = identity;
+        Matrix4 matrix = Matrix4.Identity;
+        public Matrix4 CompositeMatrix
+        {
+            get { return matrix; }
+        }
 
-        static float[] identity = new float[16]{1,0,0,0, 0,1,0,0, 1,0,0,0, 0,0,0,0};
+        public Matrix4 viewMatrix = Matrix4.Identity;
+        public Matrix4 projectionMatrix = Matrix4.Identity;
 
         public Plane Near = new Plane(0,0,-1,0);
         public Plane Far = new Plane(0, 0, 1, 0);
@@ -43,33 +46,154 @@ namespace Math3D
              return Far;
         }
 
+        // gl format
+        // 0, 4, 8, 12
+        // 1, 5, 9, 13
+        // 2, 6, 10, 14
+        // 3, 7, 11, 15
+
+        float getMatValRow(int index)
+        {
+            switch(index)
+            {
+                case 1:
+                    return matrix.Row0.Y;
+                case 2:
+                    return matrix.Row0.Z;
+                case 3:
+                    return matrix.Row0.W;
+
+                case 4:
+                    return matrix.Row1.X;
+                case 5:
+                    return matrix.Row1.Y;
+                case 6:
+                    return matrix.Row1.Z;
+                case 7:
+                    return matrix.Row1.W;
+              
+                case 8:
+                    return matrix.Row2.X;
+                case 9:
+                    return matrix.Row2.Y;
+                case 10:
+                    return matrix.Row2.Z;
+                case 11:
+                    return matrix.Row2.W;
+               
+                case 12:
+                    return matrix.Row3.X;
+                case 13:
+                    return matrix.Row3.Y;
+                case 14:
+                    return matrix.Row3.Z;
+                case 15:
+                    return matrix.Row3.W;
+            }
+            return matrix.Row0.X;
+        }
+
+        float getMatValCol(int index)
+        {
+            switch (index)
+            {
+                case 1:
+                    return matrix.Column0.Y;
+                case 2:
+                    return matrix.Column0.Z;
+                case 3:
+                    return matrix.Column0.W;
+
+                case 4:
+                    return matrix.Column1.X;
+                case 5:
+                    return matrix.Column1.Y;
+                case 6:
+                    return matrix.Column1.Z;
+                case 7:
+                    return matrix.Column1.W;
+
+                case 8:
+                    return matrix.Column2.X;
+                case 9:
+                    return matrix.Column2.Y;
+                case 10:
+                    return matrix.Column2.Z;
+                case 11:
+                    return matrix.Column2.W;
+
+                case 12:
+                    return matrix.Column3.X;
+                case 13:
+                    return matrix.Column3.Y;
+                case 14:
+                    return matrix.Column3.Z;
+                case 15:
+                    return matrix.Column3.W;
+            }
+            return matrix.Column0.X;
+        }
+
+        float getMatVal(int index)
+        {
+            return getMatValRow(index);
+        }
+
         void ExtractPlane ( Plane plane, int row )
         {
             int scale = (row < 0) ? -1 : 1;
             row = Math.Abs(row) - 1;
 
-            plane.Set(matrix[3] + scale * matrix[row],matrix[7] + scale * matrix[row + 4],matrix[11] + scale * matrix[row + 8],matrix[15] + scale * matrix[row + 12]);
+            plane.Set(getMatVal(3) + scale * getMatVal(row), getMatVal(7) + scale * getMatVal(row + 4), getMatVal(11) + scale * getMatVal(row + 8), getMatVal(15) + scale * getMatVal(row + 12));
         }
 
         public BoundingFrustum()
         {
         }
 
-        public BoundingFrustum(float[] value)
+        public BoundingFrustum(BoundingFrustum value)
         {
-            if (value.Length >= 16)
-                viewMatrix = value;
+            matrix = new Matrix4(value.matrix.Row0, value.matrix.Row1, value.matrix.Row2, value.matrix.Row3);
+            viewMatrix = new Matrix4(value.viewMatrix.Row0, value.viewMatrix.Row1, value.viewMatrix.Row2, value.viewMatrix.Row3);
+            projectionMatrix = new Matrix4(value.projectionMatrix.Row0, value.projectionMatrix.Row1, value.projectionMatrix.Row2, value.matrix.Row3);
+        }
 
+        public BoundingFrustum(Matrix4 value)
+        {
+            matrix = new Matrix4(value.Row0, value.Row1, value.Row2, value.Row3);
+            viewMatrix = new Matrix4(value.Row0, value.Row1, value.Row2, value.Row3); // cheap but it's so we can comptue it if we need to compute it
+        }
+
+        public BoundingFrustum(Matrix4 view, Matrix4 proj)
+        {
+            viewMatrix = view;
+            projectionMatrix = proj;
             computeMatrix();
         }
 
-        public BoundingFrustum(float[] view, float[] proj )
+        public Vector3 Corner ( int index )
         {
-            if (view.Length >= 16)
-                viewMatrix = view;
-            if (proj.Length >= 16)
-                projectionMatrix = proj;
-            computeMatrix();
+            // hither left/top left/bottom right/bottom right/top
+            // yon right/top right/bottom left/bottom left/top
+            switch (index)
+            {
+                case 0:
+                    return Plane.Intersection(Near, Left, Top);
+                case 1:
+                    return Plane.Intersection(Near, Left, Bottom);
+                case 2:
+                    return Plane.Intersection(Near, Right, Bottom);
+                case 3:
+                    return Plane.Intersection(Near, Right, Top);
+
+                case 4:
+                    return Plane.Intersection(Far, Right, Top);
+                case 5:
+                    return Plane.Intersection(Far, Right, Bottom);
+                case 6:
+                    return Plane.Intersection(Far, Left, Bottom);
+            }
+            return Plane.Intersection(Far, Left, Top);
         }
 
         public ContainmentType Contains(BoundingSphere sphere)
@@ -160,53 +284,72 @@ namespace Math3D
                 len = Vector3.Dot(outside, plane.Normal) + plane.D;
                 if (len < -1.0f)
                     result = ContainmentType.Intersects; // partial containment at best
-
             }
 
             return result;
         }
 
-        public void updateProjection(float[] proj)
+        Matrix4 fillFromFloatsRow(Matrix4 mat, float[] vals)
         {
-            if (proj.Length >= 16)
-                projectionMatrix = proj;
+            if (vals.Length < 16)
+                return mat;
+            mat.Row0.X = vals[0];
+            mat.Row0.Y = vals[1];
+            mat.Row0.Z = vals[2];
+            mat.Row0.W = vals[3];
+            mat.Row1.X = vals[4];
+            mat.Row1.Y = vals[5];
+            mat.Row1.Z = vals[6];
+            mat.Row1.W = vals[7];
+            mat.Row2.X = vals[8];
+            mat.Row2.Y = vals[9];
+            mat.Row2.Z = vals[10];
+            mat.Row2.W = vals[11];
+            mat.Row3.X = vals[12];
+            mat.Row3.Y = vals[13];
+            mat.Row3.Z = vals[14];
+            mat.Row3.W = vals[15];
+            return mat;
+        }
 
+        Matrix4 fillFromFloats(Matrix4 mat, float[] vals)
+        {
+            if (vals.Length < 16)
+                return mat;
+            mat.Row0.X = vals[0];
+            mat.Row0.Y = vals[4];
+            mat.Row0.Z = vals[8];
+            mat.Row0.W = vals[12];
+            mat.Row1.X = vals[1];
+            mat.Row1.Y = vals[5];
+            mat.Row1.Z = vals[9];
+            mat.Row1.W = vals[13];
+            mat.Row2.X = vals[2];
+            mat.Row2.Y = vals[6];
+            mat.Row2.Z = vals[10];
+            mat.Row2.W = vals[14];
+            mat.Row3.X = vals[3];
+            mat.Row3.Y = vals[7];
+            mat.Row3.Z = vals[11];
+            mat.Row3.W = vals[15];
+            return mat;
+        }
+
+        public void updateProjection(Matrix4 proj)
+        {
+            projectionMatrix = proj;
             computeMatrix();
         }
 
-        public void update(float[] view)
+        public void update(Matrix4 view)
         {
-            if (view.Length >= 16)
-                viewMatrix = view;
+            viewMatrix = view;
             computeMatrix();
         }
 
         void computeMatrix ()
         {
-            // 0, 4, 8, 12
-            // 1, 5, 9, 13
-            // 2, 6, 10, 14
-            // 3, 7, 11, 15
-
-            matrix[0] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
-            matrix[4] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
-            matrix[8] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
-            matrix[12] = viewMatrix[0] * viewMatrix[4] * viewMatrix[8] * viewMatrix[12] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
-
-            matrix[1] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
-            matrix[5] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
-            matrix[9] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
-            matrix[13] = viewMatrix[1] * viewMatrix[5] * viewMatrix[9] * viewMatrix[13] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
-
-            matrix[2] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
-            matrix[6] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
-            matrix[10] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
-            matrix[14] = viewMatrix[2] * viewMatrix[6] * viewMatrix[10] * viewMatrix[14] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
-
-            matrix[3] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[0] * projectionMatrix[1] * projectionMatrix[2] * projectionMatrix[3];
-            matrix[7] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[4] * projectionMatrix[5] * projectionMatrix[6] * projectionMatrix[7];
-            matrix[11] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[8] * projectionMatrix[9] * projectionMatrix[10] * projectionMatrix[11];
-            matrix[15] = viewMatrix[3] * viewMatrix[7] * viewMatrix[11] * viewMatrix[15] + projectionMatrix[12] * projectionMatrix[13] * projectionMatrix[14] * projectionMatrix[15];
+            matrix = Matrix4.Mult(viewMatrix, projectionMatrix);
 
             ExtractPlane(Left, 1);
             ExtractPlane(Right, -1);
@@ -216,27 +359,14 @@ namespace Math3D
             ExtractPlane(Far, -3);
         }
 
-        static bool matrixEqual ( float[] m1, float[] m2)
-        {
-            if (m1.Length != m2.Length)
-                return false;
-
-            for (int i = 0; i < m1.Length; i++)
-            {
-                if (m1[i] != m2[i])
-                    return false;
-            }
-            return true;
-        }
-
         public static bool operator !=(BoundingFrustum a, BoundingFrustum b)
         {
-            return !matrixEqual(a.matrix, b.matrix);
+            return a.matrix != b.matrix;
         }
 
         public static bool operator ==(BoundingFrustum a, BoundingFrustum b)
         {
-            return matrixEqual(a.matrix, b.matrix);
+            return a.matrix == b.matrix;
         }
 
         public bool Equals(BoundingFrustum other)
@@ -254,19 +384,12 @@ namespace Math3D
 
         public override int GetHashCode()
         {
-            int hash = 0;
-            for (int i = 0; i < matrix.Length; i++)
-                hash ^= matrix[i].GetHashCode();
-            return hash;
+            return matrix.GetHashCode();
         }
 
         public override string ToString()
         {
-            string s = string.Empty;
-            for (int i = 0; i < matrix.Length; i++)
-                s += matrix[i].ToString();
-
-            return s;
+            return matrix.ToString();
         }
     }
 }
