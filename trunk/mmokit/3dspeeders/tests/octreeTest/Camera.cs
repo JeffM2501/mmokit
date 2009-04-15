@@ -45,7 +45,7 @@ namespace Cameras
             set { yon = FarPlane; updatePerspective(); }
         }
 
-        BoundingFrustum frustum = new BoundingFrustum();
+        VizableFrustum frustum = new VizableFrustum();
         public BoundingFrustum ViewFrustum
         {
             get { return frustum; }
@@ -99,7 +99,7 @@ namespace Cameras
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
             Glu.Perspective((double)fov, (double)aspect, (double)hither, (double)yon);
-            frustum.updateProjection(Matrix4.Perspective(fov,aspect, hither, yon));
+            frustum.ProjectionMatrix = Matrix4.Perspective(fov, aspect, hither, yon);
         }
 
         public void Resize(Int32 width, Int32 height)
@@ -119,7 +119,7 @@ namespace Cameras
 // 
 //             GL.Rotate(-90,1,0,0);
 
-            frustum.update(Matrix4.LookAt(position, position + Forward(), up));
+            frustum.ViewMatrix = Matrix4.LookAt(position, position + Forward(), up);
             Glu.LookAt(position, position + Forward(), up);
         }
     }
