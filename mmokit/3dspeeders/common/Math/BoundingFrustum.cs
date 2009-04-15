@@ -1,395 +1,503 @@
-﻿using System;
+﻿#region License
+/*
+MIT License
+Copyright © 2006 The Mono.Xna Team
+
+All rights reserved.
+
+Authors:
+Olivier Dufour (Duff)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+#endregion License
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Text;
 
 using OpenTK.Math;
 
 namespace Math3D
 {
-    public class BoundingFrustum
+    [Serializable]
+    public class BoundingFrustum : IEquatable<BoundingFrustum>
     {
-        public const int CornerCount = 8;
-        Matrix4 matrix = Matrix4.Identity;
-        public Matrix4 CompositeMatrix
-        {
-            get { return matrix; }
-        }
+        #region Private Fields
 
-        public Matrix4 viewMatrix = Matrix4.Identity;
-        public Matrix4 projectionMatrix = Matrix4.Identity;
+        protected Matrix4 matrix;
+        protected Plane bottom;
+        protected Plane far;
+        protected Plane left;
+        protected Plane right;
+        protected Plane near;
+        protected Plane top;
+        protected Vector3[] corners;
 
-        public Plane Near = new Plane(0,0,-1,0);
-        public Plane Far = new Plane(0, 0, 1, 0);
-        public Plane Left = new Plane(1, 0, 0, 0);
-        public Plane Right = new Plane(-1, 0, 0, 0);
-        public Plane Top = new Plane(0, -1, 0, 0);
-        public Plane Bottom = new Plane(0, 1, 0, 0);
+        #endregion Private Fields
 
-        Plane GetPlane( int index )
-        {
-            if (index < 1)
-                return Near;
-
-            switch(index)
-            {
-                case 1:
-                    return Far;
-                case 2:
-                    return Left;
-                case 3:
-                    return Right;
-                case 4:
-                    return Top;
-                case 5:
-                    return Bottom;
-            }
-             return Far;
-        }
-
-        // gl format
-        // 0, 4, 8, 12
-        // 1, 5, 9, 13
-        // 2, 6, 10, 14
-        // 3, 7, 11, 15
-
-        float getMatValRow(int index)
-        {
-            switch(index)
-            {
-                case 1:
-                    return matrix.Row0.Y;
-                case 2:
-                    return matrix.Row0.Z;
-                case 3:
-                    return matrix.Row0.W;
-
-                case 4:
-                    return matrix.Row1.X;
-                case 5:
-                    return matrix.Row1.Y;
-                case 6:
-                    return matrix.Row1.Z;
-                case 7:
-                    return matrix.Row1.W;
-              
-                case 8:
-                    return matrix.Row2.X;
-                case 9:
-                    return matrix.Row2.Y;
-                case 10:
-                    return matrix.Row2.Z;
-                case 11:
-                    return matrix.Row2.W;
-               
-                case 12:
-                    return matrix.Row3.X;
-                case 13:
-                    return matrix.Row3.Y;
-                case 14:
-                    return matrix.Row3.Z;
-                case 15:
-                    return matrix.Row3.W;
-            }
-            return matrix.Row0.X;
-        }
-
-        float getMatValCol(int index)
-        {
-            switch (index)
-            {
-                case 1:
-                    return matrix.Column0.Y;
-                case 2:
-                    return matrix.Column0.Z;
-                case 3:
-                    return matrix.Column0.W;
-
-                case 4:
-                    return matrix.Column1.X;
-                case 5:
-                    return matrix.Column1.Y;
-                case 6:
-                    return matrix.Column1.Z;
-                case 7:
-                    return matrix.Column1.W;
-
-                case 8:
-                    return matrix.Column2.X;
-                case 9:
-                    return matrix.Column2.Y;
-                case 10:
-                    return matrix.Column2.Z;
-                case 11:
-                    return matrix.Column2.W;
-
-                case 12:
-                    return matrix.Column3.X;
-                case 13:
-                    return matrix.Column3.Y;
-                case 14:
-                    return matrix.Column3.Z;
-                case 15:
-                    return matrix.Column3.W;
-            }
-            return matrix.Column0.X;
-        }
-
-        float getMatVal(int index)
-        {
-            return getMatValRow(index);
-        }
-
-        void ExtractPlane ( Plane plane, int row )
-        {
-            int scale = (row < 0) ? -1 : 1;
-            row = Math.Abs(row) - 1;
-
-            plane.Set(getMatVal(3) + scale * getMatVal(row), getMatVal(7) + scale * getMatVal(row + 4), getMatVal(11) + scale * getMatVal(row + 8), getMatVal(15) + scale * getMatVal(row + 12));
-        }
-
-        public BoundingFrustum()
-        {
-        }
-
-        public BoundingFrustum(BoundingFrustum value)
-        {
-            matrix = new Matrix4(value.matrix.Row0, value.matrix.Row1, value.matrix.Row2, value.matrix.Row3);
-            viewMatrix = new Matrix4(value.viewMatrix.Row0, value.viewMatrix.Row1, value.viewMatrix.Row2, value.viewMatrix.Row3);
-            projectionMatrix = new Matrix4(value.projectionMatrix.Row0, value.projectionMatrix.Row1, value.projectionMatrix.Row2, value.matrix.Row3);
-        }
+        #region Public Constructors
 
         public BoundingFrustum(Matrix4 value)
         {
-            matrix = new Matrix4(value.Row0, value.Row1, value.Row2, value.Row3);
-            viewMatrix = new Matrix4(value.Row0, value.Row1, value.Row2, value.Row3); // cheap but it's so we can comptue it if we need to compute it
+            this.matrix = value;
+            CreatePlanes();
+            CreateCorners();
         }
 
-        public BoundingFrustum(Matrix4 view, Matrix4 proj)
+        #endregion Public Constructors
+
+        #region Public Properties
+
+        public Plane Bottom
         {
-            viewMatrix = view;
-            projectionMatrix = proj;
-            computeMatrix();
+            get { return this.bottom; }
         }
 
-        public Vector3 Corner ( int index )
+        public Plane Far
         {
-            // hither left/top left/bottom right/bottom right/top
-            // yon right/top right/bottom left/bottom left/top
-            switch (index)
+            get { return this.far; }
+        }
+
+        public Plane Left
+        {
+            get { return this.left; }
+        }
+
+        public Matrix4 Matrix
+        {
+            get { return this.matrix; }
+            set
             {
-                case 0:
-                    return Plane.Intersection(Near, Left, Top);
-                case 1:
-                    return Plane.Intersection(Near, Left, Bottom);
-                case 2:
-                    return Plane.Intersection(Near, Right, Bottom);
-                case 3:
-                    return Plane.Intersection(Near, Right, Top);
-
-                case 4:
-                    return Plane.Intersection(Far, Right, Top);
-                case 5:
-                    return Plane.Intersection(Far, Right, Bottom);
-                case 6:
-                    return Plane.Intersection(Far, Left, Bottom);
+                this.matrix = value;
+                this.CreatePlanes();    // FIXME: The odds are the planes will be used a lot more often than the matrix
+                this.CreateCorners();   // is updated, so this should help performance. I hope ;)
             }
-            return Plane.Intersection(Far, Left, Top);
         }
 
-        public ContainmentType Contains(BoundingSphere sphere)
+        public Plane Near
         {
-            ContainmentType result = ContainmentType.Contains;
-            for (int i = 0; i < 6; i++)
-            {
-                Plane plane = GetPlane(i);
-                PlaneIntersectionType planeIntersect = plane.Intersects(sphere);
-                if (planeIntersect == PlaneIntersectionType.Back)
-                    return ContainmentType.Disjoint;
-                else if (planeIntersect == PlaneIntersectionType.Intersecting)
-                    result = ContainmentType.Intersects;
-            }
-
-            return result;
+            get { return this.near; }
         }
 
-        public ContainmentType Contains(ref Vector3 point)
+        public Plane Right
         {
-            ContainmentType result = ContainmentType.Contains;
-            for (int i = 0; i < 6; i++)
-            {
-                Plane plane = GetPlane(i);
-                PlaneIntersectionType planeIntersect = plane.Intersects(point);
-                if (planeIntersect == PlaneIntersectionType.Back)
-                    return ContainmentType.Disjoint;
-                else if (planeIntersect == PlaneIntersectionType.Intersecting)
-                    result = ContainmentType.Intersects;
-            }
-
-            return result;
+            get { return this.right; }
         }
 
-        public ContainmentType Contains(BoundingBox box)
+        public Plane Top
         {
-            Vector3 inside = new Vector3();  // inside point  (assuming partial)
-            Vector3 outside = new Vector3(); // outside point (assuming partial)
-            float len = 0.0f;
-
-            ContainmentType result = ContainmentType.Contains;
-
-            for (int i = 0; i < 6; i++)
-            {
-                Plane plane = GetPlane(i);
-
-                // setup the inside/outside corners
-                // this can be determined easily based
-                // on the normal vector for the plane
-                if (plane.Normal.X > 0.0f)
-                {
-                    inside.X = box.Max.X;
-                    outside.X = box.Min.X;
-                }
-                else
-                {
-                    inside.X = box.Min.X;
-                    outside.X = box.Max.X;
-                }
-                if (plane.Normal.Y > 0.0f)
-                {
-                    inside.Y = box.Max.Y;
-                    outside.Y = box.Min.X;
-                }
-                else
-                {
-                    inside.Y = box.Min.Y;
-                    outside.Y = box.Max.Y;
-                }
-
-                if (plane.Normal.Z > 0.0f)
-                {
-                    inside.Z = box.Max.Z;
-                    outside.Z = box.Min.Z;
-                }
-                else
-                {
-                    inside.Z = box.Min.Z;
-                    outside.Z = box.Max.Z;
-                }
-
-                // check the inside length
-                len = Vector3.Dot(inside, plane.Normal) + plane.D;
-                if (len < -1.0f)
-                    return ContainmentType.Disjoint; // box is fully outside the frustum
-
-                // check the outside length
-                len = Vector3.Dot(outside, plane.Normal) + plane.D;
-                if (len < -1.0f)
-                    result = ContainmentType.Intersects; // partial containment at best
-            }
-
-            return result;
+            get { return this.top; }
         }
 
-        Matrix4 fillFromFloatsRow(Matrix4 mat, float[] vals)
-        {
-            if (vals.Length < 16)
-                return mat;
-            mat.Row0.X = vals[0];
-            mat.Row0.Y = vals[1];
-            mat.Row0.Z = vals[2];
-            mat.Row0.W = vals[3];
-            mat.Row1.X = vals[4];
-            mat.Row1.Y = vals[5];
-            mat.Row1.Z = vals[6];
-            mat.Row1.W = vals[7];
-            mat.Row2.X = vals[8];
-            mat.Row2.Y = vals[9];
-            mat.Row2.Z = vals[10];
-            mat.Row2.W = vals[11];
-            mat.Row3.X = vals[12];
-            mat.Row3.Y = vals[13];
-            mat.Row3.Z = vals[14];
-            mat.Row3.W = vals[15];
-            return mat;
-        }
+        #endregion Public Properties
 
-        Matrix4 fillFromFloats(Matrix4 mat, float[] vals)
-        {
-            if (vals.Length < 16)
-                return mat;
-            mat.Row0.X = vals[0];
-            mat.Row0.Y = vals[4];
-            mat.Row0.Z = vals[8];
-            mat.Row0.W = vals[12];
-            mat.Row1.X = vals[1];
-            mat.Row1.Y = vals[5];
-            mat.Row1.Z = vals[9];
-            mat.Row1.W = vals[13];
-            mat.Row2.X = vals[2];
-            mat.Row2.Y = vals[6];
-            mat.Row2.Z = vals[10];
-            mat.Row2.W = vals[14];
-            mat.Row3.X = vals[3];
-            mat.Row3.Y = vals[7];
-            mat.Row3.Z = vals[11];
-            mat.Row3.W = vals[15];
-            return mat;
-        }
+        #region Public Methods
 
-        public void updateProjection(Matrix4 proj)
+        public static bool operator ==(BoundingFrustum a, BoundingFrustum b)
         {
-            projectionMatrix = proj;
-            computeMatrix();
-        }
+            if (object.Equals(a, null))
+                return (object.Equals(b, null));
 
-        public void update(Matrix4 view)
-        {
-            viewMatrix = view;
-            computeMatrix();
-        }
+            if (object.Equals(b, null))
+                return (object.Equals(a, null));
 
-        void computeMatrix ()
-        {
-            matrix = Matrix4.Mult(viewMatrix, projectionMatrix);
-
-            ExtractPlane(Left, 1);
-            ExtractPlane(Right, -1);
-            ExtractPlane(Bottom, 2);
-            ExtractPlane(Top, -2);
-            ExtractPlane(Near, 3);
-            ExtractPlane(Far, -3);
+            return a.matrix == (b.matrix);
         }
 
         public static bool operator !=(BoundingFrustum a, BoundingFrustum b)
         {
-            return a.matrix != b.matrix;
+            return !(a == b);
         }
 
-        public static bool operator ==(BoundingFrustum a, BoundingFrustum b)
+        public ContainmentType Contains(BoundingBox box)
         {
-            return a.matrix == b.matrix;
+            ContainmentType result;
+            this.Contains(ref box, out result);
+            return result;
+        }
+
+        public void Contains(ref BoundingBox box, out ContainmentType result)
+        {
+            // FIXME: Is this a bug?
+            // If the bounding box is of W * D * H = 0, then return disjoint
+            if (box.Min == box.Max)
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            int i;
+            ContainmentType contained;
+            Vector3[] corners = box.GetCorners();
+
+            // First we assume completely disjoint. So if we find a point that is contained, we break out of this loop
+            for (i = 0; i < corners.Length; i++)
+            {
+                this.Contains(ref corners[i], out contained);
+                if (contained != ContainmentType.Disjoint)
+                    break;
+            }
+
+            if (i == corners.Length) // This means we checked all the corners and they were all disjoint
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            if (i != 0)             // if i is not equal to zero, we can fastpath and say that this box intersects
+            {                       // because we know at least one point is outside and one is inside.
+                result = ContainmentType.Intersects;
+                return;
+            }
+
+            // If we get here, it means the first (and only) point we checked was actually contained in the frustum.
+            // So we assume that all other points will also be contained. If one of the points is disjoint, we can
+            // exit immediately saying that the result is Intersects
+            i++;
+            for (; i < corners.Length; i++)
+            {
+                this.Contains(ref corners[i], out contained);
+                if (contained != ContainmentType.Contains)
+                {
+                    result = ContainmentType.Intersects;
+                    return;
+                }
+            }
+
+            // If we get here, then we know all the points were actually contained, therefore result is Contains
+            result = ContainmentType.Contains;
+            return;
+        }
+
+        // TODO: Implement this
+        public ContainmentType Contains(BoundingFrustum frustum)
+        {
+            if (this == frustum)                // We check to see if the two frustums are equal
+                return ContainmentType.Contains;// If they are, there's no need to go any further.
+
+            throw new NotImplementedException();
+        }
+
+        public ContainmentType Contains(BoundingSphere sphere)
+        {
+            ContainmentType result;
+            this.Contains(ref sphere, out result);
+            return result;
+        }
+
+        public void Contains(ref BoundingSphere sphere, out ContainmentType result)
+        {
+            float val;
+            ContainmentType contained;
+
+            // We first check if the sphere is inside the frustum
+            this.Contains(ref sphere.Center, out contained);
+
+            // The sphere is inside. Now we need to check if it's fully contained or not
+            // So we see if the perpendicular distance to each plane is less than or equal to the sphere's radius.
+            // If the perpendicular distance is less, just return Intersects.
+            if (contained == ContainmentType.Contains)
+            {
+                val = Plane.PerpendicularDistance(ref sphere.Center, ref this.bottom);
+                if (val < sphere.Radius)
+                {
+                    result = ContainmentType.Intersects;
+                    return;
+                }
+
+                val = Plane.PerpendicularDistance(ref sphere.Center, ref this.far);
+                if (val < sphere.Radius)
+                {
+                    result = ContainmentType.Intersects;
+                    return;
+                }
+
+                val = Plane.PerpendicularDistance(ref sphere.Center, ref this.left);
+                if (val < sphere.Radius)
+                {
+                    result = ContainmentType.Intersects;
+                    return;
+                }
+
+                val = Plane.PerpendicularDistance(ref sphere.Center, ref this.near);
+                if (val < sphere.Radius)
+                {
+                    result = ContainmentType.Intersects;
+                    return;
+                }
+
+                val = Plane.PerpendicularDistance(ref sphere.Center, ref this.right);
+                if (val < sphere.Radius)
+                {
+                    result = ContainmentType.Intersects;
+                    return;
+                }
+
+                val = Plane.PerpendicularDistance(ref sphere.Center, ref this.top);
+                if (val < sphere.Radius)
+                {
+                    result = ContainmentType.Intersects;
+                    return;
+                }
+
+                // If we get here, the sphere is fully contained
+                result = ContainmentType.Contains;
+                return;
+            }
+            //duff idea : test if all corner is in same side of a plane if yes and outside it is disjoint else intersect
+            // issue is that we can have some times when really close aabb 
+
+
+
+            // If we're here, the the sphere's centre was outside of the frustum. This makes things hard :(
+            // We can't use perpendicular distance anymore. I'm not sure how to code this.
+            throw new NotImplementedException();
+        }
+
+        public ContainmentType Contains(Vector3 point)
+        {
+            ContainmentType result;
+            this.Contains(ref point, out result);
+            return result;
+        }
+
+        public void Contains(ref Vector3 point, out ContainmentType result)
+        {
+            float val;
+            // If a point is on the POSITIVE side of the plane, then the point is not contained within the frustum
+
+            // Check the top
+            val = Plane.ClassifyPoint(ref point, ref this.top);
+            if (val > 0)
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            // Check the bottom
+            val = Plane.ClassifyPoint(ref point, ref this.bottom);
+            if (val > 0)
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            // Check the left
+            val = Plane.ClassifyPoint(ref point, ref this.left);
+            if (val > 0)
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            // Check the right
+            val = Plane.ClassifyPoint(ref point, ref this.right);
+            if (val > 0)
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            // Check the near
+            val = Plane.ClassifyPoint(ref point, ref this.near);
+            if (val > 0)
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            // Check the far
+            val = Plane.ClassifyPoint(ref point, ref this.far);
+            if (val > 0)
+            {
+                result = ContainmentType.Disjoint;
+                return;
+            }
+
+            // If we get here, it means that the point was on the correct side of each plane to be
+            // contained. Therefore this point is contained
+            result = ContainmentType.Contains;
         }
 
         public bool Equals(BoundingFrustum other)
         {
-            return this == other;
+            return (this == other);
         }
 
         public override bool Equals(object obj)
         {
-            BoundingFrustum other = obj as BoundingFrustum;
-            if (other == null)
-                return false;
-            return this == other;
+            BoundingFrustum f = obj as BoundingFrustum;
+            return (object.Equals(f, null)) ? false : (this == f);
+        }
+
+        public Vector3[] GetCorners()
+        {
+            return corners;
         }
 
         public override int GetHashCode()
         {
-            return matrix.GetHashCode();
+            return this.matrix.GetHashCode();
+        }
+
+        public bool Intersects(BoundingBox box)
+        {
+            return Contains(box) != ContainmentType.Disjoint;
+        }
+
+        public void Intersects(ref BoundingBox box, out bool result)
+        {
+            result = Contains(box) != ContainmentType.Disjoint;
+        }
+
+        public bool Intersects(BoundingFrustum frustum)
+        {
+            return Contains(frustum) != ContainmentType.Disjoint;
+        }
+
+        public bool Intersects(BoundingSphere sphere)
+        {
+            return Contains(sphere) != ContainmentType.Disjoint;
+        }
+
+        public void Intersects(ref BoundingSphere sphere, out bool result)
+        {
+            result = Contains(sphere) != ContainmentType.Disjoint;
+        }
+
+        public PlaneIntersectionType Intersects(Plane plane)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Intersects(ref Plane plane, out PlaneIntersectionType result)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Nullable<float> Intersects(Ray ray)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Intersects(ref Ray ray, out Nullable<float> result)
+        {
+            throw new NotImplementedException();
         }
 
         public override string ToString()
         {
-            return matrix.ToString();
+            StringBuilder sb = new StringBuilder(256);
+            sb.Append("{Near:");
+            sb.Append(this.near.ToString());
+            sb.Append(" Far:");
+            sb.Append(this.far.ToString());
+            sb.Append(" Left:");
+            sb.Append(this.left.ToString());
+            sb.Append(" Right:");
+            sb.Append(this.right.ToString());
+            sb.Append(" Top:");
+            sb.Append(this.top.ToString());
+            sb.Append(" Bottom:");
+            sb.Append(this.bottom.ToString());
+            sb.Append("}");
+            return sb.ToString();
         }
+
+        #endregion Public Methods
+
+        #region Protected Methods
+
+        protected void CreateCorners()
+        {
+            this.corners = new Vector3[8];
+            this.corners[0] = IntersectionPoint(ref this.near, ref this.left, ref this.top);
+            this.corners[1] = IntersectionPoint(ref this.near, ref this.right, ref this.top);
+            this.corners[2] = IntersectionPoint(ref this.near, ref this.right, ref this.bottom);
+            this.corners[3] = IntersectionPoint(ref this.near, ref this.left, ref this.bottom);
+            this.corners[4] = IntersectionPoint(ref this.far, ref this.left, ref this.top);
+            this.corners[5] = IntersectionPoint(ref this.far, ref this.right, ref this.top);
+            this.corners[6] = IntersectionPoint(ref this.far, ref this.right, ref this.bottom);
+            this.corners[7] = IntersectionPoint(ref this.far, ref this.left, ref this.bottom);
+        }
+
+        protected void CreatePlanes()
+        {
+            // Pre-calculate the different planes needed
+            this.left = new Plane(-MatrixHelper4.M14(this.matrix) - MatrixHelper4.M11(this.matrix), -MatrixHelper4.M24(this.matrix) - MatrixHelper4.M21(this.matrix),
+                                  -MatrixHelper4.M34(this.matrix) - MatrixHelper4.M31(this.matrix), -MatrixHelper4.M44(this.matrix) - MatrixHelper4.M41(this.matrix));
+
+            this.right = new Plane(MatrixHelper4.M11(this.matrix) - MatrixHelper4.M14(this.matrix), MatrixHelper4.M21(this.matrix) - MatrixHelper4.M24(this.matrix),
+                                   MatrixHelper4.M31(this.matrix) - MatrixHelper4.M34(this.matrix), MatrixHelper4.M41(this.matrix) - MatrixHelper4.M44(this.matrix));
+
+            this.top = new Plane(MatrixHelper4.M12(this.matrix) - MatrixHelper4.M14(this.matrix), MatrixHelper4.M22(this.matrix) - MatrixHelper4.M24(this.matrix),
+                                 MatrixHelper4.M32(this.matrix) - MatrixHelper4.M34(this.matrix), MatrixHelper4.M42(this.matrix) - MatrixHelper4.M44(this.matrix));
+
+            this.bottom = new Plane(-MatrixHelper4.M14(this.matrix) - MatrixHelper4.M12(this.matrix), -MatrixHelper4.M24(this.matrix) - MatrixHelper4.M22(this.matrix),
+                                    -MatrixHelper4.M34(this.matrix) - MatrixHelper4.M32(this.matrix), -MatrixHelper4.M44(this.matrix) - MatrixHelper4.M42(this.matrix));
+
+            this.near = new Plane(-MatrixHelper4.M13(this.matrix), -MatrixHelper4.M23(this.matrix), -MatrixHelper4.M33(this.matrix), -MatrixHelper4.M43(this.matrix));
+
+
+            this.far = new Plane(MatrixHelper4.M13(this.matrix) - MatrixHelper4.M14(this.matrix), MatrixHelper4.M23(this.matrix) - MatrixHelper4.M24(this.matrix),
+                                 MatrixHelper4.M33(this.matrix) - MatrixHelper4.M34(this.matrix), MatrixHelper4.M43(this.matrix) - MatrixHelper4.M44(this.matrix));
+
+            this.NormalizePlane(ref this.left);
+            this.NormalizePlane(ref this.right);
+            this.NormalizePlane(ref this.top);
+            this.NormalizePlane(ref this.bottom);
+            this.NormalizePlane(ref this.near);
+            this.NormalizePlane(ref this.far);
+        }
+
+        protected static Vector3 IntersectionPoint(ref Plane a, ref Plane b, ref Plane c)
+        {
+            // Formula used
+            //                d1 ( N2 * N3 ) + d2 ( N3 * N1 ) + d3 ( N1 * N2 )
+            //P =   -------------------------------------------------------------------------
+            //                             N1 . ( N2 * N3 )
+            //
+            // Note: N refers to the normal, d refers to the displacement. '.' means dot product. '*' means cross product
+
+            Vector3 v1, v2, v3;
+            float f = -Vector3.Dot(a.Normal, Vector3.Cross(b.Normal, c.Normal));
+
+            v1 = (a.D * (Vector3.Cross(b.Normal, c.Normal)));
+            v2 = (b.D * (Vector3.Cross(c.Normal, a.Normal)));
+            v3 = (c.D * (Vector3.Cross(a.Normal, b.Normal)));
+
+            Vector3 vec = new Vector3(v1.X + v2.X + v3.X, v1.Y + v2.Y + v3.Y, v1.Z + v2.Z + v3.Z);
+            return vec / f;
+        }
+
+        protected void NormalizePlane(ref Plane p)
+        {
+            float factor = 1f / p.Normal.Length;
+            p.Normal.X *= factor;
+            p.Normal.Y *= factor;
+            p.Normal.Z *= factor;
+            p.D *= factor;
+        }
+
+        #endregion
     }
 }
