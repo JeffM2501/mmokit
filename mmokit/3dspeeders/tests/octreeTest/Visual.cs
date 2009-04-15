@@ -22,7 +22,7 @@ namespace octreeTest
     {
         Camera camera = new Camera();
         Grid grid = new Grid();
-        BoundingFrustum clipingFrustum = new BoundingFrustum();
+        BoundingFrustum clipingFrustum = null;
         Vector3 clipFrustumPos = new Vector3();
         Vector3 clipFrustumHeading= new Vector3();
 
@@ -237,10 +237,10 @@ namespace octreeTest
             printer.Print("Drawn Objects(" + drawnObject.ToString() + ")", sans_serif, Color.Wheat, new RectangleF(0, Height - 64, Width, Height - 36), TextPrinterOptions.Default);
 
             printer.Print("ViewMatrix", small_serif, Color.Wheat, new RectangleF(Width-220, 10, Width, 20), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.CompositeMatrix.Row0.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 20, Width, 30), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.CompositeMatrix.Row1.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 30, Width, 40), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.CompositeMatrix.Row2.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 40, Width, 50), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.CompositeMatrix.Row3.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 50, Width, 60), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.Matrix.Row0.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 20, Width, 30), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.Matrix.Row1.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 30, Width, 40), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.Matrix.Row2.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 40, Width, 50), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.Matrix.Row3.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 50, Width, 60), TextPrinterOptions.Default);
 
             GL.Begin(BeginMode.LineLoop);
             GL.Vertex2(Width - 280, 10);
@@ -331,6 +331,16 @@ namespace octreeTest
             GL.PushMatrix();
             GL.Translate(clipFrustumPos);
             Glu.Sphere(Glu.NewQuadric(), 0.25f, 6, 6);
+
+            Vector3[] corners = clipingFrustum.GetCorners();
+            foreach (Vector3 corner in corners)
+            {
+                GL.PushMatrix();
+                GL.Translate(corner);
+                Glu.Sphere(Glu.NewQuadric(), 0.125f, 6, 2);
+                GL.PopMatrix();
+            }
+           
             GL.Disable(EnableCap.Lighting);
 
             GL.LineWidth(3.0f);
@@ -342,22 +352,7 @@ namespace octreeTest
             GL.Vertex3(clipFrustumHeading * 25.0f);
             GL.End();
 
-            GL.Color4(1.0f, 0.45f, 0.7f, 0.9f);
-            Vector3 up = new Vector3(0, 0, 1f);
-            Vector3 horizVector = Vector3.Cross( new Vector3(0, 0, 1f),clipFrustumHeading);
-            GL.Begin(BeginMode.Lines);
-            GL.Vertex3(0,0,0);
-            GL.Vertex3(horizVector);
-            GL.End();
-
-
-            Vector3 VerticalVector = Vector3.Cross(clipFrustumHeading, horizVector);
-            GL.Color4(1.0f, 1.0f, 0.7f, 0.9f);
-            GL.Begin(BeginMode.Lines);
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(VerticalVector);
-            GL.End();
-
+           
             // fov lines
 
             GL.PopMatrix();
@@ -451,7 +446,7 @@ namespace octreeTest
 
             if (snapshotFrustum)
             {
-                clipingFrustum = new BoundingFrustum(camera.ViewFrustum);
+                clipingFrustum = new BoundingFrustum(camera.ViewFrustum.Matrix);
                 clipFrustumPos = new Vector3(camera.EyePoint);
                 clipFrustumHeading = new Vector3(camera.Forward());
 
@@ -515,8 +510,8 @@ namespace octreeTest
         public BoxObject(BoundingBox box)
             : base()
         {
-            postion = box.CenterPoint;
-            size = box.BoxSize;
+            size = box.Max - box.Min;
+            postion = size * 0.5f;
             rotation = 0;
             bounds = new BoundingBox(box.Min, box.Max);
         }
