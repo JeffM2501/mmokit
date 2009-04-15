@@ -22,7 +22,9 @@ namespace octreeTest
     {
         Camera camera = new Camera();
         Grid grid = new Grid();
-        BoundingFrustum frustum = new BoundingFrustum();
+        BoundingFrustum clipingFrustum = new BoundingFrustum();
+        Vector3 clipFrustumPos = new Vector3();
+        Vector3 clipFrustumHeading= new Vector3();
 
         OctreeWorld world = new OctreeWorld();
 
@@ -41,6 +43,9 @@ namespace octreeTest
 
         TextPrinter printer = new TextPrinter(TextQuality.High);
         Font sans_serif = new Font(FontFamily.GenericSansSerif, 16.0f);
+        Font small_serif = new Font(FontFamily.GenericSansSerif, 8.0f);
+
+        bool snapshotFrustum = true;
 
         public Visual() : base(1024,550)
         {
@@ -84,7 +89,7 @@ namespace octreeTest
 
             if (!fixedMap)
             {
-                int boxes = 250;// new Random().Next() % 10 + 100;
+                int boxes = 25;// new Random().Next() % 10 + 100;
                 for (int i = 0; i < boxes; i++)
                     world.Add(new BoxObject(groundSize));
                 world.BuildTree(new BoundingBox(new Vector3(-groundSize, -groundSize, -1), new Vector3(groundSize, groundSize, 50)));
@@ -101,6 +106,13 @@ namespace octreeTest
 
                 world.BuildTree(new BoundingBox(new Vector3(-groundSize, -groundSize, -1), new Vector3(groundSize, groundSize, size.Z * 5)));
             }
+
+            this.Mouse.Move += new MouseMoveEventHandler(Mouse_Move);
+        }
+
+        void Mouse_Move(object sender, MouseMoveEventArgs e)
+        {
+            int i = e.XDelta;
         }
 
         public override void OnUnload(EventArgs e)
@@ -112,13 +124,7 @@ namespace octreeTest
         {
             base.OnResize(e);
             GL.Viewport(0, 0, Width, Height);
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadIdentity();
-            Glu.Perspective(45.0, Width / (double)Height, 1.0, 1000.0);
-
-            float[] projMat = new float[16];
-            GL.GetFloat(GetPName.ProjectionMatrix, projMat);
-            frustum.updateProjection(projMat);
+            camera.Resize(Width, Height);
         }
 
         protected bool doInput (UpdateFrameEventArgs e)
@@ -126,7 +132,7 @@ namespace octreeTest
             if (Keyboard[Key.Escape])
                 return true;
 
-            float turnSpeed = 50.0f;
+            float turnSpeed = 40.0f;
             turnSpeed *= (float)e.Time;
 
             if (Keyboard[Key.Left])
@@ -147,6 +153,8 @@ namespace octreeTest
                 cullToFrustum = true;
             if (Keyboard[Key.F4])
                 cullToFrustum = false;
+            if (Keyboard[Key.F5])
+                snapshotFrustum = true;
 
             Vector3 forward = new Vector3(camera.Heading());
             Vector3 leftward = new Vector3(forward);
@@ -155,7 +163,7 @@ namespace octreeTest
 
             Vector2 movement = new Vector2();
 
-            float speed = 50.0f;
+            float speed = 30.0f;
             speed *= (float)e.Time;
 
             if (Keyboard[Key.A])
@@ -227,6 +235,19 @@ namespace octreeTest
             printer.Print(((int)(1 / e.Time)).ToString("F0"), sans_serif, Color.Wheat);
             printer.Print("Forward(" + camera.HeadingAngle().ToString() + ") " + camera.Heading().ToString(), sans_serif, Color.Wheat, new RectangleF(0, Height - 36, Width, Height), TextPrinterOptions.Default);
             printer.Print("Drawn Objects(" + drawnObject.ToString() + ")", sans_serif, Color.Wheat, new RectangleF(0, Height - 64, Width, Height - 36), TextPrinterOptions.Default);
+
+            printer.Print("ViewMatrix", small_serif, Color.Wheat, new RectangleF(Width-220, 10, Width, 20), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.CompositeMatrix.Row0.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 20, Width, 30), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.CompositeMatrix.Row1.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 30, Width, 40), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.CompositeMatrix.Row2.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 40, Width, 50), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.CompositeMatrix.Row3.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 50, Width, 60), TextPrinterOptions.Default);
+
+            GL.Begin(BeginMode.LineLoop);
+            GL.Vertex2(Width - 280, 10);
+            GL.Vertex2(Width - 2, 10);
+            GL.Vertex2(Width - 2, 65);
+            GL.Vertex2(Width - 280, 65);
+            GL.End();
 
             printer.End();
         }
@@ -305,6 +326,45 @@ namespace octreeTest
             }
         }
 
+        void drawFrustum ()
+        {
+            GL.PushMatrix();
+            GL.Translate(clipFrustumPos);
+            Glu.Sphere(Glu.NewQuadric(), 0.25f, 6, 6);
+            GL.Disable(EnableCap.Lighting);
+
+            GL.LineWidth(3.0f);
+            GL.Color4(0.0f, 0.45f, 0.7f, 0.9f);
+
+            // vector out from the near plane
+            GL.Begin(BeginMode.Lines);
+            GL.Vertex3(clipFrustumHeading * camera.NearPlane);
+            GL.Vertex3(clipFrustumHeading * 25.0f);
+            GL.End();
+
+            GL.Color4(1.0f, 0.45f, 0.7f, 0.9f);
+            Vector3 up = new Vector3(0, 0, 1f);
+            Vector3 horizVector = Vector3.Cross( new Vector3(0, 0, 1f),clipFrustumHeading);
+            GL.Begin(BeginMode.Lines);
+            GL.Vertex3(0,0,0);
+            GL.Vertex3(horizVector);
+            GL.End();
+
+
+            Vector3 VerticalVector = Vector3.Cross(clipFrustumHeading, horizVector);
+            GL.Color4(1.0f, 1.0f, 0.7f, 0.9f);
+            GL.Begin(BeginMode.Lines);
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(VerticalVector);
+            GL.End();
+
+            // fov lines
+
+            GL.PopMatrix();
+       
+            GL.Enable(EnableCap.Lighting);
+        }
+
         void drawWorld()
         {
             GL.Enable(EnableCap.Lighting);
@@ -321,7 +381,7 @@ namespace octreeTest
                 }
 
                 List<OctreeObject> vis = new List<OctreeObject>();
-                world.ObjectsInFrustum(vis, frustum);
+                world.ObjectsInFrustum(vis, clipingFrustum);
                 drawnObject = vis.Count;
 
                 GL.Color3(System.Drawing.Color.Red);
@@ -331,6 +391,11 @@ namespace octreeTest
                 foreach (OctreeObject o in vis)
                     drawBox(o as BoxObject);
                 GL.Disable(EnableCap.PolygonOffsetFill);
+
+                // draw the frustum
+                GL.Color4(0.0f, 0.35f, 0.6f, 0.6f);
+
+                drawFrustum();
             }
             else
             {
@@ -384,8 +449,14 @@ namespace octreeTest
 
             camera.Execute();
 
-            GL.GetFloat(GetPName.ModelviewMatrix, viewMat);
-            frustum.update(viewMat);
+            if (snapshotFrustum)
+            {
+                clipingFrustum = new BoundingFrustum(camera.ViewFrustum);
+                clipFrustumPos = new Vector3(camera.EyePoint);
+                clipFrustumHeading = new Vector3(camera.Forward());
+
+                snapshotFrustum = false;
+            }
 
             GL.Enable(EnableCap.Light0);
             GL.Lightv(LightName.Light0, LightParameter.Position, new Vector4(10, 15, 10, 1.0f));
@@ -393,7 +464,6 @@ namespace octreeTest
             drawGround();
 
             drawWorld();
-            Glu.Sphere(Glu.NewQuadric(), 1, 25, 25);
 
             drawOverlay(e);
 
