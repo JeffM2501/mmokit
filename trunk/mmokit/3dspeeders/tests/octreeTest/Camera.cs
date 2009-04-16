@@ -131,5 +131,15 @@ namespace Cameras
                 frustum.SetView(matrix);
             }
         }
+
+        public VizableFrustum SnapshotFrusum ( )
+        {
+            VizableFrustum f = new VizableFrustum();
+
+            f.SetProjection(fov, aspect, hither, 25, width, height);
+            f.LookAt(position, position + Forward());
+
+            return f;
+        }
     }
 }
