@@ -28,15 +28,19 @@ namespace Math3D
         }
         #endregion
 
-        Vector3 RightVec = new Vector3();
-        Vector3 Up = new Vector3();
+        public Vector3 RightVec = new Vector3();
+        public Vector3 Up = new Vector3();
+        public Vector3 ViewDir = new Vector3();
+        public Vector3 EyePoint = new Vector3();
 
-        float nearClip = 0;
-        float farClip = 0;
+        public float nearClip = 0;
+        public float farClip = 0;
+
+        public Vector3[] edge;
 
         public VizableFrustum() : base (Matrix4.Identity)
         {
-            BuildMatrix();
+            BuildFrustum();
         }
 
         public VizableFrustum( VizableFrustum value )
@@ -44,7 +48,7 @@ namespace Math3D
         {
             projection = new Matrix4(value.projection.Row0,value.projection.Row1,value.projection.Row2,value.projection.Row3);
             view = new Matrix4(value.view.Row0, value.view.Row1, value.view.Row2, value.view.Row3);
-            BuildMatrix();
+            BuildFrustum();
         }
 
         public void SetProjection(float fov, float aspect, float hither, float yon, int width, int height  )
@@ -74,27 +78,28 @@ namespace Math3D
                 projection.Transpose();
             }
 
-            BuildMatrix();
+            BuildFrustum();
         }
 
         public void SetView(Matrix4 mat)
         {
             view = mat;
-            BuildMatrix();
+            BuildFrustum();
         }
 
         public void LookAt ( Vector3 eye, Vector3 target)
         {
+            EyePoint = new Vector3(eye);
             bool useMatrixMath = false;
 
             // compute forward vector and normalize
-            Vector3 dir = VectorHelper3.Subtract(target,eye);
-            dir.Normalize();
+            ViewDir = VectorHelper3.Subtract(target, eye);
+            ViewDir.Normalize();
 
             // compute left vector (by crossing forward with
             // world-up [0 0 1]T and normalizing)
-            RightVec.X = dir.Y;
-            RightVec.Y = -dir.X;
+            RightVec.X = ViewDir.Y;
+            RightVec.Y = -ViewDir.X;
             float rd = 1.0f / Trig.Hypot(RightVec.X, RightVec.Y);
             RightVec.X *= rd;
             RightVec.Y *= rd;
@@ -102,9 +107,9 @@ namespace Math3D
 
             // compute local up vector (by crossing right and forward,
             // normalization unnecessary)
-            Up.X = RightVec.Y * dir.Z;
-            Up.Y = -RightVec.X * dir.Z;
-            Up.Z = (RightVec.X * dir.Y) - (RightVec.Y * dir.X);
+            Up.X = RightVec.Y * ViewDir.Z;
+            Up.Y = -RightVec.X * ViewDir.Z;
+            Up.Z = (RightVec.X * ViewDir.Y) - (RightVec.Y * ViewDir.X);
 
             if (useMatrixMath)
                 view = Matrix4.LookAt(eye, target, Up);
@@ -121,9 +126,9 @@ namespace Math3D
                 MatrixHelper4.m5(ref view,Up.Y);
                 MatrixHelper4.m9(ref view,Up.Z);
 
-                MatrixHelper4.m2(ref view,-dir.X);
-                MatrixHelper4.m6(ref view,-dir.Y);
-                MatrixHelper4.m10(ref view,-dir.Z);
+                MatrixHelper4.m2(ref view, -ViewDir.X);
+                MatrixHelper4.m6(ref view, -ViewDir.Y);
+                MatrixHelper4.m10(ref view, -ViewDir.Z);
 
                 MatrixHelper4.m12(ref view,-(MatrixHelper4.m0(view) * eye.X +
                                    MatrixHelper4.m4(view) * eye.Y +
@@ -148,54 +153,51 @@ namespace Math3D
             MatrixHelper4.M32(ref billboard, MatrixHelper4.M23(view));
             MatrixHelper4.M33(ref billboard, MatrixHelper4.M33(view));
 
-         //   BuildMatrix();
-          //  CreatePlanes();
+            BuildFrustum();
+            
+        }
 
+        #region Protected Methods
+
+        protected void BuildFrustum()
+        {
+            // save off the composite matrix to the base
+            base.matrix = Matrix4.Mult(view,projection);
 
             // compute vectors of frustum edges
             float xs = (float)Math.Abs(1.0f / projection.Column0.X);
             float ys = (float)Math.Abs(1.0f / projection.Column1.Y);
-            Vector3[] edge = new Vector3[4];
+            edge = new Vector3[4];
 
-            edge[0] = dir - (xs * RightVec) - (ys * Up);
-            edge[1] = dir + (xs * RightVec) - (ys * Up);
-            edge[2] = dir + (xs * RightVec) + (ys * Up);
-            edge[3] = dir - (xs * RightVec) + (ys * Up);
+            edge[0] = ViewDir - (xs * RightVec) - (ys * Up);
+            edge[1] = ViewDir + (xs * RightVec) - (ys * Up);
+            edge[2] = ViewDir + (xs * RightVec) + (ys * Up);
+            edge[3] = ViewDir - (xs * RightVec) + (ys * Up);
 
             // make frustum planes
-            this.near.Normal = dir;
-            this.near.D = -Vector3.Dot(eye, dir);
+            this.near.Normal = ViewDir;
+            this.near.D = -Vector3.Dot(EyePoint, ViewDir);
 
-            makePlane(edge[0], edge[3], eye, this.left);
-            makePlane(edge[2], edge[1], eye, this.right);
-            makePlane(edge[1], edge[0], eye, this.top);
-            makePlane(edge[3], edge[2], eye, this.bottom);
+            makePlane(edge[0], edge[3], EyePoint, ref this.left);
+            makePlane(edge[2], edge[1], EyePoint, ref this.right);
+            makePlane(edge[1], edge[0], EyePoint, ref this.bottom);
+            makePlane(edge[3], edge[2], EyePoint, ref this.top);
 
             this.far.Normal = -near.Normal;
             this.far.D = near.D + farClip;
 
             CreateCorners();
         }
-//         0 1 2 3
-//         4 5 6 7
-//         8 9 10 11
-//         12 13 14 15
 
-        #region Protected Methods
-
-        void makePlane(Vector3 v1, Vector3 v2, Vector3 eye, Plane plane)
+        void makePlane(Vector3 v1, Vector3 v2, Vector3 eye, ref Plane plane)
         {
+            if (plane == null)
+                plane = new Plane();
+
             // get normal by crossing v1 and v2 and normalizing
             plane.Normal = Vector3.Cross(v1, v2);
             plane.Normal.Normalize();
             plane.D = -Vector3.Dot(eye, plane.Normal);
-        }
-
-        protected void BuildMatrix()
-        {
-            matrix = Matrix4.Mult(view,projection);
-            CreatePlanes();
-            CreateCorners();
         }
         #endregion
    }

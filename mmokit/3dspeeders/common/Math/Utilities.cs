@@ -66,6 +66,18 @@ namespace Math3D
         }
     }
 
+    public class PlaneHelper
+    {
+        // sets a plane from 3 points with out a copy
+        public static void Set ( ref Plane plane, Vector3 p1, Vector3 p2, Vector3 p3 )
+        {
+                        // get normal by crossing v1 and v2 and normalizing
+            plane.Normal = Vector3.Cross(p1, p2);
+            plane.Normal.Normalize();
+            plane.D = -Vector3.Dot(p3, plane.Normal);
+        }
+    }
+
     public class MatrixHelper4
     {
         // matrix grid methods
