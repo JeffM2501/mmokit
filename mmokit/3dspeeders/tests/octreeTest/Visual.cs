@@ -22,7 +22,7 @@ namespace octreeTest
     {
         Camera camera = new Camera();
         Grid grid = new Grid();
-        BoundingFrustum clipingFrustum = null;
+        VizableFrustum clipingFrustum = null;
         Vector3 clipFrustumPos = new Vector3();
         Vector3 clipFrustumHeading= new Vector3();
 
@@ -78,7 +78,7 @@ namespace octreeTest
             GL.Lightv(LightName.Light0, LightParameter.Diffuse, lightInfo);
             GL.Lightv(LightName.Light0, LightParameter.Specular, lightInfo);
 
-            camera.set(new Vector3(0, 0, 1), 0, 0);
+            camera.set(new Vector3(0, 0, 2), -5, 0);
 
             grid.gridSize = groundSize;
             grid.majorSpacing = 10.0f;
@@ -232,21 +232,41 @@ namespace octreeTest
         {
             GL.Disable(EnableCap.Lighting);
             printer.Begin();
+
+            GL.Color3(Color.DarkSlateGray);
+            GL.Begin(BeginMode.Quads);
+            GL.Vertex3(Width - 280, 70 + 65, -0.001f);
+            GL.Vertex3(Width - 2, 70 + 65, -0.001f);
+            GL.Vertex3(Width - 2, 10, -0.001f);
+            GL.Vertex3(Width - 280, 10,-0.001f);
+            GL.End();
+
+            GL.Color3(Color.Wheat);
+
+
             printer.Print(((int)(1 / e.Time)).ToString("F0"), sans_serif, Color.Wheat);
             printer.Print("Forward(" + camera.HeadingAngle().ToString() + ") " + camera.Heading().ToString(), sans_serif, Color.Wheat, new RectangleF(0, Height - 36, Width, Height), TextPrinterOptions.Default);
             printer.Print("Drawn Objects(" + drawnObject.ToString() + ")", sans_serif, Color.Wheat, new RectangleF(0, Height - 64, Width, Height - 36), TextPrinterOptions.Default);
 
-            printer.Print("ViewMatrix", small_serif, Color.Wheat, new RectangleF(Width-220, 10, Width, 20), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.Matrix.Row0.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 20, Width, 30), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.Matrix.Row1.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 30, Width, 40), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.Matrix.Row2.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 40, Width, 50), TextPrinterOptions.Default);
-            printer.Print(clipingFrustum.Matrix.Row3.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, 50, Width, 60), TextPrinterOptions.Default);
+            float offset = 10;
+            printer.Print("View Matrix", small_serif, Color.Wheat, new RectangleF(Width - 220, offset + 10, Width, offset + 20), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ViewMatrix.Row0.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 20, Width, offset + 30), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ViewMatrix.Row1.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 30, Width, offset + 40), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ViewMatrix.Row2.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 40, Width, offset + 50), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ViewMatrix.Row3.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 50, Width, offset + 60), TextPrinterOptions.Default);
+
+            offset = 70;
+            printer.Print("Projection Matrix", small_serif, Color.Wheat, new RectangleF(Width - 220, offset + 10, Width, offset + 20), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ProjectionMatrix.Row0.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 20, Width, offset + 30), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ProjectionMatrix.Row1.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 30, Width, offset + 40), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ProjectionMatrix.Row2.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 40, Width, offset + 50), TextPrinterOptions.Default);
+            printer.Print(clipingFrustum.ProjectionMatrix.Row3.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 50, Width, offset + 60), TextPrinterOptions.Default);
 
             GL.Begin(BeginMode.LineLoop);
             GL.Vertex2(Width - 280, 10);
             GL.Vertex2(Width - 2, 10);
-            GL.Vertex2(Width - 2, 65);
-            GL.Vertex2(Width - 280, 65);
+            GL.Vertex2(Width - 2, offset+65);
+            GL.Vertex2(Width - 280, offset + 65);
             GL.End();
 
             printer.End();
@@ -446,7 +466,7 @@ namespace octreeTest
 
             if (snapshotFrustum)
             {
-                clipingFrustum = new BoundingFrustum(camera.ViewFrustum.Matrix);
+                clipingFrustum = new VizableFrustum(camera.ViewFrustum);
                 clipFrustumPos = new Vector3(camera.EyePoint);
                 clipFrustumHeading = new Vector3(camera.Forward());
 
@@ -460,6 +480,7 @@ namespace octreeTest
 
             drawWorld();
 
+            GL.Clear(ClearBufferMask.DepthBufferBit);
             drawOverlay(e);
 
             SwapBuffers();

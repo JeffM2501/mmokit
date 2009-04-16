@@ -25,6 +25,10 @@ namespace Cameras
 
         float aspect = 1;
         float fov = 45f;
+
+        int width = 1;
+        int height = 1;
+
         public float FOV
         {
             get { return fov; }
@@ -46,7 +50,7 @@ namespace Cameras
         }
 
         VizableFrustum frustum = new VizableFrustum();
-        public BoundingFrustum ViewFrustum
+        public VizableFrustum ViewFrustum
         {
             get { return frustum; }
         }
@@ -94,33 +98,38 @@ namespace Cameras
             return forward;
         }
 
-        void updatePerspective ( )
+        void updatePerspective ()
         {
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
-            Glu.Perspective((double)fov, (double)aspect, (double)hither, (double)yon);
-            frustum.ProjectionMatrix = Matrix4.Perspective(fov, aspect, hither, yon);
+            frustum.SetProjection(fov, aspect, hither, yon,width, height);
+            GL.MultTransposeMatrix(ref frustum.projection);
         }
 
-        public void Resize(Int32 width, Int32 height)
+        public void Resize(Int32 _width, Int32 _height)
         {
+            width = _width;
+            height = _height;
+
             aspect = width/(float)height;
             updatePerspective();
         }
 
         public void Execute()
         {
+            bool useFrustum = true;
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
-
-// 			GL.Rotate(tilt, 1.0f, 0.0f, 0.0f);			// pops us to the tilt
-//             GL.Rotate(-spin+90.0f, 0.0f, 1.0f, 0.0f);			// gets us on our rot
-//             GL.Translate(-position.X, -position.Z, position.Y);
-// 
-//             GL.Rotate(-90,1,0,0);
-
-            frustum.ViewMatrix = Matrix4.LookAt(position, position + Forward(), up);
-            Glu.LookAt(position, position + Forward(), up);
+            frustum.LookAt(position, position + Forward());
+            if (useFrustum)
+                GL.MultTransposeMatrix(ref frustum.view);
+            else
+            {
+                Glu.LookAt(position, position + Forward(), up);
+                Matrix4 matrix = new Matrix4();
+                GL.GetFloat(GetPName.TransposeModelviewMatrix, out matrix.Row0.X);
+                frustum.SetView(matrix);
+            }
         }
     }
 }
