@@ -67,6 +67,7 @@ namespace Math3D
 
         #region Public Methods
 
+        public static BoundingBox Empty = new BoundingBox(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
 
         public ContainmentType Contains(BoundingBox box)
         {
@@ -253,6 +254,22 @@ namespace Math3D
         public static void CreateFromSphere(ref BoundingSphere sphere, out BoundingBox result)
         {
             result = BoundingBox.CreateFromSphere(sphere);
+        }
+
+
+        public static BoundingBox CreateFromCylinderXY(BoundingCylinderXY cylinder)
+        {
+            Vector3 vector1 = new Vector3(cylinder.Radius, cylinder.Radius, cylinder.Radius);
+            BoundingBox box = new BoundingBox(new Vector3(cylinder.Center) - vector1, new Vector3(cylinder.Center) + vector1);
+            box.Max.Z = cylinder.MaxZ;
+            box.Min.Z = cylinder.MinZ;
+            return box;
+        }
+
+
+        public static void CreateFromCylinderXY(ref BoundingCylinderXY cylinder, out BoundingBox result)
+        {
+            result = BoundingBox.CreateFromCylinderXY(cylinder);
         }
 
 

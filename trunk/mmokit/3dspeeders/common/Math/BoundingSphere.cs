@@ -66,6 +66,7 @@ namespace Math3D
 
         #region Public Methods
 
+        public static BoundingSphere Empty = new BoundingSphere(new Vector3(0, 0, 0), 0);
 
         public ContainmentType Contains(BoundingBox box)
         {

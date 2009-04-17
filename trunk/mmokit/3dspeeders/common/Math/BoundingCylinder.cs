@@ -15,20 +15,21 @@ SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 using OpenTK.Math;
 
 namespace Math3D
 {
     [Serializable]
-    public struct BoundingCylinderXY // : IEquatable<BoundingBox>
+    public struct BoundingCylinderXY  : IEquatable<BoundingBox>
     {
         #region Public Fields
 
-        Vector2 Center;
-        float MaxZ;
-        float MinZ;
-        float Radius;
+        public Vector2 Center;
+        public float MaxZ;
+        public float MinZ;
+        public float Radius;
 
         #endregion Public Fields
 
@@ -47,17 +48,9 @@ namespace Math3D
 
         #endregion Public Constructors
 
-        #region private Methods
-
-        bool pointInXY (float X, float Y)
-        {
-            float distSquare = (X - Center.X) * (X - Center.X) + (Y - Center.Y) * (Y - Center.Y);
-            return distSquare <= Radius * Radius;
-        }
-
-        #endregion private Constructors
-
         #region Public Methods
+
+        public static BoundingCylinderXY Empty = new BoundingCylinderXY(new Vector3(0, 0, 0), 0, 0);
 
         public ContainmentType Contains(BoundingBox box)
         {
@@ -80,6 +73,49 @@ namespace Math3D
             return ContainmentType.Intersects;
         }
 
+        public bool Equals(BoundingCylinderXY other)
+        {
+            return this.Center == other.Center && this.Radius == other.Radius && this.MinZ == other.MinZ && this.MaxZ == other.MaxZ;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is BoundingCylinderXY)
+                return this.Equals((BoundingCylinderXY)obj);
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Center.GetHashCode() + this.Radius.GetHashCode() + this.MaxZ.GetHashCode() + this.MinZ.GetHashCode();
+        }
+
+        public static bool operator ==(BoundingCylinderXY a, BoundingCylinderXY b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(BoundingCylinderXY a, BoundingCylinderXY b)
+        {
+            return !a.Equals(b);
+        }
+
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.CurrentCulture, "{{Center:{0} Radius:{1} MinZ:{2} MaxZ:{3}}}", this.Center.ToString(), this.Radius.ToString(),this.MinZ.ToString(),this.MaxZ.ToString());
+        }
+
         #endregion Public Methods
+
+        #region Private Methods
+
+        bool pointInXY(float X, float Y)
+        {
+            float distSquare = (X - Center.X) * (X - Center.X) + (Y - Center.Y) * (Y - Center.Y);
+            return distSquare <= Radius * Radius;
+        }
+
+        #endregion Private Methods
     }
 }
