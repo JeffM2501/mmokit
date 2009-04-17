@@ -158,6 +158,15 @@ namespace Math3D
             return sphere.Intersects(this);
         }
 
+        public PlaneIntersectionType Intersects(Vector3 point)
+        {
+            float dist = ClassifyPoint(ref point, ref this);
+            if (dist > 0)
+                return PlaneIntersectionType.Front;
+            if (dist < 0)
+                return PlaneIntersectionType.Back;
+            return PlaneIntersectionType.Intersecting;
+        }
 
         public void Intersects(ref BoundingSphere sphere, out PlaneIntersectionType result)
         {
