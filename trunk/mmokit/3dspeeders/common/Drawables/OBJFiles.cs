@@ -164,6 +164,8 @@ namespace Drawables.Models.OBJ
         {
             Model model = new Model();
 
+            model.name = Path.GetFileNameWithoutExtension(file.FullName);
+
             FileStream fs = file.OpenRead();
             StreamReader sr = new StreamReader(fs);
 

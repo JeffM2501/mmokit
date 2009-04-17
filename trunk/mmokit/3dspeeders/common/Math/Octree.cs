@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml;
+using System.Xml.Serialization;
 
 using OpenTK.Math;
 
@@ -12,11 +14,18 @@ namespace Math3D
 
     public class OctreeLeaf
     {
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         const int maxDepth = 40;
+       
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         const bool doFastOut = true;
 
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         int maxObjects = 8;
+        
+        [System.Xml.Serialization.XmlIgnoreAttribute]
         public List<OctreeObject> containedObjects = new List<OctreeObject>();
+       
         public List<OctreeLeaf> children = null;
         public BoundingBox bounds;
 

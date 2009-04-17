@@ -17,7 +17,6 @@ namespace Drawables
         public static int FirstPass = 0;
         public static int LastPass = 1000;
 
-
         Dictionary<int, Dictionary<Material, List<ExecuteCallback>>> passes = new Dictionary<int, Dictionary<Material, List<ExecuteCallback>>>();
 
         public void addItem(Material mat, ExecuteCallback callback)

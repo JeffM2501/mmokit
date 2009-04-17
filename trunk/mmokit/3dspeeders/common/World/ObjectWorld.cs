@@ -4,6 +4,7 @@ using System.Xml;
 using System.Xml.Serialization;
 
 using Math3D;
+using OpenTK.Math;
 
 namespace World
 {
@@ -13,6 +14,10 @@ namespace World
         public string ObjectName = string.Empty;
         public object Tag;
         public List<string> Attributes = new List<string>();
+
+        public Vector3 postion = new Vector3();
+        public Vector3 rotation = new Vector3();
+        public string Skin = string.Empty;
     }
 
     public class ObjectWorld : Octree
