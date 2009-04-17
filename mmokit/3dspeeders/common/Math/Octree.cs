@@ -7,16 +7,15 @@ namespace Math3D
 {
     public class OctreeObject
     {
-        public BoundingBox bounds = new BoundingBox(new Vector3(), new Vector3());
-
+        public BoundingBox bounds = BoundingBox.Empty;
     }
 
     public class OctreeLeaf
     {
-        const int maxDepth = 15;
+        const int maxDepth = 40;
         const bool doFastOut = true;
 
-        int maxObjects = 2;
+        int maxObjects = 8;
         public List<OctreeObject> containedObjects = new List<OctreeObject>();
         public List<OctreeLeaf> children = null;
         public BoundingBox bounds;
