@@ -10,7 +10,7 @@ using OpenTK.Math;
 using OpenTK.Input;
 using OpenTK.Platform;
 
-using Cameras;
+using Drawables.Cameras;
 using Grids;
 using World;
 using Math3D;

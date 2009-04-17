@@ -7,7 +7,7 @@ using OpenTK.Graphics;
 using OpenTK.Math;
 using Math3D;
 
-namespace Cameras
+namespace Drawables.Cameras
 {
     public class Camera
     {
