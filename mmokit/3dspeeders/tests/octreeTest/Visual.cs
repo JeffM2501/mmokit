@@ -21,21 +21,23 @@ namespace octreeTest
     public class Visual : GameWindow
     {
         Camera camera = new Camera();
-        Grid grid = new Grid();
-        VizableFrustum clipingFrustum = null;
-        Vector3 clipFrustumPos = new Vector3();
-        Vector3 clipFrustumHeading= new Vector3();
+        
+        DebugableVisibleFrustum clipingFrustum = null;
+        BoundingBox clippingBox = new BoundingBox();
 
-        OctreeWorld world = new OctreeWorld();
+        DebugableOctreeWorld world = new DebugableOctreeWorld();
 
         Dictionary<OctreeLeaf, GLColor> treeColorMap = new Dictionary<OctreeLeaf, GLColor>();
 
-        float groundSize = 100.0f;
-
-        bool showOctreeObjects = false;
+        bool drawAll = false;
+        bool drawTreeNodes = false;
         bool cullToFrustum = false;
+        bool snapshotFrustum = true;
+        bool clipToCamera = false;
 
-        int drawnObject = 0;
+        bool exactCulling = true;
+
+        int drawnObjects = 0;
 
         float[] viewMat = new float[16];
 
@@ -45,7 +47,6 @@ namespace octreeTest
         Font sans_serif = new Font(FontFamily.GenericSansSerif, 16.0f);
         Font small_serif = new Font(FontFamily.GenericSansSerif, 8.0f);
 
-        bool snapshotFrustum = true;
 
         public Visual() : base(1024,550)
         {
@@ -80,33 +81,13 @@ namespace octreeTest
 
             camera.set(new Vector3(1, 1, 2), 0, 0);
 
-            grid.gridSize = groundSize;
-            grid.majorSpacing = 10.0f;
-            grid.minorSpacing = 2.0f;
-            grid.alpha = 0.5f;
+            world.Setup(100.0f, 10.0f, 2.0f );
 
-            bool fixedMap = false;
-
-            if (!fixedMap)
-            {
-                int boxes = 125;// new Random().Next() % 10 + 100;
-                for (int i = 0; i < boxes; i++)
-                    world.Add(new BoxObject(groundSize));
-                world.BuildTree(new BoundingBox(new Vector3(-groundSize, -groundSize, -1), new Vector3(groundSize, groundSize, 50)));
-            }
-            else
-            {
-                float step = 25;
-                Vector3 size = new Vector3(0.5f, 0.5f, 0.5f);
-                for (float x = -groundSize + size.X; x < groundSize - size.X; x += step)
-                {
-                    for (float y = -groundSize + size.Y; y < groundSize - size.Y; y += step)
-                        world.Add(new BoxObject(new Vector3(x, y, 0.5f), size, 0));
-                }
-
-                world.BuildTree(new BoundingBox(new Vector3(-groundSize, -groundSize, -1), new Vector3(groundSize, groundSize, size.Z * 5)));
-            }
-
+            int boxes = new Random().Next() % 10 + 100;
+            for (int i = 0; i < boxes; i++)
+                world.Add(new BoxObject(world.Size));
+            world.FinalizeWorld();
+          
             this.Mouse.Move += new MouseMoveEventHandler(Mouse_Move);
         }
 
@@ -145,16 +126,41 @@ namespace octreeTest
                 camera.turn(turnSpeed, 0);
 
             if (Keyboard[Key.F1])
-                showOctreeObjects = true;
+                drawAll = true;
             if (Keyboard[Key.F2])
-                showOctreeObjects = false;
+                drawAll = false;
 
             if (Keyboard[Key.F3])
+            {
+                if (clipToCamera)
+                    snapshotFrustum = true;
+
                 cullToFrustum = true;
+                clipToCamera = false;
+            }
             if (Keyboard[Key.F4])
+            {
                 cullToFrustum = false;
+                clipToCamera = false;
+            }
+            if (Keyboard[Key.F8])
+            {
+                cullToFrustum = true;
+                clipToCamera = true;
+            }
+
             if (Keyboard[Key.F5])
                 snapshotFrustum = true;
+
+            if (Keyboard[Key.F6])
+                drawTreeNodes = true;
+            if (Keyboard[Key.F7])
+                drawTreeNodes = false;
+
+            if (Keyboard[Key.F9])
+                exactCulling = true;
+            if (Keyboard[Key.F10])
+                exactCulling = false;
 
             Vector3 forward = new Vector3(camera.Heading());
             Vector3 leftward = new Vector3(forward);
@@ -211,23 +217,6 @@ namespace octreeTest
                 Exit();
         }
 
-        protected void drawGround()
-        {
-            GL.Color3(System.Drawing.Color.LightGreen);
-
-            GL.Begin(BeginMode.Quads);
-            GL.Normal3(0, 0, 1);
-            GL.Vertex3(100, 100, -0.01f);
-            GL.Vertex3(-100, 100, -0.01f);
-            GL.Vertex3(-100, -100, -0.01f);
-            GL.Vertex3(100, -100, -0.01f);
-            GL.End();
-
-            GL.Disable(EnableCap.Lighting);
-            grid.Exectute();
-            GL.Enable(EnableCap.Lighting);
-        }
-
         void drawOverlay(RenderFrameEventArgs e)
         {
             GL.Disable(EnableCap.Lighting);
@@ -239,13 +228,55 @@ namespace octreeTest
             GL.Vertex3(Width - 2, 70 + 70, -0.001f);
             GL.Vertex3(Width - 2, 10, -0.001f);
             GL.Vertex3(Width - 285, 10,-0.001f);
+
+
+            GL.Vertex3(0, Height - 48, -0.001f);
+            GL.Vertex3(Width, Height - 48, -0.001f);
+            GL.Vertex3(Width, Height - 62, -0.001f);
+            GL.Vertex3(0, Height - 62, -0.001f);
+
             GL.End();
 
             GL.Color3(Color.Wheat);
 
             printer.Print(((int)(1 / e.Time)).ToString("F0"), sans_serif, Color.Wheat);
-            printer.Print("Forward(" + camera.HeadingAngle().ToString() + ") " + camera.Heading().ToString(), sans_serif, Color.Wheat, new RectangleF(0, Height - 36, Width, Height), TextPrinterOptions.Default);
-            printer.Print("Drawn Objects(" + drawnObject.ToString() + ")", sans_serif, Color.Wheat, new RectangleF(0, Height - 64, Width, Height - 36), TextPrinterOptions.Default);
+            printer.Print("Drawn Objects(" + drawnObjects.ToString() + ")", sans_serif, Color.Wheat, new RectangleF(0, Height - 32, Width, Height), TextPrinterOptions.Default);
+            string modes = string.Empty;
+            if (drawAll)
+                modes += "*";
+            modes += "F1=DrawAll ";
+            if (!drawAll)
+                modes += "*";
+            modes += "F2=DrawVis ";
+
+            if (cullToFrustum && !clipToCamera)
+                modes += "*";
+            modes += "F3=CullFrustum ";
+            if (!cullToFrustum && !clipToCamera)
+                modes += "*";
+            modes += "F4=CullBox ";
+
+            modes += "F5=SnapFrustumToCam ";
+
+            if (drawTreeNodes)
+                modes += "*";
+            modes += "F6=DrawTreeNodes ";
+            if (!drawTreeNodes)
+                modes += "*";
+            modes += "F7=HideTreeNodes ";
+
+            if (cullToFrustum && clipToCamera)
+                modes += "*";
+            modes += "F8=ClipToCamera ";
+
+            if (exactCulling)
+                modes += "*";
+            modes += "F9=ExactCulling ";
+            if (!exactCulling)
+                modes += "*";
+            modes += "F10=FastCulling ";
+
+            printer.Print(modes, small_serif, Color.Wheat, new RectangleF(0, Height - 64, Width, Height - 32), TextPrinterOptions.Default);
 
             float offset = 10;
             printer.Print("View Matrix", small_serif, Color.Wheat, new RectangleF(Width - 220, offset + 10, Width, offset + 20), TextPrinterOptions.Default);
@@ -261,6 +292,7 @@ namespace octreeTest
             printer.Print(clipingFrustum.ProjectionMatrix.Row2.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 40, Width, offset + 50), TextPrinterOptions.Default);
             printer.Print(clipingFrustum.ProjectionMatrix.Row3.ToString(), small_serif, Color.Wheat, new RectangleF(Width - 280, offset + 50, Width, offset + 60), TextPrinterOptions.Default);
 
+            GL.LineWidth(1f);
             GL.Begin(BeginMode.LineLoop);
             GL.Vertex2(Width - 285, 10);
             GL.Vertex2(Width - 2, 10);
@@ -268,76 +300,43 @@ namespace octreeTest
             GL.Vertex2(Width - 285, offset + 70);
             GL.End();
 
+            GL.Begin(BeginMode.LineLoop);
+            GL.Vertex2(0, Height - 48);
+            GL.Vertex2(Width, Height - 48);
+            GL.Vertex2(Width, Height - 62);
+            GL.Vertex2(0, Height - 62);
+            GL.End();
+
             printer.End();
-        }
-
-        void drawBox (BoxObject box)
-        {
-            if (box != null)
-            {
-                GL.PushMatrix();
-
-                GL.Translate(box.postion);
-                GL.Rotate(box.rotation, 0, 0, 1);
-
-                GL.Begin(BeginMode.Quads);
-
-                // top
-                GL.Normal3(0, 0, 1.0f);
-                GL.Vertex3(box.size.X, box.size.Y, box.size.Z);
-                GL.Vertex3(-box.size.X, box.size.Y, box.size.Z);
-                GL.Vertex3(-box.size.X, -box.size.Y, box.size.Z);
-                GL.Vertex3(box.size.X, -box.size.Y, box.size.Z);
-
-                // bottom
-                GL.Normal3(0, 0, 1.0f);
-                GL.Vertex3(box.size.X, box.size.Y, -box.size.Z);
-                GL.Vertex3(box.size.X, -box.size.Y, -box.size.Z);
-                GL.Vertex3(-box.size.X, -box.size.Y, -box.size.Z);
-                GL.Vertex3(-box.size.X, box.size.Y, -box.size.Z);
-
-                //X+
-                GL.Normal3(1.0f, 0, 0);
-                GL.Vertex3(box.size.X, box.size.Y, box.size.Z);
-                GL.Vertex3(box.size.X, -box.size.Y, box.size.Z);
-                GL.Vertex3(box.size.X, -box.size.Y, -box.size.Z);
-                GL.Vertex3(box.size.X, box.size.Y, -box.size.Z);
-
-                //X-
-                GL.Normal3(-1.0f, 0, 0);
-                GL.Vertex3(-box.size.X, box.size.Y, box.size.Z);
-                GL.Vertex3(-box.size.X, box.size.Y, -box.size.Z);
-                GL.Vertex3(-box.size.X, -box.size.Y, -box.size.Z);
-                GL.Vertex3(-box.size.X, -box.size.Y, box.size.Z);
-
-                //Y+
-                GL.Normal3(0, 1.0f, 0);
-                GL.Vertex3(box.size.X, box.size.Y, box.size.Z);
-                GL.Vertex3(box.size.X, box.size.Y, -box.size.Z);
-                GL.Vertex3(-box.size.X, box.size.Y, -box.size.Z);
-                GL.Vertex3(-box.size.X, box.size.Y, box.size.Z);
-
-                //Y-
-                GL.Normal3(0, -1.0f, 0);
-                GL.Vertex3(box.size.X, -box.size.Y, box.size.Z);
-                GL.Vertex3(-box.size.X, -box.size.Y, box.size.Z);
-                GL.Vertex3(-box.size.X, -box.size.Y, -box.size.Z);
-                GL.Vertex3(box.size.X, -box.size.Y, -box.size.Z);
-
-                GL.End();
-
-                GL.PopMatrix();
-            }
         }
 
         void drawOctreeNodes (OctreeLeaf leaf)
         {
+            GL.LineWidth(1);
+
             if (!treeColorMap.ContainsKey(leaf))
-                treeColorMap.Add(leaf, new GLColor(FloatRand.RandInRange(0, 1), FloatRand.RandInRange(0, 1), FloatRand.RandInRange(0, 1), 0.75f));
+                treeColorMap.Add(leaf, new GLColor(FloatRand.RandInRange(0, 0.5f), FloatRand.RandInRange(0, 1), FloatRand.RandInRange(0, 1), 0.75f));
 
             treeColorMap[leaf].glColor();
 
-            drawBox(new BoxObject(leaf.bounds));
+            if (cullToFrustum)
+            {
+                if (clipingFrustum.Intersects(leaf.bounds))
+                {
+                    GL.Color4(1f, 0, 0, 0.75f);
+                    GL.LineWidth(3);
+                }
+            }
+            else
+            {
+                if (clippingBox.Intersects(leaf.bounds))
+                {
+                    GL.Color4(1f, 0, 0, 0.75f);
+                    GL.LineWidth(3);
+                }
+            }
+
+            new BoxObject(leaf.bounds).draw();
             if (leaf.children != null)
             {
                 foreach (OctreeLeaf l in leaf.children)
@@ -345,200 +344,45 @@ namespace octreeTest
             }
         }
 
-        void drawEyePoint()
-        {
-            // put a sphere at the eye point and draw the axes
-            GL.Color4(0.25f, 0.25f, 1f, 0.5f); 
-            Glu.Sphere(Glu.NewQuadric(), 0.25f, 6, 6);
-            
-            GL.Disable(EnableCap.Lighting);
-
-            GL.LineWidth(2.0f);
-            GL.Begin(BeginMode.Lines);
-
-            // the "up" vector
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(clipingFrustum.Up);
-            GL.Vertex3(clipingFrustum.Up);
-            GL.Vertex3(clipingFrustum.Up * 0.75f + clipingFrustum.RightVec*0.35f);
-
-            // the "right" vector
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(clipingFrustum.RightVec);
-            GL.Vertex3(clipingFrustum.RightVec);
-            GL.Vertex3(clipingFrustum.RightVec * 0.75f + clipingFrustum.Up * 0.25f);
-
-
-            // the "forward" vector
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(clipingFrustum.ViewDir * 3f);
-            GL.Vertex3(clipingFrustum.ViewDir * 3f);
-            GL.Vertex3(clipingFrustum.ViewDir * 2.75f + clipingFrustum.Up * 0.125f);
-            GL.Vertex3(clipingFrustum.ViewDir * 3f);
-            GL.Vertex3(clipingFrustum.ViewDir * 2.75f + clipingFrustum.Up * -0.125f);
-
-            GL.End();
-
-            GL.Enable(EnableCap.Lighting);
-        }
-
-        void drawViewFrustum()
-        {
-            GL.Disable(EnableCap.Lighting);
-
-            float endViewAlpha = 0.5f;
-            float startViewAlpha = 1f;
-
-            GL.LineWidth(1.0f);
-            // draw the edge vectors
-            GL.Begin(BeginMode.Lines);
-                foreach(Vector3 e in clipingFrustum.edge)
-                {
-                    GL.Color4(1f, 1f, 1f, startViewAlpha);
-                    GL.Vertex3(0, 0, 0);
-                    GL.Color4(1f, 1f, 1f, endViewAlpha);
-                    GL.Vertex3(e * clipingFrustum.farClip);
-                }     
-            GL.End();
-
-            GL.LineWidth(3.0f);
-            // compute the view plane points for normal drawing
-            Vector3 leftPoint = (clipingFrustum.edge[0] + clipingFrustum.edge[3])*2;
-            Vector3 rightPoint = (clipingFrustum.edge[1] + clipingFrustum.edge[2])*2;
-            Vector3 topPoint = (clipingFrustum.edge[3] + clipingFrustum.edge[2])*2;
-            Vector3 bottomPoint = (clipingFrustum.edge[0] + clipingFrustum.edge[1]) * 2;
-        
-            GL.Begin(BeginMode.Lines);
-
-            GL.Color4(1f, 0f, 0f, 0.5f);
-            GL.Vertex3(leftPoint);
-            GL.Vertex3(leftPoint + clipingFrustum.Left.Normal);
-
-            GL.Color4(0f, 1f, 0f, 0.5f);
-            GL.Vertex3(rightPoint);
-            GL.Vertex3(rightPoint + clipingFrustum.Right.Normal);
-
-            GL.Color4(0f, 0f, 1f, 0.5f);
-            GL.Vertex3(topPoint);
-            GL.Vertex3(topPoint + clipingFrustum.Top.Normal);
-
-            GL.Color4(1f, 0f, 1f, 0.5f);
-            GL.Vertex3(bottomPoint);
-            GL.Vertex3(bottomPoint + clipingFrustum.Bottom.Normal);
-
-            GL.Color4(1f, 1f, 1f, endViewAlpha);
-            GL.Vertex3(clipingFrustum.ViewDir * clipingFrustum.farClip);
-            GL.Vertex3(clipingFrustum.ViewDir * clipingFrustum.farClip + clipingFrustum.Far.Normal);
-            GL.End();
-
-            GL.Begin(BeginMode.LineLoop);
-            GL.Color4(0.5f, 0.5f, 0.5f, endViewAlpha);
-            foreach (Vector3 e in clipingFrustum.edge)
-                GL.Vertex3(e * clipingFrustum.farClip);
-            GL.End();
-
-            GL.PushMatrix();
-            GL.Color4(1f, 1f, 1f, startViewAlpha);
-            GL.Translate(clipingFrustum.ViewDir * clipingFrustum.nearClip);
-            Glu.Sphere(Glu.NewQuadric(), 0.125f, 3, 2);
-            GL.PopMatrix();
-
-            GL.PushMatrix();
-            GL.Color4(0.5f, 0.5f, 0.5f, endViewAlpha);
-            GL.Translate(clipingFrustum.ViewDir * clipingFrustum.farClip);
-            Glu.Sphere(Glu.NewQuadric(), 0.125f, 3, 2);
-            GL.PopMatrix();
-
-            GL.Enable(EnableCap.Lighting);
-        }
-
-        void drawFrustum ()
-        {
-            GL.PushMatrix();
-            //move to the eye point
-            GL.Translate(clipingFrustum.EyePoint);
-
-            drawEyePoint();
-
-            drawViewFrustum();
-           
-            GL.PopMatrix();
-
-            GL.Enable(EnableCap.Lighting);
-        }
-
         void drawWorld()
         {
-            GL.Enable(EnableCap.Lighting);
-            GL.Enable(EnableCap.Light0);
+            List<OctreeObject> vis = new List<OctreeObject>();
 
             if (cullToFrustum)
             {
-                if (showOctreeObjects)
+                world.ObjectsInFrustum(vis, clipingFrustum, exactCulling);
+                if (!clipToCamera)
                 {
-                    GL.Color3(System.Drawing.Color.White);
-                    drawnObject = world.objects.Count;
-                    foreach (OctreeWorldObject o in world.objects)
-                        drawBox(o as BoxObject);
+                    // draw the frustum
+                    GL.Color4(0.0f, 0.35f, 0.6f, 0.6f);
+                    clipingFrustum.drawFrustum();
                 }
-
-                List<OctreeObject> vis = new List<OctreeObject>();
-                world.ObjectsInFrustum(vis, clipingFrustum);
-                drawnObject = vis.Count;
-
-                GL.Color3(System.Drawing.Color.Red);
-
-                GL.Enable(EnableCap.PolygonOffsetFill);
-                GL.PolygonOffset(-1.0f, 1.0f);
-                foreach (OctreeObject o in vis)
-                    drawBox(o as BoxObject);
-                GL.Disable(EnableCap.PolygonOffsetFill);
-
-                // draw the frustum
-                GL.Color4(0.0f, 0.35f, 0.6f, 0.6f);
-
-                drawFrustum();
             }
             else
             {
-                GL.Color3(System.Drawing.Color.White);
-                drawnObject = world.objects.Count;
-                foreach (OctreeWorldObject o in world.objects)
-                    drawBox(o as BoxObject);
+                Vector3 boundSize = new Vector3(5, 5, 5);
+                clippingBox = new BoundingBox(boundSize * -1.0f + cullBoxPos, boundSize + cullBoxPos);
+                world.ObjectsInBoundingBox(vis, clippingBox, exactCulling);
 
-                if (showOctreeObjects)
-                {
-                    List<OctreeObject> vis = new List<OctreeObject>();
-
-                    Vector3 boundSize = new Vector3(5,5,5);
-
-                    BoundingBox visBox = new BoundingBox(boundSize * -1.0f + cullBoxPos, boundSize + cullBoxPos);
-                    world.ObjectsInBoundingBox(vis, visBox);
-                    drawnObject = vis.Count;
-
-                    GL.Color3(System.Drawing.Color.Red);
-
-                    GL.Enable(EnableCap.PolygonOffsetFill);
-                    GL.PolygonOffset(-1.0f, 1.0f);
-                    foreach (OctreeObject o in vis)
-                        drawBox(o as BoxObject);
-                    GL.Disable(EnableCap.PolygonOffsetFill);
-
-                    GL.Color4(0.0f, 0.25f, 0.5f, 0.5f);
-                    drawBox(new BoxObject(visBox));
-
-                    GL.Disable(EnableCap.DepthTest);
-                    GL.Disable(EnableCap.CullFace);
-                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                    drawOctreeNodes(world);
-                    GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill);
-                    GL.Enable(EnableCap.DepthTest);
-                    GL.Enable(EnableCap.CullFace);
-
-                    GL.Color4(1.0f,1.0f,1.0f,1.0f);
-                }
+                GL.DepthMask(false);
+                GL.Color4(0.0f, 0.25f, 0.5f, 0.5f);
+                new BoxObject(clippingBox).draw();
+                GL.DepthMask(true);
             }
 
+            drawnObjects = world.draw(vis, drawAll);
+
+            if (drawTreeNodes)
+            {
+                GL.Disable(EnableCap.DepthTest);
+                GL.Disable(EnableCap.CullFace);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                drawOctreeNodes(world);
+                GL.PolygonMode(MaterialFace.Front, PolygonMode.Fill);
+                GL.Enable(EnableCap.DepthTest);
+                GL.Enable(EnableCap.CullFace);
+            }
+            GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
         }
 
         public override void OnRenderFrame(RenderFrameEventArgs e)
@@ -552,18 +396,16 @@ namespace octreeTest
 
             if (snapshotFrustum)
             {
-                clipingFrustum = camera.SnapshotFrusum();
-
-                clipFrustumPos = new Vector3(camera.EyePoint);
-                clipFrustumHeading = new Vector3(camera.Forward());
-
+                clipingFrustum = new DebugableVisibleFrustum(camera.SnapshotFrusum());
                 snapshotFrustum = false;
             }
+            else if (clipToCamera && cullToFrustum)
+                clipingFrustum = new DebugableVisibleFrustum(camera.ViewFrustum);
 
             GL.Enable(EnableCap.Light0);
             GL.Lightv(LightName.Light0, LightParameter.Position, new Vector4(10, 15, 10, 1.0f));
 
-            drawGround();
+            world.drawGround();
 
             drawWorld();
 
@@ -571,6 +413,86 @@ namespace octreeTest
             drawOverlay(e);
 
             SwapBuffers();
+        }
+    }
+
+    public class DebugableOctreeWorld : OctreeWorld
+    {
+        Grid grid = new Grid();
+        float groundSize = 100f;
+
+        public void FinalizeWorld ()
+        {
+            BuildTree(new BoundingBox(new Vector3(-groundSize, -groundSize, -1), new Vector3(groundSize, groundSize, 50)));
+        }
+
+        public float Size
+        {
+            get { return groundSize; }
+        }
+
+        public void Setup ( float ground, float majorSpace, float minorSpace )
+        {
+            groundSize = ground;
+
+            grid.gridSize = groundSize;
+            grid.majorSpacing = majorSpace;
+            grid.minorSpacing = minorSpace;
+            grid.alpha = 0.5f;
+        }
+
+        public void drawGround()
+        {
+            GL.Color3(System.Drawing.Color.LightGreen);
+
+            GL.Begin(BeginMode.Quads);
+            GL.Normal3(0, 0, 1);
+            GL.Vertex3(groundSize, groundSize, -0.01f);
+            GL.Vertex3(-groundSize, groundSize, -0.01f);
+            GL.Vertex3(-groundSize, -groundSize, -0.01f);
+            GL.Vertex3(groundSize, -groundSize, -0.01f);
+            GL.End();
+
+            GL.Disable(EnableCap.Lighting);
+            grid.Exectute();
+            GL.Enable(EnableCap.Lighting);
+        }
+
+        public int draw ( List<OctreeObject> visList, bool drawNonVis )
+        {
+            GL.Enable(EnableCap.Lighting);
+            GL.Enable(EnableCap.Light0);
+
+            // draw what is vis
+            GL.Color3(System.Drawing.Color.Red);
+
+            GL.Enable(EnableCap.PolygonOffsetFill);
+            GL.PolygonOffset(-5.0f, 1.0f);
+
+            foreach (OctreeObject o in visList)
+            {
+                BoxObject box = o as BoxObject;
+                if (box != null)
+                    box.draw();
+            }
+
+            GL.Disable(EnableCap.PolygonOffsetFill);
+
+            if (drawNonVis)
+            {
+                GL.Color3(System.Drawing.Color.White);
+                foreach( OctreeWorldObject o in objects )
+                {
+                    OctreeObject oc = o as OctreeObject;
+                    if (!visList.Contains(oc))
+                    {
+                        BoxObject box = o as BoxObject;
+                        if (box != null)
+                            box.draw();
+                    }
+                }
+            }
+            return visList.Count;
         }
     }
 
@@ -619,9 +541,266 @@ namespace octreeTest
             : base()
         {
             size = box.Max - box.Min;
-            postion = size * 0.5f;
+            size *= 0.5f;
+            postion = box.Min + size;
             rotation = 0;
             bounds = new BoundingBox(box.Min, box.Max);
+        }
+
+        public void draw()
+        {
+            GL.PushMatrix();
+
+            GL.Translate(postion);
+            GL.Rotate(rotation, 0, 0, 1);
+
+            GL.Begin(BeginMode.Quads);
+
+            // top
+            GL.Normal3(0, 0, 1.0f);
+            GL.Vertex3(size.X, size.Y, size.Z);
+            GL.Vertex3(-size.X, size.Y, size.Z);
+            GL.Vertex3(-size.X, -size.Y, size.Z);
+            GL.Vertex3(size.X, -size.Y, size.Z);
+
+            // bottom
+            GL.Normal3(0, 0, 1.0f);
+            GL.Vertex3(size.X, size.Y, -size.Z);
+            GL.Vertex3(size.X, -size.Y, -size.Z);
+            GL.Vertex3(-size.X, -size.Y, -size.Z);
+            GL.Vertex3(-size.X, size.Y, -size.Z);
+
+            //X+
+            GL.Normal3(1.0f, 0, 0);
+            GL.Vertex3(size.X, size.Y, size.Z);
+            GL.Vertex3(size.X, -size.Y, size.Z);
+            GL.Vertex3(size.X, -size.Y, -size.Z);
+            GL.Vertex3(size.X, size.Y, -size.Z);
+
+            //X-
+            GL.Normal3(-1.0f, 0, 0);
+            GL.Vertex3(-size.X, size.Y, size.Z);
+            GL.Vertex3(-size.X, size.Y, -size.Z);
+            GL.Vertex3(-size.X, -size.Y, -size.Z);
+            GL.Vertex3(-size.X, -size.Y, size.Z);
+
+            //Y+
+            GL.Normal3(0, 1.0f, 0);
+            GL.Vertex3(size.X, size.Y, size.Z);
+            GL.Vertex3(size.X, size.Y, -size.Z);
+            GL.Vertex3(-size.X, size.Y, -size.Z);
+            GL.Vertex3(-size.X, size.Y, size.Z);
+
+            //Y-
+            GL.Normal3(0, -1.0f, 0);
+            GL.Vertex3(size.X, -size.Y, size.Z);
+            GL.Vertex3(-size.X, -size.Y, size.Z);
+            GL.Vertex3(-size.X, -size.Y, -size.Z);
+            GL.Vertex3(size.X, -size.Y, -size.Z);
+
+            GL.End();
+
+            GL.PopMatrix();
+        }
+    }
+
+    public class DebugableVisibleFrustum : VisibleFrustum
+    {
+        public DebugableVisibleFrustum ( VisibleFrustum val ) : base(val)
+        {
+        }
+
+        void drawEyePoint()
+        {
+            // put a sphere at the eye point and draw the axes
+            GL.Color4(0.25f, 0.25f, 1f, 0.5f);
+            Glu.Sphere(Glu.NewQuadric(), 0.25f, 6, 6);
+
+            GL.Disable(EnableCap.Lighting);
+
+            GL.LineWidth(2.0f);
+            GL.Begin(BeginMode.Lines);
+
+            // the "up" vector
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(Up);
+            GL.Vertex3(Up);
+            GL.Vertex3(Up * 0.75f + RightVec * 0.35f);
+
+            // the "right" vector
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(RightVec);
+            GL.Vertex3(RightVec);
+            GL.Vertex3(RightVec * 0.75f + Up * 0.25f);
+
+            // the "forward" vector
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(ViewDir * 3f);
+            GL.Vertex3(ViewDir * 3f);
+            GL.Vertex3(ViewDir * 2.75f + Up * 0.125f);
+            GL.Vertex3(ViewDir * 3f);
+            GL.Vertex3(ViewDir * 2.75f + Up * -0.125f);
+
+            GL.End();
+
+            GL.Enable(EnableCap.Lighting);
+        }
+
+        void drawViewFrustum()
+        {
+            GL.Disable(EnableCap.Lighting);
+
+            float endViewAlpha = 0.25f;
+            float startViewAlpha = 0.75f;
+
+            //GL.Disable(EnableCap.DepthTest);
+            GL.DepthMask(false);
+
+            float planeAlphaFactor = 0.25f;
+            GL.Begin(BeginMode.Triangles);
+
+            // top
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[2] * farClip);
+            GL.Vertex3(edge[3] * farClip);
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[3] * farClip);
+            GL.Vertex3(edge[2] * farClip);
+
+            // bottom
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[0] * farClip);
+            GL.Vertex3(edge[1] * farClip);
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[1] * farClip);
+            GL.Vertex3(edge[0] * farClip);
+
+            // left
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[0] * farClip);
+            GL.Vertex3(edge[3] * farClip);
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[3] * farClip);
+            GL.Vertex3(edge[0] * farClip);
+
+            // right
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[2] * farClip);
+            GL.Vertex3(edge[1] * farClip);
+            GL.Color4(1f, 1f, 1f, startViewAlpha * planeAlphaFactor);
+            GL.Vertex3(0f, 0f, 0f);
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[1] * farClip);
+            GL.Vertex3(edge[2] * farClip);
+
+            GL.End();
+
+            GL.Begin(BeginMode.Quads);
+            // far
+            GL.Color4(1f, 1f, 1f, endViewAlpha * planeAlphaFactor);
+            GL.Vertex3(edge[0] * farClip);
+            GL.Vertex3(edge[1] * farClip);
+            GL.Vertex3(edge[2] * farClip);
+            GL.Vertex3(edge[3] * farClip);
+            GL.Vertex3(edge[3] * farClip);
+            GL.Vertex3(edge[2] * farClip);
+            GL.Vertex3(edge[1] * farClip);
+            GL.Vertex3(edge[0] * farClip);
+            GL.End();
+
+            GL.LineWidth(2.0f);
+            // draw the edge vectors
+            GL.Begin(BeginMode.Lines);
+            foreach (Vector3 e in edge)
+            {
+                GL.Color4(1f, 1f, 1f, startViewAlpha);
+                GL.Vertex3(0, 0, 0);
+                GL.Color4(1f, 1f, 1f, endViewAlpha);
+                GL.Vertex3(e * farClip);
+            }
+            GL.End();
+
+            GL.LineWidth(3.0f);
+            // compute the view plane points for normal drawing
+            Vector3 leftPoint = (edge[0] + edge[3]) * 2;
+            Vector3 rightPoint = (edge[1] + edge[2]) * 2;
+            Vector3 topPoint = (edge[3] + edge[2]) * 2;
+            Vector3 bottomPoint = (edge[0] + edge[1]) * 2;
+
+            GL.Begin(BeginMode.Lines);
+
+            GL.Color4(1f, 0f, 0f, 0.5f);
+            GL.Vertex3(leftPoint);
+            GL.Vertex3(leftPoint + Left.Normal);
+
+            GL.Color4(0f, 1f, 0f, 0.5f);
+            GL.Vertex3(rightPoint);
+            GL.Vertex3(rightPoint + Right.Normal);
+
+            GL.Color4(0f, 0f, 1f, 0.5f);
+            GL.Vertex3(topPoint);
+            GL.Vertex3(topPoint + Top.Normal);
+
+            GL.Color4(1f, 0f, 1f, 0.5f);
+            GL.Vertex3(bottomPoint);
+            GL.Vertex3(bottomPoint + Bottom.Normal);
+
+            GL.Color4(1f, 1f, 1f, endViewAlpha);
+            GL.Vertex3(ViewDir * farClip);
+            GL.Vertex3(ViewDir * farClip + Far.Normal);
+            GL.End();
+
+            GL.Begin(BeginMode.LineLoop);
+            GL.Color4(0.5f, 0.5f, 0.5f, endViewAlpha);
+            foreach (Vector3 e in edge)
+                GL.Vertex3(e * farClip);
+            GL.End();
+
+            GL.PushMatrix();
+            GL.Color4(1f, 1f, 1f, startViewAlpha);
+            GL.Translate(ViewDir * nearClip);
+            Glu.Sphere(Glu.NewQuadric(), 0.125f, 3, 2);
+            GL.PopMatrix();
+
+            GL.PushMatrix();
+            GL.Color4(0.5f, 0.5f, 0.5f, endViewAlpha);
+            GL.Translate(ViewDir * farClip);
+            Glu.Sphere(Glu.NewQuadric(), 0.125f, 3, 2);
+            GL.PopMatrix();
+
+            GL.Enable(EnableCap.DepthTest);
+            GL.DepthMask(true);
+
+            GL.Enable(EnableCap.Lighting);
+        }
+
+        public void drawFrustum()
+        {
+            GL.PushMatrix();
+            //move to the eye point
+            GL.Translate(EyePoint);
+
+            drawEyePoint();
+
+            drawViewFrustum();
+
+            GL.PopMatrix();
+
+            GL.Enable(EnableCap.Lighting);
         }
     }
 }

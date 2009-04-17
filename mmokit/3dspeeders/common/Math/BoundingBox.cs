@@ -79,9 +79,6 @@ namespace Math3D
                 || box.Min.Z > Max.Z)
                 return ContainmentType.Disjoint;
 
-
-
-
             if (box.Min.X >= Min.X
                 && box.Max.X <= Max.X
                 && box.Min.Y >= Min.Y
@@ -350,9 +347,7 @@ namespace Math3D
                 && Max.Z - sphere.Center.Z > sphere.Radius)
                 return true;
 
-
             double dmin = 0;
-
 
             if (sphere.Center.X - Min.X <= sphere.Radius)
                 dmin += (sphere.Center.X - Min.X) * (sphere.Center.X - Min.X);
@@ -371,10 +366,8 @@ namespace Math3D
             else if (Max.Z - sphere.Center.Z <= sphere.Radius)
                 dmin += (sphere.Center.Z - Max.Z) * (sphere.Center.Z - Max.Z);
 
-
             if (dmin <= sphere.Radius * sphere.Radius)
                 return true;
-
 
             return false;
         }
@@ -385,13 +378,11 @@ namespace Math3D
             result = Intersects(sphere);
         }
 
-
         public PlaneIntersectionType Intersects(Plane plane)
         {
             //check all corner side of plane
             Vector3[] corners = this.GetCorners();
             float lastdistance = Vector3.Dot(plane.Normal, corners[0]) + plane.D;
-
 
             for (int i = 1; i < corners.Length; i++)
             {
@@ -401,14 +392,10 @@ namespace Math3D
                 lastdistance = distance;
             }
 
-
             if (lastdistance > 0.0f)
                 return PlaneIntersectionType.Front;
 
-
             return PlaneIntersectionType.Back;
-
-
         }
 
 

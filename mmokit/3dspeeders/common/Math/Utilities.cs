@@ -66,6 +66,22 @@ namespace Math3D
         }
     }
 
+    public class FrustumHelper
+    {
+        public static Plane[] GetPlanes ( BoundingFrustum frustum )
+        {
+            Plane[] l = new Plane[6];
+            l[0] = frustum.Near;
+            l[1] = frustum.Left;
+            l[2] = frustum.Right;
+            l[3] = frustum.Top;
+            l[4] = frustum.Bottom;
+            l[5] = frustum.Far;
+
+            return l;
+        }
+    }
+
     public class PlaneHelper
     {
         // sets a plane from 3 points with out a copy

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 using OpenTK;
@@ -19,9 +18,6 @@ namespace Cameras
         }
 
         float tilt = 0, spin = 0;
-
-        Vector3 up = new Vector3(0, 0, 1f);
-        public bool ZIsUp = true;
 
         float aspect = 1;
         float fov = 45f;
@@ -49,8 +45,8 @@ namespace Cameras
             set { yon = FarPlane; updatePerspective(); }
         }
 
-        VizableFrustum frustum = new VizableFrustum();
-        public VizableFrustum ViewFrustum
+        VisibleFrustum frustum = new VisibleFrustum();
+        public VisibleFrustum ViewFrustum
         {
             get { return frustum; }
         }
@@ -117,26 +113,17 @@ namespace Cameras
 
         public void Execute()
         {
-            bool useFrustum = true;
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
             frustum.LookAt(position, position + Forward());
-            if (useFrustum)
-                GL.MultTransposeMatrix(ref frustum.view);
-            else
-            {
-                Glu.LookAt(position, position + Forward(), up);
-                Matrix4 matrix = new Matrix4();
-                GL.GetFloat(GetPName.TransposeModelviewMatrix, out matrix.Row0.X);
-                frustum.SetView(matrix);
-            }
+            GL.MultTransposeMatrix(ref frustum.view);
         }
 
-        public VizableFrustum SnapshotFrusum ( )
+        public VisibleFrustum SnapshotFrusum ( )
         {
-            VizableFrustum f = new VizableFrustum();
+            VisibleFrustum f = new VisibleFrustum();
 
-            f.SetProjection(fov, aspect, hither, 25, width, height);
+            f.SetProjection(fov, aspect, hither, yon, width, height);
             f.LookAt(position, position + Forward());
 
             return f;

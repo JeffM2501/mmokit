@@ -361,12 +361,42 @@ namespace Math3D
 
         public bool Intersects(BoundingBox box)
         {
-            return Contains(box) != ContainmentType.Disjoint;
+            foreach( Plane plane in FrustumHelper.GetPlanes(this))
+            {
+                if ((plane.Normal.X * box.Min.X) + (plane.Normal.Y * box.Min.Y) + (plane.Normal.Z * box.Min.Z) + plane.D > 0)
+                    continue;
+ 
+                if ((plane.Normal.X * box.Max.X) + (plane.Normal.Y * box.Min.Y) + (plane.Normal.Z * box.Min.Z) + plane.D > 0)
+                    continue;
+                
+                if ((plane.Normal.X * box.Max.X) + (plane.Normal.Y * box.Min.Y) + (plane.Normal.Z * box.Max.Z) + plane.D > 0)
+                    continue;
+
+                if ((plane.Normal.X * box.Min.X) + (plane.Normal.Y * box.Min.Y) + (plane.Normal.Z * box.Max.Z) + plane.D > 0)
+                    continue;
+  
+                if ((plane.Normal.X * box.Min.X) + (plane.Normal.Y * box.Max.Y) + (plane.Normal.Z * box.Min.Z) + plane.D > 0)
+                    continue;
+ 
+                if ((plane.Normal.X * box.Max.X) + (plane.Normal.Y * box.Max.Y) + (plane.Normal.Z * box.Min.Z) + plane.D > 0)
+                    continue;
+
+                if ((plane.Normal.X * box.Max.X) + (plane.Normal.Y * box.Max.Y) + (plane.Normal.Z * box.Max.Z) + plane.D > 0)
+                    continue;
+
+                if ((plane.Normal.X * box.Min.X) + (plane.Normal.Y * box.Max.Y) + (plane.Normal.Z * box.Max.Z) + plane.D > 0)
+                    continue;
+
+                // all points are behind the one plane so they can't be inside any other plane
+                return false;
+            }
+
+            return true;
         }
 
         public void Intersects(ref BoundingBox box, out bool result)
         {
-            result = Contains(box) != ContainmentType.Disjoint;
+           result = Intersects(box);
         }
 
         public bool Intersects(BoundingFrustum frustum)
