@@ -13,7 +13,8 @@ namespace Math3D
 
     public class OctreeLeaf
     {
-        const int maxDepth = 35;
+        const int maxDepth = 15;
+        const bool doFastOut = true;
 
         int maxObjects = 2;
         public List<OctreeObject> containedObjects = new List<OctreeObject>();
@@ -65,12 +66,12 @@ namespace Math3D
             ChildLeaves.Add(new OctreeLeaf(new BoundingBox(ContainerBox.Min + half, ContainerBox.Max)));
         }
 
-        public void Distribute( int depth )
+        public void Distribute(int depth)
         {
             if (containedObjects.Count > maxObjects && depth <= maxDepth)
             {
                 Split();
-                for ( int i = containedObjects.Count -1; i >= 0; i--)// (OctreeObject item in containedObjects)
+                for (int i = containedObjects.Count - 1; i >= 0; i--)// (OctreeObject item in containedObjects)
                 {
                     OctreeObject item = containedObjects[i];
                     foreach (OctreeLeaf leaf in ChildLeaves)
@@ -91,49 +92,152 @@ namespace Math3D
             }
         }
 
+        protected void FastAddChildren(List<OctreeObject> objects)
+        {
+            foreach (OctreeObject item in containedObjects)
+                objects.Add(item);
+
+            if (ChildLeaves != null)
+            {
+                foreach (OctreeLeaf leaf in ChildLeaves)
+                    leaf.FastAddChildren(objects);
+            }
+        }
+
         public virtual void ObjectsInFrustum(List<OctreeObject> objects, BoundingFrustum boundingFrustum)
         {
-            foreach (OctreeObject item in containedObjects)
-                objects.Add(item);
-
-            if (ChildLeaves != null)
+            // if the current box is totally contained in our leaf, then add me and all my kids
+            if (doFastOut && boundingFrustum.Contains(ContainerBox) == ContainmentType.Contains)
+                FastAddChildren(objects);
+            else
             {
-                foreach (OctreeLeaf leaf in ChildLeaves)
+                // ok so we know that we are probably intersecting or outside
+                foreach (OctreeObject item in containedObjects) // add our straglers
+                    objects.Add(item);
+
+                if (ChildLeaves != null)
                 {
-                    if (leaf.ContainerBox.Intersects(boundingFrustum))
-                        leaf.ObjectsInFrustum(objects, boundingFrustum);
+                    foreach (OctreeLeaf leaf in ChildLeaves)
+                    {
+                        // if the child is totally in the volume then add it and it's kids
+                        if (doFastOut && boundingFrustum.Contains(leaf.ContainerBox) == ContainmentType.Contains)
+                            leaf.FastAddChildren(objects);
+                        else
+                        {
+                            if (boundingFrustum.Intersects(leaf.ContainerBox))
+                                leaf.ObjectsInFrustum(objects, boundingFrustum);
+                        }
+
+                    }
                 }
             }
         }
 
-        public virtual void ObjectsInBoundingBox(List<OctreeObject> objects, BoundingBox box)
+        public virtual void ObjectsInBoundingBox(List<OctreeObject> objects, BoundingBox boundingBox)
         {
-            foreach (OctreeObject item in containedObjects)
-                objects.Add(item);
-
-            if (ChildLeaves != null)
+            // if the current box is totally contained in our leaf, then add me and all my kids
+            if (boundingBox.Contains(ContainerBox) == ContainmentType.Contains)
+                FastAddChildren(objects);
+            else
             {
-                foreach (OctreeLeaf leaf in ChildLeaves)
+                // ok so we know that we are probably intersecting or outside
+                foreach (OctreeObject item in containedObjects) // add our straglers
+                    objects.Add(item);
+
+                if (ChildLeaves != null)
                 {
-                    if (leaf.ContainerBox.Intersects(box))
-                        leaf.ObjectsInBoundingBox(objects, box);
+                    foreach (OctreeLeaf leaf in ChildLeaves)
+                    {
+                        // see if any of the sub boxes intesect our frustum
+                        if (leaf.ContainerBox.Intersects(boundingBox))
+                            leaf.ObjectsInBoundingBox(objects, boundingBox);
+                    }
                 }
             }
         }
 
-        public virtual void ObjectsInBoundingSphere(List<OctreeObject> objects, BoundingSphere sphere)
+        public virtual void ObjectsInBoundingSphere(List<OctreeObject> objects, BoundingSphere boundingSphere)
         {
-            foreach (OctreeObject item in containedObjects)
-                objects.Add(item);
-
-            if (ChildLeaves != null)
+            // if the current box is totally contained in our leaf, then add me and all my kids
+            if (boundingSphere.Contains(ContainerBox) == ContainmentType.Contains)
+                FastAddChildren(objects);
+            else
             {
-                foreach (OctreeLeaf leaf in ChildLeaves)
+                // ok so we know that we are probably intersecting or outside
+                foreach (OctreeObject item in containedObjects) // add our straglers
+                    objects.Add(item);
+
+                if (ChildLeaves != null)
                 {
-                    if (leaf.ContainerBox.Intersects(sphere))
-                        leaf.ObjectsInBoundingSphere(objects, sphere);
+                    foreach (OctreeLeaf leaf in ChildLeaves)
+                    {
+                        // see if any of the sub boxes intesect our frustum
+                        if (leaf.ContainerBox.Intersects(boundingSphere))
+                            leaf.ObjectsInBoundingSphere(objects, boundingSphere);
+                    }
                 }
             }
+        }
+
+        protected ContainmentType testBoxInFrustum(BoundingBox extents, BoundingFrustum frustum)
+        {
+            // TODO - use a sphere vs. cone test first?
+
+            Vector3 inside;  // inside point  (assuming partial)
+            Vector3  outside; // outside point (assuming partial)
+            float len = 0;
+            ContainmentType result = ContainmentType.Contains;
+
+            foreach (Plane plane in FrustumHelper.GetPlanes(frustum))
+            {
+                // setup the inside/outside corners
+                // this can be determined easily based
+                // on the normal vector for the plane
+                if (plane.Normal.X > 0.0f)
+                {
+                    inside.X = extents.Max.X;
+                    outside.X = extents.Min.X;
+                }
+                else
+                {
+                    inside.X = extents.Min.X;
+                    outside.X = extents.Max.X;
+                }
+
+                if (plane.Normal.Y > 0.0f)
+                {
+                    inside.Y = extents.Max.Y;
+                    outside.Y = extents.Min.Y;
+                }
+                else
+                {
+                    inside.Y = extents.Min.Y;
+                    outside.Y = extents.Max.Y;
+                }
+
+                if (plane.Normal.Z > 0.0f)
+                {
+                    inside.Z = extents.Max.Z;
+                    outside.Z = extents.Min.Z;
+                }
+                else
+                {
+                    inside.Z = extents.Min.Z;
+                    outside.Z = extents.Max.Z;
+                }
+              
+                // check the inside length
+                len = plane.Distance(inside);
+                if (len < -1.0f)
+                    return ContainmentType.Disjoint; // box is fully outside the frustum
+
+                // check the outside length
+                len = plane.Distance(outside);
+                if (len < -1.0f)
+                    result = ContainmentType.Intersects; // partial containment at best
+            }
+
+            return result;
         }
     }
 
@@ -169,7 +273,26 @@ namespace Math3D
 
         public override void ObjectsInFrustum(List<OctreeObject> objects, BoundingFrustum boundingFrustum)
         {
-            base.ObjectsInFrustum(objects, boundingFrustum);
+            bool useTree = true;
+            if (useTree)
+                base.ObjectsInFrustum(objects, boundingFrustum);
+            else // brute force to see if our box in frustum works
+                AddInFrustum(objects, boundingFrustum,this);
+        }
+
+        protected void AddInFrustum (List<OctreeObject> objects, BoundingFrustum boundingFrustum, OctreeLeaf leaf )
+        {
+            foreach (OctreeObject item in leaf.containedObjects)
+            {
+                if (boundingFrustum.Intersects(item.bounds))
+                    objects.Add(item);
+            }
+
+            if (leaf.ChildLeaves != null)
+            {
+                foreach (OctreeLeaf child in leaf.ChildLeaves)
+                    AddInFrustum(objects, boundingFrustum, child);
+            }
         }
 
         public override void ObjectsInBoundingBox(List<OctreeObject> objects, BoundingBox box)

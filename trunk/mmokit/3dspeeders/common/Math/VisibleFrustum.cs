@@ -7,7 +7,7 @@ using OpenTK.Math;
 
 namespace Math3D
 {
-    public class VizableFrustum : BoundingFrustum
+    public class VisibleFrustum : BoundingFrustum
     {
         #region Properties
         public Matrix4 view = new Matrix4();
@@ -26,57 +26,87 @@ namespace Math3D
         {
             get { return billboard; }
         }
+
+        bool zIsUp = true;
+        public bool ZIsUp
+        {
+            get { return ZIsUp; }
+            set { zIsUp = ZIsUp; BuildFrustum(); }
+        }
         #endregion
 
-        public Vector3 RightVec = new Vector3();
-        public Vector3 Up = new Vector3();
-        public Vector3 ViewDir = new Vector3();
-        public Vector3 EyePoint = new Vector3();
+        #region Protected Variables
+        protected Vector3 RightVec = new Vector3();
+        protected Vector3 Up = new Vector3();
+        protected Vector3 ViewDir = new Vector3();
+        protected Vector3 EyePoint = new Vector3();
 
-        public float nearClip = 0;
-        public float farClip = 0;
+        protected float nearClip = 0;
+        protected float farClip = 0;
 
-        public Vector3[] edge;
+        protected Vector3[] edge;
+        #endregion
 
-        public VizableFrustum() : base (Matrix4.Identity)
+        #region Public Constructors
+
+        public VisibleFrustum() : base (Matrix4.Identity)
         {
             BuildFrustum();
         }
 
-        public VizableFrustum( VizableFrustum value )
+        public VisibleFrustum( VisibleFrustum value )
             : base(value.matrix)
         {
             projection = new Matrix4(value.projection.Row0,value.projection.Row1,value.projection.Row2,value.projection.Row3);
             view = new Matrix4(value.view.Row0, value.view.Row1, value.view.Row2, value.view.Row3);
-            BuildFrustum();
+            matrix = new Matrix4(value.matrix.Row0, value.matrix.Row1, value.matrix.Row2, value.matrix.Row3);
+            billboard = new Matrix4(value.billboard.Row0, value.billboard.Row1, value.billboard.Row2, value.billboard.Row3);
+            
+            zIsUp = value.zIsUp;
+            nearClip = value.nearClip;
+            farClip = value.farClip;
+
+            ViewDir = new Vector3(value.ViewDir);
+            EyePoint = new Vector3(value.EyePoint);
+            RightVec = new Vector3(value.RightVec);
+            Up = new Vector3(value.Up);
+
+            this.left = new Plane(value.left.Normal, value.left.D);
+            this.right = new Plane(value.right.Normal, value.right.D);
+            this.top = new Plane(value.top.Normal, value.top.D);
+            this.bottom = new Plane(value.bottom.Normal, value.bottom.D);
+            this.near = new Plane(value.near.Normal, value.near.D);
+            this.far = new Plane(value.far.Normal, value.far.D);
+
+            edge = new Vector3[4];
+            edge[0] = new Vector3(value.edge[0]);
+            edge[1] = new Vector3(value.edge[1]);
+            edge[2] = new Vector3(value.edge[2]);
+            edge[3] = new Vector3(value.edge[3]);
         }
+        #endregion
+
+        #region Public Methods
 
         public void SetProjection(float fov, float aspect, float hither, float yon, int width, int height  )
         {
             nearClip = hither;
             farClip = yon;
 
-            bool useMatrixMath = true;
+            // compute projectionMatrix
+            float s = 1.0f / (float)Math.Tan(fov / 2.0f);
+            float fracHeight = 1.0f - (float)height / (float)height;
+            MatrixHelper4.M11(ref projection,s);
+            MatrixHelper4.M22(ref projection,(1.0f - fracHeight) * s * (float)width / (float)height);
+            MatrixHelper4.M31(ref projection,0.0f);
+            MatrixHelper4.M32(ref projection,-fracHeight);
+            MatrixHelper4.M33(ref projection,-(yon + hither) / (yon - hither));
+            MatrixHelper4.M34(ref projection,-1.0f);
+            MatrixHelper4.M41(ref projection,0.0f);
+            MatrixHelper4.M43(ref projection,-2.0f * yon * hither / (yon - hither));
+            MatrixHelper4.M44(ref projection,0.0f);
 
-            if(useMatrixMath)
-                projection = Matrix4.Perspective(Trig.DegreeToRadian(fov), aspect, hither, yon);
-            else
-            {
-                // compute projectionMatrix
-                float s = 1.0f / (float)Math.Tan(fov / 2.0f);
-                float fracHeight = 1.0f - (float)height / (float)height;
-                MatrixHelper4.M11(ref projection,s);
-                MatrixHelper4.M22(ref projection,(1.0f - fracHeight) * s * (float)width / (float)height);
-                MatrixHelper4.M31(ref projection,0.0f);
-                MatrixHelper4.M32(ref projection,-fracHeight);
-                MatrixHelper4.M33(ref projection,-(yon + hither) / (yon - hither));
-                MatrixHelper4.M34(ref projection,-1.0f);
-                MatrixHelper4.M41(ref projection,0.0f);
-                MatrixHelper4.M43(ref projection,-2.0f * yon * hither / (yon - hither));
-                MatrixHelper4.M44(ref projection,0.0f);
-
-                projection.Transpose();
-            }
+            projection.Transpose();
 
             BuildFrustum();
         }
@@ -90,11 +120,13 @@ namespace Math3D
         public void LookAt ( Vector3 eye, Vector3 target)
         {
             EyePoint = new Vector3(eye);
-            bool useMatrixMath = false;
 
             // compute forward vector and normalize
             ViewDir = VectorHelper3.Subtract(target, eye);
             ViewDir.Normalize();
+
+            if (!zIsUp)
+                throw new NotImplementedException();
 
             // compute left vector (by crossing forward with
             // world-up [0 0 1]T and normalizing)
@@ -111,37 +143,32 @@ namespace Math3D
             Up.Y = -RightVec.X * ViewDir.Z;
             Up.Z = (RightVec.X * ViewDir.Y) - (RightVec.Y * ViewDir.X);
 
-            if (useMatrixMath)
-                view = Matrix4.LookAt(eye, target, Up);
-            else
-            {
-                // build view matrix, including a transformation bringing
-                // world up [0 0 1 0]T to eye up [0 1 0 0]T, world north
-                // [0 1 0 0]T to eye forward [0 0 -1 0]T.
-                MatrixHelper4.m0(ref view,RightVec.X);
-                MatrixHelper4.m4(ref view,RightVec.Y);
-                MatrixHelper4.m8(ref view,0.0f);
+            // build view matrix, including a transformation bringing
+            // world up [0 0 1 0]T to eye up [0 1 0 0]T, world north
+            // [0 1 0 0]T to eye forward [0 0 -1 0]T.
+            MatrixHelper4.m0(ref view,RightVec.X);
+            MatrixHelper4.m4(ref view,RightVec.Y);
+            MatrixHelper4.m8(ref view,0.0f);
 
-                MatrixHelper4.m1(ref view,Up.X);
-                MatrixHelper4.m5(ref view,Up.Y);
-                MatrixHelper4.m9(ref view,Up.Z);
+            MatrixHelper4.m1(ref view,Up.X);
+            MatrixHelper4.m5(ref view,Up.Y);
+            MatrixHelper4.m9(ref view,Up.Z);
 
-                MatrixHelper4.m2(ref view, -ViewDir.X);
-                MatrixHelper4.m6(ref view, -ViewDir.Y);
-                MatrixHelper4.m10(ref view, -ViewDir.Z);
+            MatrixHelper4.m2(ref view, -ViewDir.X);
+            MatrixHelper4.m6(ref view, -ViewDir.Y);
+            MatrixHelper4.m10(ref view, -ViewDir.Z);
 
-                MatrixHelper4.m12(ref view,-(MatrixHelper4.m0(view) * eye.X +
-                                   MatrixHelper4.m4(view) * eye.Y +
-                                   MatrixHelper4.m8(view) * eye.Z));
-                MatrixHelper4.m13(ref view,-(MatrixHelper4.m1(view) * eye.X +
-                                   MatrixHelper4.m5(view) * eye.Y +
-                                   MatrixHelper4.m9(view) * eye.Z));
-                MatrixHelper4.m14(ref view,-(MatrixHelper4.m2(view) * eye.X +
-                                   MatrixHelper4.m6(view) * eye.Y +
-                                   MatrixHelper4.m10(view) * eye.Z));
+            MatrixHelper4.m12(ref view,-(MatrixHelper4.m0(view) * eye.X +
+                               MatrixHelper4.m4(view) * eye.Y +
+                               MatrixHelper4.m8(view) * eye.Z));
+            MatrixHelper4.m13(ref view,-(MatrixHelper4.m1(view) * eye.X +
+                               MatrixHelper4.m5(view) * eye.Y +
+                               MatrixHelper4.m9(view) * eye.Z));
+            MatrixHelper4.m14(ref view,-(MatrixHelper4.m2(view) * eye.X +
+                               MatrixHelper4.m6(view) * eye.Y +
+                               MatrixHelper4.m10(view) * eye.Z));
 
-                MatrixHelper4.m15(ref view, 1.0f);
-            }
+            MatrixHelper4.m15(ref view, 1.0f);
 
             MatrixHelper4.M11(ref billboard, MatrixHelper4.M11(view));
             MatrixHelper4.M12(ref billboard, MatrixHelper4.M21(view));
@@ -154,8 +181,9 @@ namespace Math3D
             MatrixHelper4.M33(ref billboard, MatrixHelper4.M33(view));
 
             BuildFrustum();
-            
+
         }
+        #endregion
 
         #region Protected Methods
 
@@ -189,7 +217,7 @@ namespace Math3D
             CreateCorners();
         }
 
-        void makePlane(Vector3 v1, Vector3 v2, Vector3 eye, ref Plane plane)
+        protected void makePlane(Vector3 v1, Vector3 v2, Vector3 eye, ref Plane plane)
         {
             if (plane == null)
                 plane = new Plane();
