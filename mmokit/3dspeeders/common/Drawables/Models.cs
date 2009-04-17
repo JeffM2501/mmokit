@@ -223,6 +223,8 @@ namespace Drawables.Models
 
     public class Model 
     {
+        public string name = string.Empty;
+
         public List<Mesh> meshes = new List<Mesh>();
 
         public List<MaterialOverride> skins = new List<MaterialOverride>();

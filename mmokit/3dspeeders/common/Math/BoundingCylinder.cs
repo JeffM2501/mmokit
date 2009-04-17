@@ -22,7 +22,7 @@ using OpenTK.Math;
 namespace Math3D
 {
     [Serializable]
-    public struct BoundingCylinderXY  : IEquatable<BoundingBox>
+    public struct BoundingCylinderXY : IEquatable<BoundingCylinderXY>
     {
         #region Public Fields
 
