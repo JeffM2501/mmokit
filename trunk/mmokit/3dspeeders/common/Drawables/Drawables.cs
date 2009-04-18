@@ -8,7 +8,21 @@ using Drawables.Materials;
 
 namespace Drawables
 {
-    public delegate bool ExecuteCallback(Material mat, bool draw);
+    public delegate bool ExecuteCallback(Material mat, object tag);
+
+    public class ExecuteItem
+    {
+        public ExecuteCallback callback = null;
+        public object tag = null;
+
+        public bool call ( Material mat )
+        {
+            if (callback != null)
+                return callback(mat, tag);
+
+            return false;
+        }
+    }
 
     public class DrawablesSystem
     {
@@ -17,23 +31,36 @@ namespace Drawables
         public static int FirstPass = 0;
         public static int LastPass = 1000;
 
-        Dictionary<int, Dictionary<Material, List<ExecuteCallback>>> passes = new Dictionary<int, Dictionary<Material, List<ExecuteCallback>>>();
+        Dictionary<int, Dictionary<Material, List<ExecuteItem>>> passes = new Dictionary<int, Dictionary<Material, List<ExecuteItem>>>();
 
         public void addItem(Material mat, ExecuteCallback callback)
         {
-            addItem(mat, callback, LastPass);
+            addItem(mat, callback, LastPass,null);
+        }
+
+        public void addItem(Material mat, ExecuteCallback callback, object tag)
+        {
+            addItem(mat, callback, LastPass,tag);
         }
 
         public void addItem (Material mat, ExecuteCallback callback, int pass)
         {
+            addItem(mat, callback, pass, null);
+        }
+
+        public void addItem (Material mat, ExecuteCallback callback, int pass, object tag)
+        {
             if (!passes.ContainsKey(pass))
-                passes[pass] = new Dictionary<Material, List<ExecuteCallback>>();
+                passes[pass] = new Dictionary<Material, List<ExecuteItem>>();
 
-            Dictionary<Material, List<ExecuteCallback>> passList = passes[pass];
+            Dictionary<Material, List<ExecuteItem>> passList = passes[pass];
             if (!passList.ContainsKey(mat))
-                passList[mat] = new List<ExecuteCallback>();
+                passList[mat] = new List<ExecuteItem>();
 
-            passList[mat].Add(callback);
+            ExecuteItem item = new ExecuteItem();
+            item.callback = callback;
+            item.tag = tag;
+            passList[mat].Add(item);
         }
 
         public void removeItem(Material mat, ExecuteCallback callback)
@@ -47,7 +74,14 @@ namespace Drawables
                 return;
             if (!passes[pass].ContainsKey(mat))
                 return;
-            passes[pass][mat].Remove(callback);
+            foreach (ExecuteItem i in passes[pass][mat])
+            {
+                if (i.callback == callback)
+                {
+                    passes[pass][mat].Remove(i);
+                    return;
+                }
+            }
         }
 
         public void removeAll ()
@@ -57,15 +91,13 @@ namespace Drawables
 
         public void Execute ()
         {
-            foreach(KeyValuePair<int,Dictionary<Material, List<ExecuteCallback>>> pass in passes)
+            foreach(KeyValuePair<int,Dictionary<Material, List<ExecuteItem>>> pass in passes)
             {
-                foreach(KeyValuePair<Material,List<ExecuteCallback>> matList in pass.Value)
+                foreach(KeyValuePair<Material,List<ExecuteItem>> matList in pass.Value)
                 {
                     matList.Key.Execute();
-                    foreach(ExecuteCallback callback in matList.Value)
-                    {
-                        callback(matList.Key, false);
-                    }
+                    foreach (ExecuteItem item in matList.Value)
+                        item.call(matList.Key);
                 }
             }
         }
