@@ -88,4 +88,34 @@ namespace Drawables.DisplayLists
             displayLists.Remove(d);
         }
     }
+
+    public class ListableItem
+    {
+        protected DisplayList list = new DisplayList();
+
+        public void Invalidate()
+        {
+            list.Invalidate();
+        }
+
+        protected void Rebuild()
+        {
+            list.Start();
+            GenerateList();
+            list.End();
+        }
+
+        protected virtual void GenerateList()
+        {
+
+        }
+
+        public virtual void Execute()
+        {
+            if (!list.Valid())
+                Rebuild();
+
+            list.Call();
+        }
+    }
 }
