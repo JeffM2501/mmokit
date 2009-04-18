@@ -33,7 +33,12 @@ namespace World
             return string.Empty;
         }
 
-        public static bool read ( WorldFile worldFile, FileInfo file )
+        public static bool read ( WorldFile worldFile, FileInfo file)
+        {
+            return read(worldFile,file,true);
+        }
+
+        public static bool read ( WorldFile worldFile, FileInfo file, bool compress )
         {
             if (!file.Exists)
                 return false;
@@ -41,8 +46,11 @@ namespace World
             FileStream fs = file.OpenRead();
             if (fs == null)
                 return false;
+
             GZipStream zip = new GZipStream(fs, CompressionMode.Decompress, false);
             StreamReader sr = new StreamReader(zip);
+            if (!compress)
+                sr = new StreamReader(fs);
 
             XmlSerializer xml = new XmlSerializer(typeof(WorldFile));
             worldFile = (WorldFile)xml.Deserialize(sr);
@@ -55,11 +63,18 @@ namespace World
 
         public static bool write(WorldFile worldFile, FileInfo file)
         {
+            return write(worldFile, file, true);
+        }
+
+        public static bool write(WorldFile worldFile, FileInfo file, bool compress)
+        {
             FileStream fs = file.OpenWrite();
             if (fs == null)
                 return false;
             GZipStream zip = new GZipStream(fs, CompressionMode.Compress, false);
             StreamWriter sw = new StreamWriter(zip);
+            if (!compress)
+                sw = new StreamWriter(fs);
 
             XmlSerializer xml = new XmlSerializer(typeof(WorldFile));
             xml.Serialize(sw, worldFile);
