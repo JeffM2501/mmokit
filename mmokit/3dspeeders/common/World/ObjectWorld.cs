@@ -12,21 +12,40 @@ namespace World
     {
         public CollisionBoundry Boundry = new CollisionBoundry();
         public string ObjectName = string.Empty;
-        public object Tag;
+   
         public List<string> Attributes = new List<string>();
 
         public Vector3 postion = new Vector3();
         public Vector3 rotation = new Vector3();
         public string Skin = string.Empty;
+
+        [System.Xml.Serialization.XmlIgnoreAttribute]
+        public object Tag = null;
     }
 
     public class ObjectWorld : Octree
     {
-        List<WorldObject> objects = new List<WorldObject>();
+        public List<WorldObject> objects = new List<WorldObject>();
+
+        // general world info
+        public Vector3 size = new Vector3(100, 100, 50);
+
+        // basic rendering info (non gl specific)
+        public string groundMaterialName = string.Empty;
+        public string wallMaterialName = string.Empty;
+        public float groundUVSize = 1.0f;
 
         // static list just so we don't have to new one each frame
         [System.Xml.Serialization.XmlIgnoreAttribute]
         List<OctreeObject> visList = new List<OctreeObject>();
+
+        public void Flush ()
+        {
+            visList.Clear();
+            containedObjects.Clear();
+            children.Clear();
+            children = null;
+        }
 
         public void Add(WorldObject item)
         {
