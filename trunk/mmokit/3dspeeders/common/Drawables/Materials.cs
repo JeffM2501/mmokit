@@ -125,6 +125,16 @@ namespace Drawables.Materials
         public Material()
         {}
 
+        public Material(GLColor color)
+        {
+            baseColor = color;
+        }
+
+        public Material( Color color )
+        {
+            baseColor = new GLColor(color);
+        }
+
         public Material( Material mat)
         {
             name = string.Copy(mat.name);
@@ -399,6 +409,16 @@ namespace Drawables.Materials
 
             materials.Add(mat);
             return mat;
+        }
+
+        public Material getMaterial(string name)
+        {
+            foreach (Material m in materials)
+            {
+                if (m.name == name)
+                    return m;
+            }
+            return null;
         }
 
         public Material newMaterial()
