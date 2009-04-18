@@ -10,7 +10,7 @@ using World;
 using Drawables.Materials;
 using Drawables.Models;
 
-namespace GraphicWorld
+namespace GraphicWorlds
 {
     public class GraphicWorldIO
     {
@@ -20,7 +20,7 @@ namespace GraphicWorld
                 return false;
 
             WorldFile worldFile = new WorldFile();
-            if (!WorldFile.read(worldFile, file))
+            if (!WorldFile.read(worldFile, file, false))
                 return false;
             return read(world,worldFile);
         }
@@ -84,7 +84,7 @@ namespace GraphicWorld
             if (!write(world, worldFile))
                 return false;
 
-            return WorldFile.write(worldFile, file);
+            return WorldFile.write(worldFile, file, false);
         }
 
         public static bool write(GraphicWorld world, WorldFile file)
