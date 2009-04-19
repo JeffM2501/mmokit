@@ -19,6 +19,8 @@ using Drawables.Models;
 using Drawables.Models.OBJ;
 using Drawables.Models.XMDL;
 using Drawables.Materials;
+using Drawables.Textures;
+using Utilities.Paths;
 
 namespace modeler
 {
@@ -86,6 +88,11 @@ namespace modeler
             camera.move(new Vector3(0, 0, 0));
             camera.pushpull(5);
             camera.pan(45, 15);
+
+            if (prefs.dataRoot == string.Empty)
+                prefsToolStripMenuItem_Click(this, EventArgs.Empty);
+
+            TextureSystem.system.rootDir = new DirectoryInfo(prefs.dataRoot);
         }
 
         private void ModelerDialog_FormClosed(object sender, FormClosedEventArgs e)
@@ -587,8 +594,9 @@ namespace modeler
                         mat = movd.newMaterial;
                     }
                 }
-                mat.textureName = ofd.FileName;
+
                 mat.Invalidate();
+                mat.textureName = PathUtils.MakePathRelitive(prefs.dataRoot,ofd.FileName);
 
                 // find the texture item in the material
                 foreach(TreeNode meshNode in SkinView.Nodes[0].Nodes)
@@ -643,6 +651,23 @@ namespace modeler
                 invalidateView();
             }
         }
+
+        private void prefsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SingleItemQuery d = new SingleItemQuery();
+            d.Title = "Data Root";
+            d.MessageLabel = "Data folder";
+            d.Value = prefs.dataRoot;
+
+            if (d.ShowDialog() == DialogResult.OK)
+            {
+                prefs.dataRoot = d.Value;
+                savePrefs();
+
+                TextureSystem.system.Invalidate();
+                TextureSystem.system.rootDir = new DirectoryInfo(prefs.dataRoot);
+            }
+        }
     }
 
     public class Prefrences
@@ -654,5 +679,7 @@ namespace modeler
         public bool showGrid = true;
         public bool showNormals = false;
         public bool showWireframe = false;
+
+        public string dataRoot = string.Empty;
     }
 }
