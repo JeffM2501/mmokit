@@ -98,34 +98,31 @@ namespace Drawables.Textures
 
         public Texture getTexture(string path)
         {
-            return getTexture(new FileInfo(path));
-        }
-
-        public Texture getTexture( FileInfo file )
-        {
-            if (textures.ContainsKey(file.FullName))
-                return textures[file.FullName];
+            if (textures.ContainsKey(path))
+                return textures[path];
 
             Texture texture = null;
-            if (textureIsValid(file.FullName))
+            if (textureIsValid(path))
             {
+                FileInfo file = new FileInfo(path);
                 if (file.Exists)
                     texture = new Texture(file);
                 else if (rootDir != null)
                 {
-                    FileInfo newFile = new FileInfo(Path.Combine(rootDir.FullName, file.FullName));
-                    if (newFile.Exists)
-                        texture = new Texture(newFile);
+                    file = new FileInfo(Path.Combine(rootDir.FullName, path));
+                    if (file.Exists)
+                        texture = new Texture(file);
                 }
             }
             if (texture == null)
                 texture = new Texture(null);
 
-            textures.Add(file.FullName, texture);
+            textures.Add(path, texture);
 
             return texture;
         }
 
+       
         bool textureIsValid(string t)
         {
             if (t == string.Empty)
@@ -136,6 +133,5 @@ namespace Drawables.Textures
 
             return true;
         }
-
     }
 }

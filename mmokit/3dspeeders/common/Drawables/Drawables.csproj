@@ -69,6 +69,10 @@
       <Project>{0BC4671F-FF72-4D3E-9889-44382F6C64F2}</Project>
       <Name>Math3D</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Utilities\Utilities.csproj">
+      <Project>{1CD2C5DC-F417-41D6-9704-CCC0FB501BF3}</Project>
+      <Name>Utilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -19,6 +19,16 @@ namespace Drawables.Cameras
 
         float tilt = 0, spin = 0;
 
+        public float Tilt
+        {
+            get { return tilt; }
+        }
+
+        public float Spin
+        {
+            get { return spin; }
+        }
+
         float aspect = 1;
         float fov = 45f;
 
