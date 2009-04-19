@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>modeler</RootNamespace>
-    <AssemblyName>modeler</AssemblyName>
+    <AssemblyName>SkinEdit</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -113,6 +113,10 @@
     <ProjectReference Include="..\..\common\Drawables\Drawables.csproj">
       <Project>{71452148-876E-4B8E-9244-A8F014CF72E6}</Project>
       <Name>Drawables</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\common\Utilities\Utilities.csproj">
+      <Project>{1CD2C5DC-F417-41D6-9704-CCC0FB501BF3}</Project>
+      <Name>Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
