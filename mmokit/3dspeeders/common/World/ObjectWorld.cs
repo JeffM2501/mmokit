@@ -17,13 +17,13 @@ namespace World
 
         // mesh
         public string objectName = string.Empty;
-        public string akin = string.Empty;
-        public bool acaleSkinToSize = false;
+        public string skin = string.Empty;
+        public bool scaleSkinToSize = false;
 
         // mesh position data
         public Vector3 postion = new Vector3();
         public Vector3 rotation = new Vector3();
-        public Vector3 acale = new Vector3(1,1,1);
+        public Vector3 scale = new Vector3(1,1,1);
 
         // used for non mesh stuff, like spawns and lights
         public bool skipTree = false;
@@ -48,7 +48,7 @@ namespace World
 
         // static list just so we don't have to new one each frame
         [System.Xml.Serialization.XmlIgnoreAttribute]
-        List<OctreeObject> visList = new List<OctreeObject>();
+        public List<OctreeObject> visList = new List<OctreeObject>();
 
         public void Flush ()
         {

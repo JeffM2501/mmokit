@@ -17,7 +17,10 @@ using Drawables;
 using Drawables.Cameras;
 using Drawables.Materials;
 using Drawables.Textures;
+using Drawables.Models;
+using Drawables.Models.XMDL;
 using Drawables.DisplayLists;
+
 using World;
 using GraphicWorlds;
 
@@ -34,13 +37,14 @@ namespace MapEdit
         Point mousePos = new Point();
         bool noDrag = false;
 
-        GraphicWorld world = new GraphicWorld();
-
-        Prefrences prefs = new Prefrences();
+        public Prefrences prefs = new Prefrences();
         string docName = string.Empty;
+
+        Editor editor;
 
         public Form1()
         {
+            editor = new Editor(this);
             loadPrefs();
 
             InitializeComponent();
@@ -83,8 +87,10 @@ namespace MapEdit
             camera.move(new Vector3(-5, 0, 2));
 
             DrawablesSystem.system.removeAll();
-            world.AddDrawables();
+            editor.world.AddDrawables();
             updateMaterialsList();
+            updateMeshList();
+            updateObjectList();
 
             if (prefs.dataDir == string.Empty)
                 prefsToolStripMenuItem_Click(this, EventArgs.Empty);
@@ -96,12 +102,12 @@ namespace MapEdit
 
         private void setupGrid ()
         {
-            grid.gridSize = world.world.size.X;
-            if (world.world.size.Y > grid.gridSize)
-                grid.gridSize = world.world.size.Y;
+            grid.gridSize = editor.world.world.size.X;
+            if (editor.world.world.size.Y > grid.gridSize)
+                grid.gridSize = editor.world.world.size.Y;
 
-            grid.majorSpacing = world.world.groundUVSize*4;
-            grid.minorSpacing = world.world.groundUVSize;
+            grid.majorSpacing = editor.world.world.groundUVSize * 4;
+            grid.minorSpacing = editor.world.world.groundUVSize;
             grid.alpha = 0.25f;
             grid.Invalidate();
         }
@@ -114,13 +120,6 @@ namespace MapEdit
         protected void invalidateView()
         {
             glControl1.Invalidate(true);
-        }
-
-        protected void refreshGLItems()
-        {
-            MaterialSystem.system.Invalidate();
-            DrawablesSystem.system.removeAll();
-            DisplayListSystem.system.Invalidate();
         }
 
         void setupDisplay()
@@ -229,16 +228,13 @@ namespace MapEdit
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                refreshGLItems();
-                world.Flush();
-                MaterialSystem.system.Flush();
-                DisplayListSystem.system.Flush();
-
-                FileInfo file = new FileInfo(ofd.FileName);
-                GraphicWorldIO.read(world, new FileInfo(ofd.FileName));
-
-                world.AddDrawables();
-                updateMaterialsList();
+                if (editor.OpenWorldFile(ofd.FileName))
+                {
+                    updateMaterialsList();
+                    updateMeshList();
+                    updateObjectList();
+                    invalidateView();
+                }
             }
         }    
 
@@ -249,10 +245,7 @@ namespace MapEdit
             sfd.Filter = "XML Map File (*.xmp)|*.xmp|All files (*.*)|*.*";
 
             if (sfd.ShowDialog() == DialogResult.OK)
-            {
-                FileInfo file = new FileInfo(sfd.FileName);
-                GraphicWorldIO.write(world, new FileInfo(sfd.FileName));
-            }
+                editor.SaveWorldFile(sfd.FileName);
         }
 
         private void prefsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -265,14 +258,14 @@ namespace MapEdit
             }
         }
 
-        private void updateMaterialsList()
+        public void updateMaterialsList()
         {
             int selection = MaterialsList.SelectedIndex;
             MaterialsList.Items.Clear();
-            if (world.materials == null)
+            if (editor.world.materials == null)
                 return;
 
-            foreach (KeyValuePair<string, Material> m in world.materials)
+            foreach (KeyValuePair<string, Material> m in editor.world.materials)
                 MaterialsList.Items.Add(m.Key);
 
             MaterialsList.SelectedIndex = selection;
@@ -280,16 +273,7 @@ namespace MapEdit
 
         private void addToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (world.materials == null)
-                world.materials = new Dictionary<string,Material>();
-
-            Material mat = new Material();
-            mat.name = "New Material " + world.materials.Count.ToString();
-
-            Dialog_Boxes.MaterialEdit dlog = new MapEdit.Dialog_Boxes.MaterialEdit(mat,prefs.dataDir);
-            if (dlog.ShowDialog() == DialogResult.OK)
-                world.materials[mat.name] = MaterialSystem.system.getMaterial(mat);
-
+            editor.AddMaterial();
             updateMaterialsList();
             invalidateView();
         }
@@ -298,19 +282,7 @@ namespace MapEdit
         {
             if (MaterialsList.SelectedIndex < 0)
                 return;
-
-            string matName = MaterialsList.SelectedItem.ToString();
-            if (!world.materials.ContainsKey(matName))
-                return;
-
-            Material mat = world.materials[matName];
-            mat.Invalidate();
-            Dialog_Boxes.MaterialEdit dlog = new MapEdit.Dialog_Boxes.MaterialEdit(mat, prefs.dataDir);
-            if (dlog.ShowDialog() == DialogResult.OK)
-            {
-                world.materials.Remove(matName);
-                world.materials[mat.name] = MaterialSystem.system.getMaterial(mat);
-            }
+            editor.EditMaterial(MaterialsList.SelectedItem.ToString());
             updateMaterialsList();
             invalidateView();
         }
@@ -320,30 +292,69 @@ namespace MapEdit
             if (MaterialsList.SelectedIndex < 0)
                 return;
 
-            string matName = MaterialsList.SelectedItem.ToString();
-            if (!world.materials.ContainsKey(matName))
-                return;
-
-            Material mat = world.materials[matName];
-            world.materials.Remove(matName);
-            mat.Invalidate();
             updateMaterialsList();
             invalidateView();
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Dialog_Boxes.MapInfoDlog dlog = new MapEdit.Dialog_Boxes.MapInfoDlog(world);
-            if (dlog.ShowDialog() == DialogResult.OK)
-            {
-                // blow it all out since we don't know what changed.
-                refreshGLItems();
+           if (editor.EditMapInfo())
+           {
+               setupGrid();
+               invalidateView();
+           }
+        }
 
-                // flush the world
-                world.AddDrawables();
-                setupGrid();
+        private void updateMeshList()
+        {
+            int selection = MeshList.SelectedIndex;
+            MeshList.Items.Clear();
+            if (editor.world.models == null)
+                return;
+
+            foreach (KeyValuePair<string, Model> m in editor.world.models)
+                MeshList.Items.Add(m.Key);
+
+            MeshList.SelectedIndex = selection;
+        }
+
+        private void addToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.FileName = "*.xmdl";
+            ofd.Filter = "XML Model File (*.xmdl)|*.xmdl|All files (*.*)|*.*";
+            ofd.InitialDirectory = prefs.dataDir;
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                editor.AddModel(ofd.FileName);
+                updateMaterialsList();
+                updateMeshList();
                 invalidateView();
             }
+        }
+
+        private void updateObjectList()
+        {
+            int selection = ObjectList.SelectedIndex;
+            ObjectList.Items.Clear();
+
+            foreach (WorldObject o in editor.world.world.objects)
+            {
+                ObjectList.Items.Add(o.objectName);
+            }
+
+            ObjectList.SelectedIndex = selection;
+        }
+
+        private void ObjectAdd_Click(object sender, EventArgs e)
+        {
+            int selection = MeshList.SelectedIndex;
+            if (selection < 0)
+                return;
+
+            editor.AddObject(MeshList.SelectedItem.ToString());
+            invalidateView();
         }
     }
 

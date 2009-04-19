@@ -356,9 +356,14 @@ namespace Drawables.Models
 
             foreach (MaterialOverride m in skins)
                 m.Invalidate();
-       }
+        }
 
         void Rebuild ()
+        {
+            Rebuild(true);
+        }
+
+        void Rebuild ( bool extraLists )
         {
             if (meshes.Count == geoLists.Count)
                 return;
@@ -374,6 +379,8 @@ namespace Drawables.Models
                 list.End();
                 geoLists.Add(m.material, list);
             }
+            if (!extraLists)
+                return;
 
             displayNormalsList.Start();
             foreach (Mesh m in meshes)
@@ -421,6 +428,15 @@ namespace Drawables.Models
             }
 
             list.Call();
+        }
+
+        public void draw ( Mesh mesh )
+        {
+            if (meshes.Count == 0)
+                return;
+
+            Rebuild(false);
+            geoLists[mesh.material].Call();
         }
 
         public void drawAll(MaterialOverride matOverride)

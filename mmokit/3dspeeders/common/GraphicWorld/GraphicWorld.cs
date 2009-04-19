@@ -13,11 +13,27 @@ namespace GraphicWorlds
 {
     public class GraphicWorld
     {
-        public Dictionary<string, Material> materials = null;
-        public Dictionary<string, Model> models = null;
+        public Dictionary<string, Material> materials = new Dictionary<string,Material>();
+        public Dictionary<string, Model> models = new Dictionary<string,Model>();
         public ObjectWorld world = new ObjectWorld();
 
         GroundRenderer ground = new GroundRenderer();
+        ObjectRenderer objRender;
+
+        public bool drawAll = false;
+
+        public GraphicWorld ()
+        {
+            objRender = new ObjectRenderer(this);
+        }
+
+        public bool ObjcetVis ( WorldObject obj )
+        {
+            if (drawAll)
+                return true;
+
+            return world.visList.Contains(obj);
+        }
 
         public void Flush()
         {
@@ -29,16 +45,19 @@ namespace GraphicWorlds
                 models.Clear();
         }
 
+        public void AttachMesh ( WorldObject o )
+        {
+            if (o.tag == null && o.objectName != string.Empty)
+            {
+                if (models.ContainsKey(o.objectName))
+                    o.tag = models[o.objectName];
+            }
+        }
+
         public void AttatchMeshes ()
         {
-            foreach( WorldObject o in world.objects )
-            {
-                if (o.tag == null && o.objectName != string.Empty)
-                {
-                    if (models.ContainsKey(o.objectName))
-                        o.tag = models[o.objectName];
-                }
-            }
+            foreach (WorldObject o in world.objects)
+                AttachMesh(o);
         }
 
         public void RebuildTree()
@@ -61,7 +80,23 @@ namespace GraphicWorlds
                 materials = newMats;
             }
 
+            AttatchMeshes();
+
             ground.Setup(world);
+        }
+
+        public void SetBounds ( WorldObject obj )
+        {
+            Model model = obj.tag as Model;
+            if (model == null)
+                return;
+
+
+        }
+
+        public void AddObject( WorldObject obj )
+        {
+            AttachMesh(obj);
         }
 
         public void ComputeVis ( VisibleFrustum frustum )
