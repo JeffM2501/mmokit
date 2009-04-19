@@ -94,6 +94,20 @@ namespace _3dSpeeders
                 Exit();
         }
 
+        public float[] getViewMatrix ()
+        {
+            float[] ModelMatrix = new float[16];
+            float[] PerspectiveMatrix = new float[16];
+            GL.GetFloat(GetPName.ModelviewMatrix, ModelMatrix);
+            GL.GetFloat(GetPName.ProjectionMatrix, PerspectiveMatrix);
+
+            GL.PushMatrix();
+            GL.LoadMatrix(PerspectiveMatrix);
+            GL.MultMatrix(ModelMatrix);
+            GL.GetFloat(GetPName.ModelviewMatrix, ModelMatrix);
+            GL.PopMatrix();
+            return ModelMatrix;
+        }
         public override void OnRenderFrame(RenderFrameEventArgs e)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit |
@@ -101,6 +115,7 @@ namespace _3dSpeeders
 
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
+
 
             if (scene != null)
                 scene.draw(renderState);

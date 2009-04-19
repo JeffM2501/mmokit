@@ -262,6 +262,13 @@ namespace Drawables.Materials
             }
         }
 
+        public Material getMaterial(Material mat)
+        {
+            if (materialReplacements.ContainsKey(mat))
+                return materialReplacements[mat].newMaterial;
+            return mat;
+        }
+
         public DisplayList getGeoList(Material mat)
         {
             if (materialReplacements.ContainsKey(mat))

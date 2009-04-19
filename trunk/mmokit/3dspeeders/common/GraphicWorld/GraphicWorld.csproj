@@ -53,6 +53,7 @@
     <Compile Include="GraphicWorld.cs" />
     <Compile Include="GraphicWorldIO.cs" />
     <Compile Include="GroundRenderer.cs" />
+    <Compile Include="ObjectRenderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
