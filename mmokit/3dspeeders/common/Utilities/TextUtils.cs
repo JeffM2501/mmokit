@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Utilities.Text
+namespace Utilities.Paths
 {
     public class PathUtils
     {
-
         public static string MakePathRelitive(string rootpath, string outpath)
         {
-            string[] rootChunks = Path.GetDirectoryName(rootpath).Split(Path.DirectorySeparatorChar.ToString().ToCharArray());
+            if (rootpath == string.Empty)
+                return outpath;
+
+            string[] rootChunks = rootpath.Split(Path.DirectorySeparatorChar.ToString().ToCharArray());
+
             string[] outchunks = outpath.Split(Path.DirectorySeparatorChar.ToString().ToCharArray());
 
             string relPath = string.Empty;
@@ -18,14 +21,12 @@ namespace Utilities.Text
             int i = 0;
             for (i = 0; i < rootChunks.Length; i++)
             {
-                if (i >= outchunks.Length)
-                    return outpath;
-
                 if (rootChunks[i] != outchunks[i])
-                {
-                    relPath += ".." + Path.DirectorySeparatorChar.ToString();
-                }
+                    break;
             }
+
+            for (int j = i; j < rootChunks.Length; j++ )
+                relPath += ".." + Path.DirectorySeparatorChar.ToString();
 
             for (; i < outchunks.Length; i++)
             {
