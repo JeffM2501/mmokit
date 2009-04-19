@@ -56,6 +56,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dialog Boxes\MaterialEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog Boxes\MaterialEdit.Designer.cs">
+      <DependentUpon>MaterialEdit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog Boxes\Prefs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog Boxes\Prefs.Designer.cs">
+      <DependentUpon>Prefs.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -63,10 +75,25 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Grid.cs" />
+    <Compile Include="Dialog Boxes\MapInfoDlog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog Boxes\MapInfoDlog.Designer.cs">
+      <DependentUpon>MapInfoDlog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Dialog Boxes\MaterialEdit.resx">
+      <DependentUpon>MaterialEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialog Boxes\Prefs.resx">
+      <DependentUpon>Prefs.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialog Boxes\MapInfoDlog.resx">
+      <DependentUpon>MapInfoDlog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -99,6 +126,10 @@
     <ProjectReference Include="..\..\common\Math\Math3D.csproj">
       <Project>{0BC4671F-FF72-4D3E-9889-44382F6C64F2}</Project>
       <Name>Math3D</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\common\Utilities\Utilities.csproj">
+      <Project>{1CD2C5DC-F417-41D6-9704-CCC0FB501BF3}</Project>
+      <Name>Utilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\common\World\World.csproj">
       <Project>{D5EC63EC-B662-4C70-8C34-6E6AE3661D07}</Project>

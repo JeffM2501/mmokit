@@ -16,10 +16,14 @@ using OpenTK.Math;
 using Drawables;
 using Drawables.Cameras;
 using Drawables.Materials;
+using Drawables.Textures;
+using Drawables.DisplayLists;
 using World;
 using GraphicWorlds;
 
 using Grids;
+
+using Utilities.Paths;
 
 namespace MapEdit
 {
@@ -57,7 +61,7 @@ namespace MapEdit
             prefs.windowSize = this.Size;
             prefs.windowPos = DesktopLocation;
 
-            DirectoryInfo configDir = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "3dModeler"));
+            DirectoryInfo configDir = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "3dMapTool"));
             if (!configDir.Exists)
                 configDir.Create();
             FileInfo prefsFile = new FileInfo(Path.Combine(configDir.FullName, "prefs.xml"));
@@ -80,6 +84,26 @@ namespace MapEdit
 
             DrawablesSystem.system.removeAll();
             world.AddDrawables();
+            updateMaterialsList();
+
+            if (prefs.dataDir == string.Empty)
+                prefsToolStripMenuItem_Click(this, EventArgs.Empty);
+
+            TextureSystem.system.rootDir = new DirectoryInfo(prefs.dataDir);
+
+            setupGrid();
+        }
+
+        private void setupGrid ()
+        {
+            grid.gridSize = world.world.size.X;
+            if (world.world.size.Y > grid.gridSize)
+                grid.gridSize = world.world.size.Y;
+
+            grid.majorSpacing = world.world.groundUVSize*4;
+            grid.minorSpacing = world.world.groundUVSize;
+            grid.alpha = 0.25f;
+            grid.Invalidate();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -90,6 +114,13 @@ namespace MapEdit
         protected void invalidateView()
         {
             glControl1.Invalidate(true);
+        }
+
+        protected void refreshGLItems()
+        {
+            MaterialSystem.system.Invalidate();
+            DrawablesSystem.system.removeAll();
+            DisplayListSystem.system.Invalidate();
         }
 
         void setupDisplay()
@@ -131,22 +162,23 @@ namespace MapEdit
             glControl1.MakeCurrent();
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            GL.Disable(EnableCap.Lighting);
-            GL.Disable(EnableCap.Texture2D);
-
+            GL.Enable(EnableCap.Lighting);
             GL.Enable(EnableCap.Light0);
        
             camera.Execute();
 
-            if (prefs.showGrid)
-                grid.Execute();
-
-            GL.Enable(EnableCap.Lighting);
             GL.PushMatrix();
 
             DrawablesSystem.system.Execute();
 
             GL.PopMatrix();
+
+            GL.Disable(EnableCap.Texture2D);
+            GL.Disable(EnableCap.Lighting);
+
+            if (prefs.showGrid)
+                grid.Execute();
+
             glControl1.SwapBuffers();
         }
 
@@ -164,7 +196,13 @@ namespace MapEdit
                 float rotFactor = 2.0f;
 
                 if (e.Button == MouseButtons.Right)
-                    camera.turn(-delta.Y / rotFactor, -delta.X / rotFactor);
+                {
+                    float realTilt = -delta.Y / rotFactor;
+                    if (camera.Tilt + realTilt > 89.99f || camera.Tilt + realTilt < -89.99f)
+                        realTilt = 0;
+
+                    camera.turn(realTilt, -delta.X / rotFactor);
+                }
 
                 invalidateView();
             }
@@ -174,6 +212,8 @@ namespace MapEdit
         private void glControl1_MouseWheel(object sender, MouseEventArgs e)
         {
             float moveFactor = 0.0125f;
+            if ((Control.ModifierKeys & Keys.Shift) != Keys.None)
+                moveFactor *= 5f;
             if (e.Delta != 0)
             {
                 camera.move(camera.Forward() * (e.Delta*moveFactor));
@@ -181,16 +221,130 @@ namespace MapEdit
             }
         }
 
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.FileName = "*.xmp";
+            ofd.Filter = "XML Map File (*.xmp)|*.xmp|All files (*.*)|*.*";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                refreshGLItems();
+                world.Flush();
+                MaterialSystem.system.Flush();
+                DisplayListSystem.system.Flush();
+
+                FileInfo file = new FileInfo(ofd.FileName);
+                GraphicWorldIO.read(world, new FileInfo(ofd.FileName));
+
+                world.AddDrawables();
+                updateMaterialsList();
+            }
+        }    
+
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.FileName = "*.xmp";
+            sfd.Filter = "XML Map File (*.xmp)|*.xmp|All files (*.*)|*.*";
+
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 FileInfo file = new FileInfo(sfd.FileName);
                 GraphicWorldIO.write(world, new FileInfo(sfd.FileName));
             }
-        }    
+        }
+
+        private void prefsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Dialog_Boxes.Prefs d = new Dialog_Boxes.Prefs(prefs);
+            if (d.ShowDialog() == DialogResult.OK)
+            {
+                TextureSystem.system.rootDir = new DirectoryInfo(prefs.dataDir);
+                savePrefs();
+            }
+        }
+
+        private void updateMaterialsList()
+        {
+            int selection = MaterialsList.SelectedIndex;
+            MaterialsList.Items.Clear();
+            if (world.materials == null)
+                return;
+
+            foreach (KeyValuePair<string, Material> m in world.materials)
+                MaterialsList.Items.Add(m.Key);
+
+            MaterialsList.SelectedIndex = selection;
+        }
+
+        private void addToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (world.materials == null)
+                world.materials = new Dictionary<string,Material>();
+
+            Material mat = new Material();
+            mat.name = "New Material " + world.materials.Count.ToString();
+
+            Dialog_Boxes.MaterialEdit dlog = new MapEdit.Dialog_Boxes.MaterialEdit(mat,prefs.dataDir);
+            if (dlog.ShowDialog() == DialogResult.OK)
+                world.materials[mat.name] = MaterialSystem.system.getMaterial(mat);
+
+            updateMaterialsList();
+            invalidateView();
+        }
+
+        private void editToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MaterialsList.SelectedIndex < 0)
+                return;
+
+            string matName = MaterialsList.SelectedItem.ToString();
+            if (!world.materials.ContainsKey(matName))
+                return;
+
+            Material mat = world.materials[matName];
+            mat.Invalidate();
+            Dialog_Boxes.MaterialEdit dlog = new MapEdit.Dialog_Boxes.MaterialEdit(mat, prefs.dataDir);
+            if (dlog.ShowDialog() == DialogResult.OK)
+            {
+                world.materials.Remove(matName);
+                world.materials[mat.name] = MaterialSystem.system.getMaterial(mat);
+            }
+            updateMaterialsList();
+            invalidateView();
+        }
+
+        private void removeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MaterialsList.SelectedIndex < 0)
+                return;
+
+            string matName = MaterialsList.SelectedItem.ToString();
+            if (!world.materials.ContainsKey(matName))
+                return;
+
+            Material mat = world.materials[matName];
+            world.materials.Remove(matName);
+            mat.Invalidate();
+            updateMaterialsList();
+            invalidateView();
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Dialog_Boxes.MapInfoDlog dlog = new MapEdit.Dialog_Boxes.MapInfoDlog(world);
+            if (dlog.ShowDialog() == DialogResult.OK)
+            {
+                // blow it all out since we don't know what changed.
+                refreshGLItems();
+
+                // flush the world
+                world.AddDrawables();
+                setupGrid();
+                invalidateView();
+            }
+        }
     }
 
     public class Prefrences
@@ -202,5 +356,7 @@ namespace MapEdit
         public bool showGrid = true;
         public bool showNormals = false;
         public bool showWireframe = false;
+
+        public string dataDir = string.Empty;
     }
 }
