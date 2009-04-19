@@ -173,6 +173,8 @@ namespace Drawables.Materials
             displayList.Start();
             if (texture != null)
                 texture.Execute();
+            else
+                GL.Disable(EnableCap.Texture2D);
             baseColor.glColor();
             displayList.End();
         }
@@ -432,6 +434,14 @@ namespace Drawables.Materials
         {
             foreach(Material m in materials)
                 m.Invalidate();
+        }
+
+        public void Flush()
+        {
+            foreach (Material m in materials)
+                m.Invalidate();
+
+            materials.Clear();
         }
     }
 

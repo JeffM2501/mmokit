@@ -76,6 +76,14 @@ namespace Drawables.DisplayLists
                 d.Invalidate();
         }
 
+        public void Flush()
+        {
+            foreach (DisplayList d in displayLists)
+                d.Invalidate();
+
+            displayLists.Clear();
+        }
+
         public DisplayList newList ()
         {
             DisplayList d = new DisplayList();
