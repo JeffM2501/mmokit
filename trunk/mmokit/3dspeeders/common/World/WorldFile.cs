@@ -17,7 +17,7 @@ namespace World
     public class WorldFile
     {
         public ObjectWorld world = null;
-        public List<WorldFileExtras> extras = null;
+        public List<WorldFileExtras> extras = new List<WorldFileExtras>();
 
         public string findSection ( string name )
         {
@@ -33,13 +33,15 @@ namespace World
             return string.Empty;
         }
 
-        public static bool read ( WorldFile worldFile, FileInfo file)
+        public static bool read ( out WorldFile worldFile, FileInfo file)
         {
-            return read(worldFile,file,true);
+            return read(out worldFile,file,true);
         }
 
-        public static bool read ( WorldFile worldFile, FileInfo file, bool compress )
+        public static bool read ( out WorldFile worldFile, FileInfo file, bool compress )
         {
+            worldFile = new WorldFile();
+
             if (!file.Exists)
                 return false;
            
