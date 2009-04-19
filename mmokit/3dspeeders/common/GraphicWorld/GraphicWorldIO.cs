@@ -19,8 +19,8 @@ namespace GraphicWorlds
             if (!file.Exists)
                 return false;
 
-            WorldFile worldFile = new WorldFile();
-            if (!WorldFile.read(worldFile, file, false))
+            WorldFile worldFile;
+            if (!WorldFile.read(out worldFile, file, false))
                 return false;
             return read(world,worldFile);
         }
@@ -75,7 +75,7 @@ namespace GraphicWorlds
                     world.materials[m.name] = m;
             }
 
-            return (world.world.children.Count > 0 || world.world.containedObjects.Count > 0) && world.models.Count > 0;
+            return true;
         }
 
         public static bool write(GraphicWorld world, FileInfo file)
