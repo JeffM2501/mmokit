@@ -10,6 +10,7 @@ namespace World
 {
     public enum CollisionBoundryType
     {
+        None,
         AxisBox,
         RotatedBox,
         Sphere,

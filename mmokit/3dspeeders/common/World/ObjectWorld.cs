@@ -10,17 +10,26 @@ namespace World
 {
     public class WorldObject : OctreeObject
     {
-        public CollisionBoundry Boundry = new CollisionBoundry();
-        public string ObjectName = string.Empty;
+        public CollisionBoundry boundry = new CollisionBoundry();
    
-        public List<string> Attributes = new List<string>();
+        // generic attributes
+        public List<string> attributes = new List<string>();
 
+        // mesh
+        public string objectName = string.Empty;
+        public string akin = string.Empty;
+        public bool acaleSkinToSize = false;
+
+        // mesh position data
         public Vector3 postion = new Vector3();
         public Vector3 rotation = new Vector3();
-        public string Skin = string.Empty;
+        public Vector3 acale = new Vector3(1,1,1);
+
+        // used for non mesh stuff, like spawns and lights
+        public bool skipTree = false;
 
         [System.Xml.Serialization.XmlIgnoreAttribute]
-        public object Tag = null;
+        public object tag = null;
     }
 
     public class ObjectWorld : Octree
@@ -34,6 +43,8 @@ namespace World
         public string groundMaterialName = string.Empty;
         public string wallMaterialName = string.Empty;
         public float groundUVSize = 1.0f;
+        public float wallHeight = 5.0f;
+        public string backgroundName = string.Empty;
 
         // static list just so we don't have to new one each frame
         [System.Xml.Serialization.XmlIgnoreAttribute]
@@ -43,15 +54,18 @@ namespace World
         {
             visList.Clear();
             containedObjects.Clear();
-            children.Clear();
+            if (children != null)
+                children.Clear();
             children = null;
         }
 
         public void Add(WorldObject item)
         {
+            if (item.skipTree)
+                return;
             // make sure it has some bounds
             if (item.bounds == BoundingBox.Empty)
-                item.bounds = item.Boundry.Bounds();
+                item.bounds = item.boundry.Bounds();
 
             objects.Add(item);
         }
