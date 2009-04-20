@@ -365,7 +365,17 @@ namespace Drawables.Models
 
         void Rebuild ( bool extraLists )
         {
-            if (meshes.Count == geoLists.Count)
+            bool oneBad = false;
+            if (meshes.Count != geoLists.Count)
+                oneBad = true;
+
+            foreach (KeyValuePair<Material,DisplayList> l in geoLists)
+            {
+                if (!l.Value.Valid())
+                    oneBad = true;
+            }
+
+            if (!oneBad)
                 return;
 
             // make sure it's clear

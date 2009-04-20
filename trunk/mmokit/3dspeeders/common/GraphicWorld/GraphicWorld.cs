@@ -9,6 +9,9 @@ using Drawables.DisplayLists;
 using World;
 using Math3D;
 
+using OpenTK;
+using OpenTK.Math;
+
 namespace GraphicWorlds
 {
     public class GraphicWorld
@@ -81,6 +84,8 @@ namespace GraphicWorlds
             }
 
             AttatchMeshes();
+            foreach (WorldObject o in world.objects)
+                objRender.AddCallbacks(o);
 
             ground.Setup(world);
         }
@@ -91,12 +96,34 @@ namespace GraphicWorlds
             if (model == null)
                 return;
 
+            obj.bounds = BoundingBox.Empty;
 
+            Matrix4 mat = objRender.GetTransformMatrix(obj);
+
+            foreach(Mesh m in model.meshes)
+            {
+                List<Vector3> l = new List<Vector3>();
+                foreach(Vector3 v in m.verts)
+                    l.Add(new Vector3(Vector3.Transform(v, mat)));
+                if (obj.bounds == BoundingBox.Empty)
+                    obj.bounds = BoundingBox.CreateFromPoints(l);
+                else
+                    obj.bounds = BoundingBox.CreateMerged(BoundingBox.CreateFromPoints(l),obj.bounds);
+            }
+        }
+
+        public void SetBounds()
+        {
+            foreach (WorldObject o in world.objects)
+                SetBounds(o);
         }
 
         public void AddObject( WorldObject obj )
         {
             AttachMesh(obj);
+            SetBounds(obj);
+            objRender.AddCallbacks(obj);
+            world.objects.Add(obj);
         }
 
         public void ComputeVis ( VisibleFrustum frustum )
