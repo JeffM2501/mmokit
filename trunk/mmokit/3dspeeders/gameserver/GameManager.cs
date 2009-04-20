@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Lidgren.Network;
+
 using NetworkMessages;
+using GameStates;
 
 namespace gameserver
 {
@@ -43,12 +45,14 @@ namespace gameserver
         List<Player> players = new List<Player>();
         NetServer server;
 
-        GameState state = new GameState();
-        GameWorld world = new GameWorld();
+        GameState state;
+        GameWorld world;
 
         public GameManager(NetServer s)
         {
             server = s;
+            world = new GameWorld();
+            state = new GameState(world.world);
         }
 
         void sendPlayerPart ( Player player )
