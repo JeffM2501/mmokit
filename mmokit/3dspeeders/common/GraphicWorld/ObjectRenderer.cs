@@ -13,6 +13,8 @@ using Drawables;
 using Drawables.Models;
 using Drawables.Materials;
 
+using Math3D;
+
 namespace GraphicWorlds
 {
     public class MeshMat
@@ -65,13 +67,24 @@ namespace GraphicWorlds
         {
             GL.Translate(obj.postion);
             GL.Scale(obj.scale);
-            GL.Rotate(obj.rotation.X,1f,0,0);
+            GL.Rotate(obj.rotation.Z,0,0,1f);
             if (obj.scaleSkinToSize)
             {
                 GL.MatrixMode(MatrixMode.Texture);
                 GL.Scale(obj.scale);
                 GL.MatrixMode(MatrixMode.Modelview);
             }
+        }
+
+        public Matrix4 GetTransformMatrix(WorldObject obj)
+        {
+            Matrix4 mat = Matrix4.Identity;
+
+            mat = Matrix4.Mult(mat, Matrix4.Translation(obj.postion));
+            mat = Matrix4.Mult(mat, Matrix4.Scale(obj.scale));
+            mat = Matrix4.Mult(mat, Matrix4.Rotate(new Vector3(0,0,1f),Trig.DegreeToRadian(obj.rotation.Z)));
+
+            return mat;
         }
 
         public bool DrawObject(Material mat, object tag)

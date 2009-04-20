@@ -11,7 +11,9 @@ namespace World
     public class WorldObject : OctreeObject
     {
         public CollisionBoundry boundry = new CollisionBoundry();
-   
+
+        public string name = string.Empty;
+
         // generic attributes
         public List<string> attributes = new List<string>();
 
