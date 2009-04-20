@@ -54,6 +54,14 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\common\GameState\GameState.csproj">
+      <Project>{CF8954AA-7AFD-43C9-A9ED-FE1C56D2DB01}</Project>
+      <Name>GameState</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\common\Math\Math3D.csproj">
+      <Project>{0BC4671F-FF72-4D3E-9889-44382F6C64F2}</Project>
+      <Name>Math3D</Name>
+    </ProjectReference>
     <ProjectReference Include="..\common\World\World.csproj">
       <Project>{D5EC63EC-B662-4C70-8C34-6E6AE3661D07}</Project>
       <Name>World</Name>
