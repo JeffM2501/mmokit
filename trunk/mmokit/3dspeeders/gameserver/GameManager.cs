@@ -43,6 +43,9 @@ namespace gameserver
         List<Player> players = new List<Player>();
         NetServer server;
 
+        GameState state = new GameState();
+        GameWorld world = new GameWorld();
+
         public GameManager(NetServer s)
         {
             server = s;
