@@ -339,9 +339,14 @@ namespace MapEdit
             int selection = ObjectList.SelectedIndex;
             ObjectList.Items.Clear();
 
+            int i = 0;
             foreach (WorldObject o in editor.world.world.objects)
             {
-                ObjectList.Items.Add(o.objectName);
+                if (o.name != string.Empty)
+                    ObjectList.Items.Add(o.name);
+                else
+                    ObjectList.Items.Add("object:" + o.objectName + i.ToString());
+                i++;
             }
 
             ObjectList.SelectedIndex = selection;
@@ -354,6 +359,23 @@ namespace MapEdit
                 return;
 
             editor.AddObject(MeshList.SelectedItem.ToString());
+            updateObjectList();
+            invalidateView();
+        }
+
+        private void ObjectEdit_Click(object sender, EventArgs e)
+        {
+            int selection = ObjectList.SelectedIndex;
+
+            if (selection < 0)
+                return;
+
+            WorldObject obj = editor.world.world.objects[selection];
+            if (obj == null)
+                return;
+
+            editor.EditObject(obj);
+            updateObjectList();
             invalidateView();
         }
     }
