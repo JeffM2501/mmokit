@@ -31,6 +31,7 @@ namespace MapEdit
         public Editor (Form1 f)
         {
             form = f;
+            world.drawAll = true;
         }
 
         protected void refreshGLItems()
@@ -198,13 +199,33 @@ namespace MapEdit
             if (!world.models.ContainsKey(meshName))
                 return;
 
-
             Model model = world.models[meshName];
 
             WorldObject obj = new WorldObject();
             obj.objectName = meshName;
             obj.skipTree = false;
             obj.tag = model;
+            obj.scaleSkinToSize = false;
+            obj.postion = new Vector3(0, 0, 0);
+            obj.rotation = new Vector3(0, 0, 0);
+            obj.scale = new Vector3(1, 1, 1);
+            world.AddObject(obj);
+        }
+
+        public void EditObject ( WorldObject obj )
+        {
+            Dialog_Boxes.ObjectEdit dlog = new MapEdit.Dialog_Boxes.ObjectEdit(obj,obj.tag as Model);
+            
+            if (dlog.ShowDialog() == DialogResult.OK)
+            {
+                MaterialSystem.system.Invalidate();
+                DisplayListSystem.system.Invalidate();
+                DrawablesSystem.system.removeAll();
+                world.SetBounds(obj);
+
+                // rebuild the drawables cus skins and mats may have changed.
+                world.AddDrawables();
+            }
         }
     }
 }

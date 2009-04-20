@@ -62,6 +62,12 @@
     <Compile Include="Dialog Boxes\MaterialEdit.Designer.cs">
       <DependentUpon>MaterialEdit.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialog Boxes\ObjectEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog Boxes\ObjectEdit.Designer.cs">
+      <DependentUpon>ObjectEdit.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialog Boxes\Prefs.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -86,6 +92,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Dialog Boxes\MaterialEdit.resx">
       <DependentUpon>MaterialEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialog Boxes\ObjectEdit.resx">
+      <DependentUpon>ObjectEdit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialog Boxes\Prefs.resx">
       <DependentUpon>Prefs.cs</DependentUpon>

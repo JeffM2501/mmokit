@@ -235,6 +235,7 @@
             this.ObjectEdit.TabIndex = 2;
             this.ObjectEdit.Text = "?";
             this.ObjectEdit.UseVisualStyleBackColor = true;
+            this.ObjectEdit.Click += new System.EventHandler(this.ObjectEdit_Click);
             // 
             // ObjectRemove
             // 
