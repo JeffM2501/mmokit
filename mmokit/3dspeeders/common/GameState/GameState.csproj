@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3633FC69-E6A4-4A16-9D48-9A95F001CB42}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{CF8954AA-7AFD-43C9-A9ED-FE1C56D2DB01}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>gameserver</RootNamespace>
-    <AssemblyName>gameserver</AssemblyName>
+    <RootNamespace>GameState</RootNamespace>
+    <AssemblyName>GameState</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -45,27 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GameManager.cs" />
-    <Compile Include="GameServer.cs" />
-    <Compile Include="GameWorld.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\common\World\World.csproj">
-      <Project>{D5EC63EC-B662-4C70-8C34-6E6AE3661D07}</Project>
-      <Name>World</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\net\lidgren-network\Lidgren.Network\Lidgren.Network.csproj">
-      <Project>{BA202214-F6F8-4853-BCC9-CA4F13C5F479}</Project>
-      <Name>Lidgren.Network</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\net\NetworkMessages\NetworkMessages.csproj">
-      <Project>{CB26F044-3519-43ED-9415-1C2AC719D288}</Project>
-      <Name>NetworkMessages</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
