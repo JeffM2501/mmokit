@@ -14,7 +14,7 @@ namespace World
         public string data;
     }
 
-    public class WorldFile
+    public class OctreeWorldFile
     {
         public ObjectWorld world = null;
         public List<WorldFileExtras> extras = new List<WorldFileExtras>();
@@ -33,14 +33,14 @@ namespace World
             return string.Empty;
         }
 
-        public static bool read ( out WorldFile worldFile, FileInfo file)
+        public static bool read ( out OctreeWorldFile worldFile, FileInfo file)
         {
             return read(out worldFile,file,true);
         }
 
-        public static bool read ( out WorldFile worldFile, FileInfo file, bool compress )
+        public static bool read ( out OctreeWorldFile worldFile, FileInfo file, bool compress )
         {
-            worldFile = new WorldFile();
+            worldFile = new OctreeWorldFile();
 
             if (!file.Exists)
                 return false;
@@ -54,8 +54,8 @@ namespace World
             if (!compress)
                 sr = new StreamReader(fs);
 
-            XmlSerializer xml = new XmlSerializer(typeof(WorldFile));
-            worldFile = (WorldFile)xml.Deserialize(sr);
+            XmlSerializer xml = new XmlSerializer(typeof(OctreeWorldFile));
+            worldFile = (OctreeWorldFile)xml.Deserialize(sr);
             sr.Close();
             zip.Close();
             fs.Close();
@@ -63,12 +63,12 @@ namespace World
             return true;
         }
 
-        public static bool write(WorldFile worldFile, FileInfo file)
+        public static bool write(OctreeWorldFile worldFile, FileInfo file)
         {
             return write(worldFile, file, true);
         }
 
-        public static bool write(WorldFile worldFile, FileInfo file, bool compress)
+        public static bool write(OctreeWorldFile worldFile, FileInfo file, bool compress)
         {
             FileStream fs = file.OpenWrite();
             if (fs == null)
@@ -78,7 +78,7 @@ namespace World
             if (!compress)
                 sw = new StreamWriter(fs);
 
-            XmlSerializer xml = new XmlSerializer(typeof(WorldFile));
+            XmlSerializer xml = new XmlSerializer(typeof(OctreeWorldFile));
             xml.Serialize(sw, worldFile);
             sw.Close();
             zip.Close();
