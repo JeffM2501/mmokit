@@ -1,0 +1,18 @@
+Ringworld.
+3 races
+Humans
+Canids
+Androids
+
+Each have a starting story in a central city that has 3 burroughs.
+
+Coalliation of other races are "evil" as well as a third invading faction.
+
+Classes
+ Fighter, Mix
+ Ranger, Ranged DPS
+ Scout, single target close DD Stealth
+ Mage, AE DD, pets
+ Tech, Debufs, buffs, defense, pets.
+ Healer, heals, debufs, slows, DOT
+ 
