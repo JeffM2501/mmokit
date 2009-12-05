@@ -45,6 +45,11 @@ namespace CharacterDatabse
                 database.ChangeDatabase(config.GetItem("CharacterDatabase"));
         }
 
+        public bool Valid()
+        {
+            return database != null;
+        }
+
         protected void ConfigDefaults()
         {
             config.SetItem("CharacterDatabaseHost", "localhost");
@@ -64,12 +69,33 @@ namespace CharacterDatabse
             }
         }
 
+        public int ChracterCount()
+        {
+            checkDatabase();
+            String query = String.Format("SELECT CID FROM characters WHERE UID NOT NULL AND active is 1");
+            MySqlCommand command = new MySqlCommand(query, database);
+
+            MySqlDataReader reader = command.ExecuteReader();
+            if (!reader.HasRows)
+            {
+                reader.Close();
+                return 0;
+            }
+
+            int count = 0;
+            while (reader.Read())
+                count++;
+            reader.Close();
+
+            return count;
+        }
+
         public List<UInt64> GetCharacterList ( UInt64 UID )
         {
             checkDatabase();
             List<UInt64> characterList = new List<UInt64>();
 
-            String query = String.Format("SELECT CID FROM characters WHERE UID is @UID");
+            String query = String.Format("SELECT CID FROM characters WHERE UID is @UID AND active is 1");
             MySqlCommand command = new MySqlCommand(query, database);
             command.Parameters.Add(new MySqlParameter("@UID", UID));
 
@@ -82,11 +108,14 @@ namespace CharacterDatabse
             return characterList;
         }
 
-        public Character GetCharacter ( UInt64 CID )
+        public Character GetCharacter(UInt64 CID, UInt64 UID)
         {
             checkDatabase();
-            
-            String query = String.Format("SELECT UID, name, race, class, gender, experience, level FROM characters WHERE CID is @CID");
+
+            if (CharacterUser(CID) != UID)
+                return new Character();
+
+            String query = String.Format("SELECT UID, name, race, class, gender, experience, level FROM characters WHERE CID is @CID AND active is 1");
             MySqlCommand command = new MySqlCommand(query, database);
             command.Parameters.Add(new MySqlParameter("@CID", CID));
             
@@ -117,7 +146,7 @@ namespace CharacterDatabse
         {
             checkDatabase();
 
-            String query = String.Format("INSERT INTO characters SET name=@name, race=@race, class=@class, gender=@gender, experience=@experience, level=@level WHERE CID=@CID");
+            String query = String.Format("INSERT INTO characters SET name=@name");
             MySqlCommand command = new MySqlCommand(query, database);
 
             string name = new Random().NextDouble().ToString();
@@ -144,6 +173,19 @@ namespace CharacterDatabse
             return character.CharacterID;
         }
 
+        public bool DeleteCharacter ( UInt64 CID, UInt64 UID )
+        {
+            checkDatabase();
+            if (!CharacterExists(CID) || CharacterUser(CID) != UID)
+                return false;
+
+            String query = String.Format("UPDATE characters SET active=0 WHERE CID=@CID");
+            MySqlCommand command = new MySqlCommand(query, database);
+
+            command.Parameters.Add(new MySqlParameter("@CID", CID));
+            return command.ExecuteNonQuery() != 0;
+        }
+
         public bool CharacterExists ( UInt64 CID )
         {
             checkDatabase();
@@ -159,13 +201,30 @@ namespace CharacterDatabse
             return valid;
         }
 
+        public UInt64 CharacterUser(UInt64 CID)
+        {
+            checkDatabase();
+
+            String query = String.Format("SELECT UID FROM characters WHERE CID is @CID");
+            MySqlCommand command = new MySqlCommand(query, database);
+            command.Parameters.Add(new MySqlParameter("@CID", CID));
+
+            MySqlDataReader reader = command.ExecuteReader();
+
+            UInt64 uid = 0;
+            if (reader.Read())
+                uid = reader.GetUInt64(0);
+            reader.Close();
+            return uid;
+        }
+
         public bool UpdateCharacter ( Character character )
         {
             checkDatabase();
             
             if (!CharacterExists(character.CharacterID))
                 return false;
-            String query = String.Format("UPDATE characters SET UID=@UID, name=@name, race=@race, class=@class, gender=@gender, experience=@experience, level=@level WHERE CID=@CID");
+            String query = String.Format("UPDATE characters SET UID=@UID, name=@name, race=@race, class=@class, gender=@gender, experience=@experience, level=@level active=1 WHERE CID=@CID");
             MySqlCommand command = new MySqlCommand(query, database);
            
             command.Parameters.Add(new MySqlParameter("@CID", character.CharacterID));
