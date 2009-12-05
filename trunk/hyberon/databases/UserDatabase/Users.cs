@@ -142,6 +142,7 @@ namespace UserDatabase
 
         public int UserCount ()
         {
+            checkDatabase();
             String query = String.Format("SELECT ID FROM users");
             MySqlCommand command = new MySqlCommand(query, database);
 

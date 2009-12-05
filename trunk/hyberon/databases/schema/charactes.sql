@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `characters` (
   `gender` int(11) DEFAULT NULL,
   `experience` int(11) DEFAULT NULL,
   `level` int(11) DEFAULT NULL,
+  `active` int(11) DEFAULT NULL,
   PRIMARY KEY (`CID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 

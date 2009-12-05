@@ -65,6 +65,10 @@
       <Project>{CA9368CE-BC6D-4028-9FF8-99F012201DC6}</Project>
       <Name>ServerConfigurator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\databases\UserDatabase\UserDatabase.csproj">
+      <Project>{52F962E9-452D-4287-BEC0-03A453356D17}</Project>
+      <Name>UserDatabase</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\lidgren-network\Lidgren.Network\Lidgren.Network.csproj">
       <Project>{BA202214-F6F8-4853-BCC9-CA4F13C5F479}</Project>
       <Name>Lidgren.Network</Name>
