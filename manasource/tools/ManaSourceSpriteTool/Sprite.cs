@@ -30,7 +30,7 @@ namespace ManaSource.Sprites
         public Point Offset = Point.Empty;
         public int StartFrame = -1;
         public int EndFrame = -1;
-        public int Delay = -1;
+        public int Delay = 0;
 
         public int Frame ( int index )
         {
@@ -38,6 +38,17 @@ namespace ManaSource.Sprites
                 return StartFrame;
 
             return StartFrame + index;
+        }
+
+        public override string  ToString()
+        {
+            if (Length > 1)
+                return StartFrame.ToString() + "->" + EndFrame.ToString() + ":" + Delay.ToString();
+
+            if (Delay == 0)
+                return StartFrame.ToString();
+
+            return StartFrame.ToString() + ":" + Delay.ToString();
         }
 
         public int Length
@@ -240,6 +251,107 @@ namespace ManaSource.Sprites
                 }
             }
             return anim;
+        }
+    }
+
+    public class XMLWriter
+    {
+        public XMLWriter( FileInfo file, Sprite sprite )
+        {
+            XmlDocument doc = new XmlDocument();
+
+            doc.CreateXmlDeclaration("1.0", "ASCII", string.Empty);
+            XmlElement RootElement = doc.CreateElement("sprite");
+            doc.AppendChild(doc.CreateWhitespace("\r\n"));
+            doc.AppendChild(RootElement);
+            RootElement.AppendChild(doc.CreateWhitespace("\r\n"));
+
+            RootElement.SetAttribute("name", sprite.Name);
+            RootElement.SetAttribute("action", sprite.DefaultAction);
+
+            WriteImageSets(doc, RootElement, sprite);
+            WriteActions(doc, RootElement, sprite);
+
+            if (doc.ChildNodes.Count == 0)
+                return;
+
+            if (file.Exists)
+                file.Delete();
+            Stream outStream = file.OpenWrite();
+            System.Xml.XmlWriter writer = System.Xml.XmlWriter.Create(outStream);
+            doc.WriteTo(writer);
+            writer.Close();
+            outStream.Close();
+        }
+
+        protected void WriteImageSets ( XmlDocument doc, XmlElement root, Sprite sprite )
+        {
+            foreach (KeyValuePair<string,ImageSet> imageset in sprite.Imagesets)
+            {
+                XmlElement node = doc.CreateElement("imageset");
+
+                node.SetAttribute("name", imageset.Value.Name);
+                string source = imageset.Value.ImageFile;
+                if (imageset.Value.DieString != string.Empty)
+                    source += "|" + imageset.Value.DieString;
+
+                node.SetAttribute("src", source);
+
+                node.SetAttribute("width", imageset.Value.GridSize.Width.ToString());
+                node.SetAttribute("height", imageset.Value.GridSize.Height.ToString());
+
+                root.AppendChild(node);
+                root.AppendChild(doc.CreateWhitespace("\r\n"));
+            }
+        }
+
+        protected void WriteActions ( XmlDocument doc, XmlElement root, Sprite sprite )
+        {
+            foreach (KeyValuePair<string,Action> action in sprite.Actions)
+            {
+                XmlElement node = doc.CreateElement("action");
+                node.SetAttribute("name", action.Value.Name);
+                node.SetAttribute("imageset", action.Value.Imageset);
+                node.AppendChild(doc.CreateWhitespace("\r\n"));
+
+                foreach (KeyValuePair<Direction,Animation> anim in action.Value.Animations)
+                    WriteAnimation(doc, node, anim.Value);
+                root.AppendChild(node);
+                root.AppendChild(doc.CreateWhitespace("\r\n"));
+            }
+        }
+
+        protected void WriteAnimation ( XmlDocument doc, XmlElement root, Animation anim )
+        {
+            XmlElement node = doc.CreateElement("animation");
+            node.SetAttribute("direction", anim.Direction.ToString());
+            node.AppendChild(doc.CreateWhitespace("\r\n"));
+
+            foreach (AnimationFrame frame in anim.Frames)
+                WriteAnimationFrame(doc, node, frame);
+            root.AppendChild(node);
+            root.AppendChild(doc.CreateWhitespace("\r\n"));
+        }
+
+        protected void WriteAnimationFrame(XmlDocument doc, XmlElement root, AnimationFrame frame)
+        {
+            XmlElement node;
+            if (frame.Length > 1)
+            {
+                node = doc.CreateElement("sequence");
+                node.SetAttribute("start", frame.StartFrame.ToString());
+                node.SetAttribute("end", frame.EndFrame.ToString());
+            }
+            else
+            {
+                node = doc.CreateElement("frame");
+                node.SetAttribute("index", frame.StartFrame.ToString());
+            }
+            if (frame.Delay > 0)
+                node.SetAttribute("delay", frame.Delay.ToString());
+
+            root.AppendChild(node);
+            root.AppendChild(doc.CreateWhitespace("\r\n"));
         }
     }
 }
