@@ -108,7 +108,7 @@ namespace ManaSourceSpriteTool
         {
             Rectangle destRect;
             if (useOffset)
-                destRect = new Rectangle(frame.Offset,image.GridSize);
+                destRect = new Rectangle(-image.GridSize.Width / 2 + frame.Offset.X, -image.GridSize.Height + frame.Offset.Y, image.GridSize.Width, image.GridSize.Height);
             else
                 destRect = new Rectangle(Point.Empty, image.GridSize);
 

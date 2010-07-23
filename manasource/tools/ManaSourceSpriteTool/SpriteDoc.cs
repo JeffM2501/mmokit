@@ -30,5 +30,8 @@ namespace ManaSourceSpriteTool
     public class SpriteDoc
     {
         public List<SpriteLayer> Layers = new List<SpriteLayer>();
+        public List<String> Actions = new List<String>();
+
+
     }
 }

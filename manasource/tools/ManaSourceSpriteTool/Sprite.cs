@@ -22,7 +22,6 @@ namespace ManaSource.Sprites
         down,
         left,
         right,
-        dead,
         unknown,
     }
 
