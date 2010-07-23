@@ -36,7 +36,6 @@ namespace ManaSourceSpriteTool
 
         public MainForm()
         {
-            LastDragLoc = new Point(DrawOffset.X, DrawOffset.Y);
             InitializeComponent();
             SpriteImage.LocateFile = new SpriteImage.UnknownFileHandler(FindSpriteImage);
             SpriteImage.Reload += new SpriteImage.FileReloadHandler(SpriteImage_Reload);
@@ -44,6 +43,10 @@ namespace ManaSourceSpriteTool
             LayerList_SelectedIndexChanged(this, EventArgs.Empty);
             DirButtonBackColor = UpButton.BackColor;
             SetDirChecks();
+
+            DrawOffset = new Point(MainView.Width / ImageZoom / 2, MainView.Height / ImageZoom - 4);
+
+            LastDragLoc = new Point(DrawOffset.X, DrawOffset.Y);
         }
 
         void SpriteImage_Reload(SpriteImage image)
@@ -144,6 +147,9 @@ namespace ManaSourceSpriteTool
 
         protected ManaSource.Sprites.Action GetCurrentAction(SpriteLayer layer)
         {
+            if (layer == null)
+                return null;
+
             if (layer.Sprite.Actions.ContainsKey(CurrentAction))
                 return layer.Sprite.Actions[CurrentAction];
             return null;
@@ -275,6 +281,11 @@ namespace ManaSourceSpriteTool
                     }
                     BuildLayerList();
                     BuildActionList();
+                    UpdateImageSet();
+                    UpdateFrameData();
+                    UpdateAnimations();
+                    SelectLayer(Doc.Layers[Doc.Layers.Count - 1]);
+                    CheckCurrentFrame();
                     Redraw();
                 }
             }
@@ -300,6 +311,9 @@ namespace ManaSourceSpriteTool
                 }
                 BuildActionList();
                 BuildLayerList();
+                UpdateFrameData();
+                UpdateAnimations();
+                CheckCurrentFrame();
                 Redraw();
             }
             NoSelect = false;
@@ -322,6 +336,9 @@ namespace ManaSourceSpriteTool
                     Doc.Layers.Insert(index + 1, layer);
                     BuildLayerList();
                     SelectLayer(layer);
+                    CheckCurrentFrame();
+                    UpdateFrameData();
+                    UpdateAnimations();
                     Redraw();
                 }
             }
@@ -339,6 +356,9 @@ namespace ManaSourceSpriteTool
                     Doc.Layers.Insert(index - 1, layer);
                     BuildLayerList();
                     SelectLayer(layer);
+                    CheckCurrentFrame();
+                    UpdateFrameData();
+                    UpdateAnimations();
                     Redraw();
                 }
             }
@@ -355,23 +375,63 @@ namespace ManaSourceSpriteTool
             LayerInfo.Enabled = enable;
             HideLayer.Enabled = enable;
             RemoveLayer.Enabled = enable;
+            SaveLayer.Enabled = enable;
+
+            CheckCurrentFrame();
             UpdateFrameData();
+            UpdateImageSet();
+            UpdateAnimations();
+
+            Redraw();
         }
 
         protected void UpdateFrameData ()
         {
             NoSelect = true;
             SpriteLayer layer = SelectedLayer();
+
+            SequenceNumber.Text = CurrentSequence.ToString();
+            IndexNumber.Text = CurrentFrame.ToString();
+
+            GridIndex.Text = "";
+
             if (layer == null)
             {
                 XOffset.Value = 0;
                 YOffset.Value = 0;
+                FrameDataGroup.Enabled = false;
+                XOffset.Enabled = false;
+                YOffset.Enabled = false;
+                PlayControllsPanel.Enabled = false;
             }
             else
             {
-                 ManaSource.Sprites.Animation anim = GetCurrentAnimation(layer);
-                 XOffset.Value = anim.Frames[CurrentSequence].Offset.X;
-                 YOffset.Value = anim.Frames[CurrentSequence].Offset.Y;
+                PlayControllsPanel.Enabled = true;
+
+                ManaSource.Sprites.Animation anim = GetCurrentAnimation(layer);
+                XOffset.Enabled = true;
+                YOffset.Enabled = true;
+                XOffset.Value = anim.Frames[CurrentSequence].Offset.X;
+                YOffset.Value = anim.Frames[CurrentSequence].Offset.Y;
+
+                FrameDataGroup.Enabled = true;
+
+                ManaSource.Sprites.AnimationFrame frame = anim.Frames[CurrentSequence];
+
+                AnimIsFrame.Checked = frame.Length == 1;
+                AnimIsSeq.Checked = frame.Length > 1;
+                FrameStartIndex.Value = frame.StartFrame;
+                if (frame.Length == 1)
+                    FrameEndIndex.Enabled = false;
+                else
+                {
+                    FrameEndIndex.Enabled = true;
+                    FrameEndIndex.Value = frame.EndFrame;
+                }
+
+                FrameDelay.Value = frame.Delay;
+
+                GridIndex.Text = frame.Frame(CurrentFrame).ToString();
             }
 
             NoSelect = false;
@@ -431,6 +491,8 @@ namespace ManaSourceSpriteTool
             CurrentDirection = ManaSource.Sprites.Direction.up;
             SetDirChecks();
             UpdateFrameData();
+            UpdateAnimations();
+
             Redraw();
         }
 
@@ -439,6 +501,7 @@ namespace ManaSourceSpriteTool
             CurrentDirection = ManaSource.Sprites.Direction.left;
             SetDirChecks();
             UpdateFrameData();
+            UpdateAnimations();
             Redraw();
         }
 
@@ -447,6 +510,7 @@ namespace ManaSourceSpriteTool
             CurrentDirection = ManaSource.Sprites.Direction.down;
             SetDirChecks();
             UpdateFrameData();
+            UpdateAnimations();
             Redraw();
         }
 
@@ -455,6 +519,7 @@ namespace ManaSourceSpriteTool
             CurrentDirection = ManaSource.Sprites.Direction.right;
             SetDirChecks();
             UpdateFrameData();
+            UpdateAnimations();
             Redraw();
         }
 
@@ -465,12 +530,181 @@ namespace ManaSourceSpriteTool
 
             CurrentAction = ActionList.SelectedItem.ToString();
             UpdateFrameData();
+            UpdateImageSet();
+            UpdateAnimations();
             Redraw();
+        }
+
+        private void UpdateImageSet ()
+        {
+            ImageSetList.Items.Clear();
+            SpriteLayer layer = SelectedLayer();
+            ManaSource.Sprites.Action action = GetCurrentAction(layer);
+            if (action == null)
+                return;
+
+            NoSelect = true;
+            foreach (KeyValuePair<string, ManaSource.Sprites.ImageSet> imageset in layer.Sprite.Imagesets)
+                ImageSetList.Items.Add(imageset.Value.Name);
+
+            ImageSetList.SelectedItem = action.Imageset;
+            NoSelect = false;
+        }
+
+        protected void UpdateAnimations ()
+        {
+            SequenceList.Items.Clear();
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(SelectedLayer());
+            if (anim == null)
+                return;
+
+            NoSelect = true;
+
+            foreach (ManaSource.Sprites.AnimationFrame frame in anim.Frames)
+            {
+                int id = 0;
+                if (frame.Length > 1)
+                    id = 1;
+
+                ListViewItem item = new ListViewItem(frame.ToString(), id);
+                SequenceList.Items.Add(item).Tag = frame;
+            }
+
+
+            NoSelect = false;
         }
 
         private void ActionList_TextUpdate(object sender, EventArgs e)
         {
 
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 1;
+            Redraw();
+        }
+
+        private void xToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 2;
+            Redraw();
+        }
+
+        private void xToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 3;
+            Redraw();
+        }
+
+        private void xToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 4;
+            Redraw();
+        }
+
+        private void xToolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 5;
+            Redraw();
+        }
+
+        private void xToolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 6;
+            Redraw();
+        }
+
+        private void xToolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 7;
+            Redraw();
+        }
+
+        private void xToolStripMenuItem6_Click(object sender, EventArgs e)
+        {
+            ImageZoom = 8;
+            Redraw();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void XOffset_ValueChanged(object sender, EventArgs e)
+        {
+            if (NoSelect)
+                return;
+
+            SpriteLayer layer = SelectedLayer();
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(layer);
+
+            if (anim == null || anim.Frames.Count <= CurrentSequence)
+                return;
+
+            anim.Frames[CurrentSequence].Offset = new Point((int)XOffset.Value, (int)YOffset.Value);
+            Redraw();
+        }
+
+        private void HideLayer_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void SaveLayer_Click(object sender, EventArgs e)
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            new ManaSource.Sprites.XMLWriter(new FileInfo("temp.xml"), layer.Sprite);
+        }
+
+        private void CheckCurrentFrame ()
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(layer);
+            if (CurrentSequence >= anim.Frames.Count)
+            {
+                CurrentSequence = 0;
+                CurrentFrame = 0;
+            }
+            else if (CurrentFrame >= anim.Frames[CurrentSequence].Length)
+                CurrentFrame = 0;
+        }
+
+        private void StepForwardButton_Click(object sender, EventArgs e)
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(layer);
+            ManaSource.Sprites.AnimationFrame frame = anim.Frames[CurrentSequence];
+
+            if (anim.Frames.Count == 1 && frame.Length == 1)
+                return;
+
+            CurrentFrame++;
+            if (CurrentFrame >= frame.Length)
+            {
+                NoSelect = true;
+                SequenceList.Items[CurrentSequence].Selected = false;
+
+                CurrentFrame = 0;
+                CurrentSequence++;
+                if (CurrentSequence >= anim.Frames.Count)
+                    CurrentSequence = 0;
+
+                SequenceList.Items[CurrentSequence].Selected = true;
+                NoSelect = false;
+            }
+
+            UpdateFrameData();
+            Redraw();
         }
     }
 }
