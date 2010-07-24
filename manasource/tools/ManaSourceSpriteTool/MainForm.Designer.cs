@@ -61,6 +61,7 @@
             this.XOffset = new System.Windows.Forms.NumericUpDown();
             this.OffsetLabel = new System.Windows.Forms.Label();
             this.DirectionPanel = new System.Windows.Forms.Panel();
+            this.AnyButton = new System.Windows.Forms.Button();
             this.RightButton = new System.Windows.Forms.Button();
             this.LeftButton = new System.Windows.Forms.Button();
             this.DownButton = new System.Windows.Forms.Button();
@@ -80,8 +81,8 @@
             this.AnimPanel = new System.Windows.Forms.Panel();
             this.SequenceList = new System.Windows.Forms.ListView();
             this.SeqImageList = new System.Windows.Forms.ImageList(this.components);
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.RemoveSequence = new System.Windows.Forms.Button();
+            this.AddSequence = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.EditImageSet = new System.Windows.Forms.Button();
@@ -340,6 +341,7 @@
             this.FrameDelay.Name = "FrameDelay";
             this.FrameDelay.Size = new System.Drawing.Size(55, 20);
             this.FrameDelay.TabIndex = 7;
+            this.FrameDelay.ValueChanged += new System.EventHandler(this.FrameStartIndex_ValueChanged);
             // 
             // label7
             // 
@@ -356,6 +358,7 @@
             this.FrameEndIndex.Name = "FrameEndIndex";
             this.FrameEndIndex.Size = new System.Drawing.Size(55, 20);
             this.FrameEndIndex.TabIndex = 5;
+            this.FrameEndIndex.ValueChanged += new System.EventHandler(this.FrameStartIndex_ValueChanged);
             // 
             // EndIndexLabel
             // 
@@ -372,6 +375,7 @@
             this.FrameStartIndex.Name = "FrameStartIndex";
             this.FrameStartIndex.Size = new System.Drawing.Size(55, 20);
             this.FrameStartIndex.TabIndex = 3;
+            this.FrameStartIndex.ValueChanged += new System.EventHandler(this.FrameStartIndex_ValueChanged);
             // 
             // label6
             // 
@@ -403,6 +407,7 @@
             this.AnimIsFrame.TabStop = true;
             this.AnimIsFrame.Text = "Single";
             this.AnimIsFrame.UseVisualStyleBackColor = true;
+            this.AnimIsFrame.CheckedChanged += new System.EventHandler(this.AnimIsFrame_CheckedChanged);
             // 
             // label2
             // 
@@ -459,14 +464,25 @@
             // 
             // DirectionPanel
             // 
+            this.DirectionPanel.Controls.Add(this.AnyButton);
             this.DirectionPanel.Controls.Add(this.RightButton);
             this.DirectionPanel.Controls.Add(this.LeftButton);
             this.DirectionPanel.Controls.Add(this.DownButton);
             this.DirectionPanel.Controls.Add(this.UpButton);
             this.DirectionPanel.Location = new System.Drawing.Point(3, 3);
             this.DirectionPanel.Name = "DirectionPanel";
-            this.DirectionPanel.Size = new System.Drawing.Size(165, 100);
+            this.DirectionPanel.Size = new System.Drawing.Size(165, 121);
             this.DirectionPanel.TabIndex = 0;
+            // 
+            // AnyButton
+            // 
+            this.AnyButton.Location = new System.Drawing.Point(109, 95);
+            this.AnyButton.Name = "AnyButton";
+            this.AnyButton.Size = new System.Drawing.Size(53, 23);
+            this.AnyButton.TabIndex = 4;
+            this.AnyButton.Text = "Default";
+            this.AnyButton.UseVisualStyleBackColor = true;
+            this.AnyButton.Click += new System.EventHandler(this.AnyButton_Click);
             // 
             // RightButton
             // 
@@ -677,8 +693,8 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.AnimPanel.Controls.Add(this.SequenceList);
-            this.AnimPanel.Controls.Add(this.button1);
-            this.AnimPanel.Controls.Add(this.button2);
+            this.AnimPanel.Controls.Add(this.RemoveSequence);
+            this.AnimPanel.Controls.Add(this.AddSequence);
             this.AnimPanel.Controls.Add(this.label5);
             this.AnimPanel.Controls.Add(this.label4);
             this.AnimPanel.Controls.Add(this.EditImageSet);
@@ -712,6 +728,7 @@
             this.SequenceList.TabIndex = 15;
             this.SequenceList.UseCompatibleStateImageBehavior = false;
             this.SequenceList.View = System.Windows.Forms.View.List;
+            this.SequenceList.SelectedIndexChanged += new System.EventHandler(this.SequenceList_SelectedIndexChanged);
             // 
             // SeqImageList
             // 
@@ -720,29 +737,29 @@
             this.SeqImageList.Images.SetKeyName(0, "single.png");
             this.SeqImageList.Images.SetKeyName(1, "multiple.png");
             // 
-            // button1
+            // RemoveSequence
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1.Enabled = false;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Location = new System.Drawing.Point(34, 323);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(22, 23);
-            this.button1.TabIndex = 14;
-            this.button1.Text = "-";
-            this.button1.UseVisualStyleBackColor = true;
+            this.RemoveSequence.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.RemoveSequence.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.RemoveSequence.Location = new System.Drawing.Point(34, 323);
+            this.RemoveSequence.Name = "RemoveSequence";
+            this.RemoveSequence.Size = new System.Drawing.Size(22, 23);
+            this.RemoveSequence.TabIndex = 14;
+            this.RemoveSequence.Text = "-";
+            this.RemoveSequence.UseVisualStyleBackColor = true;
+            this.RemoveSequence.Click += new System.EventHandler(this.RemoveSequence_Click);
             // 
-            // button2
+            // AddSequence
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button2.Enabled = false;
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button2.Location = new System.Drawing.Point(6, 323);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(22, 23);
-            this.button2.TabIndex = 13;
-            this.button2.Text = "+";
-            this.button2.UseVisualStyleBackColor = true;
+            this.AddSequence.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.AddSequence.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.AddSequence.Location = new System.Drawing.Point(6, 323);
+            this.AddSequence.Name = "AddSequence";
+            this.AddSequence.Size = new System.Drawing.Size(22, 23);
+            this.AddSequence.TabIndex = 13;
+            this.AddSequence.Text = "+";
+            this.AddSequence.UseVisualStyleBackColor = true;
+            this.AddSequence.Click += new System.EventHandler(this.AddSequence_Click);
             // 
             // label5
             // 
@@ -765,7 +782,6 @@
             // EditImageSet
             // 
             this.EditImageSet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EditImageSet.Enabled = false;
             this.EditImageSet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.EditImageSet.Location = new System.Drawing.Point(209, 54);
             this.EditImageSet.Name = "EditImageSet";
@@ -773,11 +789,11 @@
             this.EditImageSet.TabIndex = 9;
             this.EditImageSet.Text = "i";
             this.EditImageSet.UseVisualStyleBackColor = true;
+            this.EditImageSet.Click += new System.EventHandler(this.EditImageSet_Click);
             // 
             // RemoveImageSet
             // 
             this.RemoveImageSet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.RemoveImageSet.Enabled = false;
             this.RemoveImageSet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.RemoveImageSet.Location = new System.Drawing.Point(181, 54);
             this.RemoveImageSet.Name = "RemoveImageSet";
@@ -785,11 +801,11 @@
             this.RemoveImageSet.TabIndex = 8;
             this.RemoveImageSet.Text = "-";
             this.RemoveImageSet.UseVisualStyleBackColor = true;
+            this.RemoveImageSet.Click += new System.EventHandler(this.RemoveImageSet_Click);
             // 
             // EditAction
             // 
             this.EditAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EditAction.Enabled = false;
             this.EditAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.EditAction.Location = new System.Drawing.Point(209, 16);
             this.EditAction.Name = "EditAction";
@@ -797,11 +813,11 @@
             this.EditAction.TabIndex = 5;
             this.EditAction.Text = "i";
             this.EditAction.UseVisualStyleBackColor = true;
+            this.EditAction.Click += new System.EventHandler(this.EditAction_Click);
             // 
             // AddImageSet
             // 
             this.AddImageSet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.AddImageSet.Enabled = false;
             this.AddImageSet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.AddImageSet.Location = new System.Drawing.Point(153, 54);
             this.AddImageSet.Name = "AddImageSet";
@@ -809,11 +825,11 @@
             this.AddImageSet.TabIndex = 7;
             this.AddImageSet.Text = "+";
             this.AddImageSet.UseVisualStyleBackColor = true;
+            this.AddImageSet.Click += new System.EventHandler(this.AddImageSet_Click);
             // 
             // RemoveAction
             // 
             this.RemoveAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.RemoveAction.Enabled = false;
             this.RemoveAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.RemoveAction.Location = new System.Drawing.Point(181, 16);
             this.RemoveAction.Name = "RemoveAction";
@@ -821,6 +837,7 @@
             this.RemoveAction.TabIndex = 4;
             this.RemoveAction.Text = "-";
             this.RemoveAction.UseVisualStyleBackColor = true;
+            this.RemoveAction.Click += new System.EventHandler(this.RemoveAction_Click);
             // 
             // ImageSetList
             // 
@@ -832,11 +849,11 @@
             this.ImageSetList.Name = "ImageSetList";
             this.ImageSetList.Size = new System.Drawing.Size(140, 21);
             this.ImageSetList.TabIndex = 6;
+            this.ImageSetList.SelectedIndexChanged += new System.EventHandler(this.ImageSetList_SelectedIndexChanged);
             // 
             // AddAction
             // 
             this.AddAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.AddAction.Enabled = false;
             this.AddAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.AddAction.Location = new System.Drawing.Point(153, 16);
             this.AddAction.Name = "AddAction";
@@ -844,6 +861,7 @@
             this.AddAction.TabIndex = 3;
             this.AddAction.Text = "+";
             this.AddAction.UseVisualStyleBackColor = true;
+            this.AddAction.Click += new System.EventHandler(this.AddAction_Click);
             // 
             // ActionList
             // 
@@ -1120,8 +1138,8 @@
         private System.Windows.Forms.NumericUpDown FrameStartIndex;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.RadioButton AnimIsSeq;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button RemoveSequence;
+        private System.Windows.Forms.Button AddSequence;
         private System.Windows.Forms.NumericUpDown FrameDelay;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Panel PlayControllsPanel;
@@ -1141,6 +1159,7 @@
         private System.Windows.Forms.Label LayerLabel;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Button AnyButton;
     }
 }
 

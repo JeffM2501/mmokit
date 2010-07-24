@@ -50,21 +50,32 @@ namespace ManaSourceSpriteTool
         protected void SetToolTips ()
         {
             toolTip1.SetToolTip(MainView, "Main graphics view, right drag to move");
+
             toolTip1.SetToolTip(LayerUp, "Move selected layer up one level");
             toolTip1.SetToolTip(LayerDown, "Move selected layer down one level");
             toolTip1.SetToolTip(SaveLayer, "Save selected layer XML");
             toolTip1.SetToolTip(HideLayer, "Show/Hide selected layer form main view");
             toolTip1.SetToolTip(AddLayer, "New layer from XML");
             toolTip1.SetToolTip(RemoveLayer, "Remove selected layer");
-            toolTip1.SetToolTip(StepForwardButton, "Step to next frame in animation");
-            toolTip1.SetToolTip(XOffset, "Offset in X for current animation");
-            toolTip1.SetToolTip(YOffset, "Offset in Y for current animation");
 
+            toolTip1.SetToolTip(XOffset, "Offset in X for current animation for current segment");
+            toolTip1.SetToolTip(YOffset, "Offset in Y for current animation for current segment");
+
+            toolTip1.SetToolTip(FrameDelay, "Delay for frame segment(ms)");
+            toolTip1.SetToolTip(FrameStartIndex, "Start frame for an animation segment");
+            toolTip1.SetToolTip(FrameEndIndex, "End frame for an animation segment");
+            toolTip1.SetToolTip(AnimIsFrame, "Animation segment is a single frame");
+            toolTip1.SetToolTip(AnimIsSeq, "Animation segment is a sequence of frames");
+
+            toolTip1.SetToolTip(StepForwardButton, "Step to next frame in animation");
             toolTip1.SetToolTip(IndexNumber, "Step for current layer animation");
             toolTip1.SetToolTip(SequenceNumber, "Sequence number for current layer animation");
             toolTip1.SetToolTip(GridIndex, "Image grid index for current layer animation frame");
 
             toolTip1.SetToolTip(SequenceList, "Animation sequences/frames for current layer");
+            toolTip1.SetToolTip(AddSequence, "Add a new animation segment for current layer/direction");
+            toolTip1.SetToolTip(RemoveSequence, "Remove selected animation segment");
+
         }
 
         void SpriteImage_Reload(SpriteImage image)
@@ -396,16 +407,32 @@ namespace ManaSourceSpriteTool
             Redraw();
         }
 
-        protected void UpdateFrameData ()
+        protected void UpdateSequenceData()
+        {
+            SequenceNumber.Text = string.Empty;
+            IndexNumber.Text = string.Empty;
+            LayerLabel.Text = string.Empty;
+            GridIndex.Text = "";
+
+            SpriteLayer layer = SelectedLayer();
+            if (layer != null)
+            {
+                LayerLabel.Text = layer.Name;
+
+                SequenceNumber.Text = layer.CurrentSequence.ToString();
+                IndexNumber.Text = layer.CurrentIndex.ToString();
+                ManaSource.Sprites.AnimationFrame frame = GetCurrentFrame(layer);
+                if (frame != null)
+                    GridIndex.Text = frame.Frame(layer.CurrentIndex).ToString();
+            }
+        }
+
+       protected void UpdateFrameData ()
         {
             NoSelect = true;
             SpriteLayer layer = SelectedLayer();
 
-            SequenceNumber.Text = string.Empty;
-            IndexNumber.Text = string.Empty;
-            LayerLabel.Text = string.Empty;
-
-            GridIndex.Text = "";
+            UpdateSequenceData();
 
             if (layer == null)
             {
@@ -418,11 +445,6 @@ namespace ManaSourceSpriteTool
             }
             else
             {
-                LayerLabel.Text = layer.Name;
-
-                SequenceNumber.Text = layer.CurrentSequence.ToString();
-                IndexNumber.Text = layer.CurrentIndex.ToString();
-
                 PlayControllsPanel.Enabled = true;
 
                 ManaSource.Sprites.Animation anim = GetCurrentAnimation(layer);
@@ -431,7 +453,7 @@ namespace ManaSourceSpriteTool
                 XOffset.Value = anim.Frames[layer.CurrentSequence].Offset.X;
                 YOffset.Value = anim.Frames[layer.CurrentSequence].Offset.Y;
 
-                FrameDataGroup.Enabled = false;
+                FrameDataGroup.Enabled = true;
 
                 ManaSource.Sprites.AnimationFrame frame = anim.Frames[layer.CurrentSequence];
 
@@ -447,8 +469,6 @@ namespace ManaSourceSpriteTool
                 }
 
                 FrameDelay.Value = frame.Delay;
-
-                GridIndex.Text = frame.Frame(layer.CurrentIndex).ToString();
             }
 
             NoSelect = false;
@@ -534,6 +554,15 @@ namespace ManaSourceSpriteTool
         private void RightButton_Click(object sender, EventArgs e)
         {
             CurrentDirection = ManaSource.Sprites.Direction.Right;
+            SetDirChecks();
+            UpdateFrameData();
+            UpdateAnimations();
+            Redraw();
+        }
+
+        private void AnyButton_Click(object sender, EventArgs e)
+        {
+            CurrentDirection = ManaSource.Sprites.Direction.Any;
             SetDirChecks();
             UpdateFrameData();
             UpdateAnimations();
@@ -710,13 +739,56 @@ namespace ManaSourceSpriteTool
             }
 
             if (CurrentStep >= time)
+                SetAllLayersToSetpZero();
+        }
+
+        protected void SetAllLayersToSetpZero ()
+        {
+            CurrentStep = 0;
+            foreach (SpriteLayer layer in Doc.Layers)
             {
-                CurrentStep = 0;
-                foreach (SpriteLayer layer in Doc.Layers)
+                layer.CurrentSequence = 0;
+                layer.CurrentIndex = 0;
+            }
+        }
+
+        protected void SetAllLayersToCurrentStep ()
+        {
+            foreach (SpriteLayer layer in Doc.Layers)
+            {
+                ManaSource.Sprites.Action action = layer.LayerSprite.GetAction(CurrentAction);
+                if (action != null)
                 {
-                    layer.CurrentSequence = 0;
-                    layer.CurrentIndex = 0;
+                    layer.CurrentSequence = -1;
+                    layer.CurrentIndex = -1;
+
+                    int count = 0;
+                    foreach(KeyValuePair<ManaSource.Sprites.Direction, ManaSource.Sprites.Animation> a in action.Animations)
+                    {
+                        if (count == CurrentStep)
+                            break;
+
+
+                        ManaSource.Sprites.Animation anim = a.Value;
+                        foreach (ManaSource.Sprites.AnimationFrame frame in anim.Frames)
+                        {
+                            layer.CurrentSequence++;
+                            if (count + frame.Length > CurrentStep)
+                            {
+                                int leftover = CurrentStep - count;
+                                layer.CurrentIndex = leftover;
+                                count = CurrentStep;
+                                break;
+                            }
+                            else
+                                count += frame.Length;
+                        }
+                    }
                 }
+                if (layer.CurrentSequence == -1)
+                    layer.CurrentSequence = 0;
+                if (layer.CurrentIndex == -1)
+                    layer.CurrentIndex = 0;
             }
         }
 
@@ -784,6 +856,398 @@ namespace ManaSourceSpriteTool
             DrawOffset = new Point(MainView.Width / ImageZoom / 2, MainView.Height / ImageZoom - 4);
             LastDragLoc = new Point(DrawOffset.X, DrawOffset.Y);
             Redraw();
+        }
+
+        protected ManaSource.Sprites.AnimationFrame GetCurrentFrame ( SpriteLayer layer )
+        {
+            if (layer == null)
+                return null;
+           
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(layer);
+
+            if (anim == null)
+                return null;
+
+            return anim.Get(layer.CurrentSequence);
+        }
+
+        private void AnimIsFrame_CheckedChanged(object sender, EventArgs e)
+        {
+            if (NoSelect)
+                return;
+
+            ManaSource.Sprites.AnimationFrame frame = GetCurrentFrame(SelectedLayer());
+            if (frame == null)
+                return;
+
+            if (AnimIsFrame.Checked != (frame.Length == 1))
+            {
+                if (AnimIsFrame.Checked)
+                    frame.EndFrame = frame.StartFrame;
+                else
+                    frame.EndFrame = frame.StartFrame+1;
+
+                FrameEndIndex.Enabled = !AnimIsFrame.Checked;
+                NoSelect = true;
+                FrameEndIndex.Value = frame.EndFrame;
+                NoSelect = false;
+            }
+        }
+
+        private void FrameStartIndex_ValueChanged(object sender, EventArgs e)
+        {
+            if (NoSelect)
+                return;
+
+            ManaSource.Sprites.AnimationFrame frame = GetCurrentFrame(SelectedLayer());
+            if (frame == null)
+                return;
+
+            frame.StartFrame = (int)FrameStartIndex.Value;
+            frame.Delay = (int)FrameDelay.Value;
+            if (!AnimIsFrame.Checked)
+                frame.EndFrame = (int)FrameEndIndex.Value;
+            else
+                frame.EndFrame = frame.StartFrame;
+
+            SequenceList.Items[SelectedLayer().CurrentSequence].Text = frame.ToString();
+            UpdateSequenceData();
+            Redraw();
+        }
+
+        private void AddSequence_Click(object sender, EventArgs e)
+        {
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(SelectedLayer());
+            if (anim == null)
+                return;
+
+            ManaSource.Sprites.AnimationFrame frame = new ManaSource.Sprites.AnimationFrame();
+            if (anim.Frames.Count > 1)
+            {
+                frame.StartFrame = anim.Frames[anim.Frames.Count - 1].StartFrame + anim.Frames[anim.Frames.Count - 1].Length - 1;
+                frame.Delay = anim.Frames[anim.Frames.Count - 1].Delay;
+                CurrentStep = anim.Length;
+            }
+            else
+            {
+                frame.StartFrame = 0;
+                CurrentStep = 0;
+            }
+            anim.Frames.Add(frame);
+
+            UpdateAnimations();
+            UpdateFrameData();
+            SequenceList.Items[SequenceList.Items.Count - 1].Selected = true;
+            Redraw();
+        }
+
+        private void RemoveSequence_Click(object sender, EventArgs e)
+        {
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(SelectedLayer());
+            if (anim == null)
+                return;
+
+            if (SequenceList.SelectedIndices.Count > 0)
+            {
+                int index = SequenceList.SelectedIndices[0];
+
+                if (index >= anim.Count)
+                    return;
+
+                anim.Frames.RemoveAt(index);
+                SetAllLayersToSetpZero();
+
+                UpdateAnimations();
+                UpdateFrameData();
+                Redraw();
+            }
+        }
+
+        private void SequenceList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (NoSelect)
+                return;
+
+            ManaSource.Sprites.Animation anim = GetCurrentAnimation(SelectedLayer());
+            if (anim == null)
+                return;
+
+            if (SequenceList.SelectedIndices.Count > 0)
+            {
+                // figure out how many steps are in front of the current selected segment
+                int index = SequenceList.SelectedIndices[0];
+
+                if (index == 0)
+                    SetAllLayersToSetpZero();
+                else
+                {
+                    CurrentStep = 0;
+                    for (int i = 0; i < index; i++)
+                        CurrentStep += anim.Frames[i].Length;
+                    SetAllLayersToCurrentStep();
+                }
+                UpdateFrameData();
+                Redraw();
+            }
+        }
+
+        private void ImageSetList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (NoSelect)
+                return;
+
+            ManaSource.Sprites.Action action = GetCurrentAction(SelectedLayer());
+            if (action == null)
+                return;
+           
+            action.Imageset = ImageSetList.SelectedItem.ToString();
+            BuildLayerList(); // the imageset may have changed and we need to update it's image
+            UpdateSequenceData();
+            Redraw();
+        }
+
+        private void AddImageSet_Click(object sender, EventArgs e)
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            NewImageSetForm form = new NewImageSetForm();
+            form.XMLName = "New Imageset";
+
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                if (layer.LayerSprite.Imagesets.ContainsKey(form.XMLName))
+                {
+                    MessageBox.Show(this, "The current sprite layer already has an image set with the name " + form.XMLName);
+                    return;
+                }
+
+                if (!File.Exists(form.ImageFilePath))
+                    return;
+
+                ManaSource.Sprites.ImageSet imgset = new ManaSource.Sprites.ImageSet();
+                imgset.Name = form.XMLName;
+                imgset.DieString = form.XMLRecolor;
+                imgset.ImageFile = form.XMLSrc;
+                imgset.GridSize = form.GridSize;
+
+                imgset.Tag = SpriteImage.Add(form.XMLSrc, form.ImageFilePath);
+                layer.LayerSprite.Imagesets.Add(form.XMLName,imgset);
+
+                UpdateImageSet();
+            }
+        }
+
+        private void EditImageSet_Click(object sender, EventArgs e)
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            int index = ImageSetList.SelectedIndex;
+            string name = ImageSetList.SelectedItem.ToString();
+
+            ManaSource.Sprites.ImageSet imgset = layer.LayerSprite.Imagesets[name];
+            SpriteImage si = imgset.Tag as SpriteImage;
+
+            NewImageSetForm form = new NewImageSetForm();
+            form.XMLName = imgset.Name;
+            form.XMLRecolor = imgset.DieString;
+            form.GridSize = imgset.GridSize;
+            form.XMLSrc = imgset.ImageFile;
+            if (si != null)
+                form.ImageFilePath = (imgset.Tag as SpriteImage).FilePath;
+
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                if (form.XMLName != name && layer.LayerSprite.Imagesets.ContainsKey(form.XMLName))
+                {
+                    MessageBox.Show(this, "The current sprite layer already has an image set with the name " + form.XMLName);
+                    return;
+                }
+
+                if (form.XMLName != name)
+                {
+                    // name changed
+                    imgset.Name = form.XMLName;
+                    foreach (KeyValuePair<string, ManaSource.Sprites.Action> action in layer.LayerSprite.Actions)
+                    {
+                        if (action.Value.Imageset == name)
+                            action.Value.Imageset = imgset.Name;
+                    }
+
+                    ImageSetList.SelectedItem = imgset.Name;
+                }
+
+                imgset.DieString = form.XMLRecolor;
+                imgset.ImageFile = form.XMLSrc;
+                imgset.GridSize = form.GridSize;
+
+                if (imgset.ImageFile == form.XMLSrc && si != null)
+                    si.Reseat(new FileInfo(form.ImageFilePath));
+                else if (imgset.ImageFile != form.XMLSrc || si == null)
+                    imgset.Tag = SpriteImage.Add(form.XMLSrc, form.ImageFilePath);
+
+                BuildLayerList(); // the imageset may have changed and we need to update it's image
+                UpdateSequenceData();
+                Redraw();
+            }
+        }
+
+        private void RemoveImageSet_Click(object sender, EventArgs e)
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            if (layer.LayerSprite.Imagesets.Count == 1)
+                return;
+
+            int index = ImageSetList.SelectedIndex;
+            string name = ImageSetList.SelectedItem.ToString();
+
+            string baseName = ImageSetList.Items[0].ToString();
+
+            NoSelect = true;
+            ImageSetList.Items.Remove(index);
+
+            layer.LayerSprite.Imagesets.Remove(name);
+
+            foreach ( KeyValuePair<string,ManaSource.Sprites.Action> action in layer.LayerSprite.Actions )
+            {
+                if (action.Value.Imageset == name)
+                    action.Value.Imageset = baseName;
+            }
+            NoSelect = false;
+            UpdateSequenceData();
+            Redraw();
+        }
+
+        protected void AddActionDir (  ManaSource.Sprites.Action action, ManaSource.Sprites.Direction dir )
+        {
+            if (action.Animations.ContainsKey(dir))
+                return;
+
+            ManaSource.Sprites.Animation anim = new ManaSource.Sprites.Animation();
+            anim.Direction = dir;
+            ManaSource.Sprites.AnimationFrame frame = new ManaSource.Sprites.AnimationFrame();
+            frame.StartFrame = 0;
+            frame.EndFrame = 0;
+            frame.Delay = 75;
+            anim.Frames.Add(frame);
+            action.Animations.Add(dir, anim);
+        }
+
+        private void EditAction_Click(object sender, EventArgs e)
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            ManaSource.Sprites.Action action = GetCurrentAction(layer);
+
+            NewActionForm form = new NewActionForm();
+
+            form.ImageSets = layer.LayerSprite.Imagesets;
+
+            form.SelectedActionName = action.Name;
+            form.SelectdImageSet = action.Imageset;
+            bool cardinals = !action.Animations.ContainsKey(ManaSource.Sprites.Direction.Any);
+            form.CardinalDirections = cardinals;
+
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                if (action.Name != form.SelectedActionName || layer.LayerSprite.Actions.ContainsKey(form.SelectedActionName))
+                {
+                    MessageBox.Show(this, "The current sprite layer already has an action with the name " + form.SelectedActionName);
+                    return;
+                }
+
+                if (action.Name != form.SelectedActionName)
+                {
+                    CurrentAction = form.SelectedActionName;
+                    action.Name = form.SelectedActionName;
+                    NoSelect = true;
+                    ActionList.SelectedItem = CurrentAction;
+                    NoSelect = false;
+                }
+
+                action.Imageset = form.SelectdImageSet;
+                NoSelect = true;
+                ImageSetList.SelectedItem = action.Imageset;
+                NoSelect = false;
+                UpdateSequenceData();
+
+                if (form.CardinalDirections != cardinals)
+                {
+                    // need to add or remove some anim dirs
+                    if (form.CardinalDirections)
+                    {
+                        AddActionDir(action, ManaSource.Sprites.Direction.Up);
+                        AddActionDir(action, ManaSource.Sprites.Direction.Down);
+                        AddActionDir(action, ManaSource.Sprites.Direction.Left);
+                        AddActionDir(action, ManaSource.Sprites.Direction.Right);
+                        if (action.Animations.ContainsKey(ManaSource.Sprites.Direction.Any))
+                            action.Animations.Remove(ManaSource.Sprites.Direction.Any);
+                    }
+                    else
+                        AddActionDir(action, ManaSource.Sprites.Direction.Any);
+                }
+
+                Redraw();
+            }
+        }
+
+        private void AddAction_Click(object sender, EventArgs e)
+        {
+            SpriteLayer layer = SelectedLayer();
+            if (layer == null)
+                return;
+
+            NewActionForm form = new NewActionForm();
+
+            form.ImageSets = layer.LayerSprite.Imagesets;
+
+            form.SelectedActionName = "New Action";
+            form.SelectdImageSet = string.Empty;
+            form.CardinalDirections = true;
+
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                if (layer.LayerSprite.Actions.ContainsKey(form.SelectedActionName))
+                {
+                    MessageBox.Show(this, "The current sprite layer already has an action with the name " + form.SelectedActionName);
+                    return;
+                }
+
+                ManaSource.Sprites.Action action = new ManaSource.Sprites.Action();
+
+                action.Name = form.SelectedActionName;
+                action.Imageset = form.SelectdImageSet;
+
+                if (form.CardinalDirections)
+                {
+                    AddActionDir(action, ManaSource.Sprites.Direction.Up);
+                    AddActionDir(action, ManaSource.Sprites.Direction.Down);
+                    AddActionDir(action, ManaSource.Sprites.Direction.Left);
+                    AddActionDir(action, ManaSource.Sprites.Direction.Right);
+                }
+                else
+                    AddActionDir(action, ManaSource.Sprites.Direction.Any);
+
+                layer.LayerSprite.Actions.Add(action.Name, action);
+
+                CurrentAction = form.SelectedActionName;
+                BuildActionList();
+                ActionList.SelectedItem = CurrentAction;
+                Redraw();
+            }
+        }
+
+        private void RemoveAction_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
