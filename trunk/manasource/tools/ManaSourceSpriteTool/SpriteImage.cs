@@ -19,6 +19,18 @@ namespace ManaSourceSpriteTool
 
         public static event FileReloadHandler Reload;
 
+        public static bool Exists ( string path )
+        {
+            return ImageFiles.ContainsKey(path);
+        }
+
+        public static SpriteImage Add ( string path, string imagefile )
+        {
+            if (!Exists(path))
+                ImageFiles.Add(path, new SpriteImage(new FileInfo(imagefile)));
+            return ImageFiles[path];
+        }
+
         public static SpriteImage Get ( ImageSet imageset, string filepath )
         {
             SpriteImage sprite = null;
@@ -68,8 +80,8 @@ namespace ManaSourceSpriteTool
         }
 
 
-        protected FileSystemWatcher Watcher;
-        protected Bitmap ImageMap;
+        protected FileSystemWatcher Watcher = null;
+        protected Bitmap ImageMap = null;
         protected FileInfo ImageFile;
 
         public Image Image
@@ -77,13 +89,29 @@ namespace ManaSourceSpriteTool
             get { return ImageMap; }
         }
 
+        public string FilePath
+        {
+            get { return ImageFile.FullName; }
+        }
+
         public SpriteImage ( FileInfo file )
         {
+            Reseat(file);
+        }
+
+        public void Reseat ( FileInfo file )
+        {
             ImageFile = file;
-            Watcher = new FileSystemWatcher(Path.GetDirectoryName(file.FullName),"*." + Path.GetExtension(file.FullName));
+            if (Watcher != null)
+                Watcher.Dispose();
+
+            Watcher = new FileSystemWatcher(Path.GetDirectoryName(file.FullName), "*." + Path.GetExtension(file.FullName));
             Watcher.Changed += new FileSystemEventHandler(Watcher_Changed);
             Watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
             Watcher.EnableRaisingEvents = true;
+
+            if (ImageMap != null)
+                ImageMap.Dispose();
 
             ImageMap = new Bitmap(file.FullName);
         }
@@ -93,6 +121,9 @@ namespace ManaSourceSpriteTool
             if (e.ChangeType != WatcherChangeTypes.Changed || e.FullPath != ImageFile.FullName)
                 return;
 
+            if (ImageMap != null)
+                ImageMap.Dispose();
+            
             ImageMap = new Bitmap(ImageFile.FullName);
 
             if (Reload != null)

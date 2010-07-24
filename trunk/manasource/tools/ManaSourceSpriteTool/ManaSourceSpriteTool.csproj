@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{27187468-0300-475D-8154-6EF50C7A0806}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -54,11 +54,38 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="NameEntryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NameEntryForm.Designer.cs">
+      <DependentUpon>NameEntryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewActionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewActionForm.Designer.cs">
+      <DependentUpon>NewActionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NewImageSetForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewImageSetForm.Designer.cs">
+      <DependentUpon>NewImageSetForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NameEntryForm.resx">
+      <DependentUpon>NameEntryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewActionForm.resx">
+      <DependentUpon>NewActionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewImageSetForm.resx">
+      <DependentUpon>NewImageSetForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
