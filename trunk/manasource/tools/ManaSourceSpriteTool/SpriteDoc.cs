@@ -9,15 +9,20 @@ namespace ManaSourceSpriteTool
 {
     public class SpriteLayer
     {
-        public Sprite Sprite;
+        public Sprite LayerSprite;
         public FileInfo XMLFile;
         public bool Visable = true;
         public String Name = string.Empty;
 
+        public int CurrentSequence = 0;
+        public int CurrentIndex = 0;
+
         public SpriteLayer ( Sprite sprite, FileInfo file )
         {
             XMLFile = file;
-            Sprite = sprite;
+            LayerSprite = sprite;
+
+            Name = Path.GetFileNameWithoutExtension(XMLFile.Name);
 
             foreach (KeyValuePair<string,ImageSet> imageSet in sprite.Imagesets)
             {

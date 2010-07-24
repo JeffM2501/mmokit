@@ -34,6 +34,10 @@
             this.MainView = new System.Windows.Forms.PictureBox();
             this.OffsetPanel = new System.Windows.Forms.Panel();
             this.PlayControllsPanel = new System.Windows.Forms.Panel();
+            this.LayerLabel = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.GridIndex = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
             this.StepBackButton = new System.Windows.Forms.Button();
             this.StepForwardButton = new System.Windows.Forms.Button();
             this.PlayButton = new System.Windows.Forms.Button();
@@ -63,6 +67,7 @@
             this.UpButton = new System.Windows.Forms.Button();
             this.VerticalSplitter = new System.Windows.Forms.SplitContainer();
             this.LayerPannel = new System.Windows.Forms.Panel();
+            this.SaveLayer = new System.Windows.Forms.Button();
             this.LayerInfo = new System.Windows.Forms.Button();
             this.NewLayer = new System.Windows.Forms.Button();
             this.LayerDown = new System.Windows.Forms.Button();
@@ -107,9 +112,7 @@
             this.xToolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.xToolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.xToolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
-            this.SaveLayer = new System.Windows.Forms.Button();
-            this.GridIndex = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.HorizontalSplitter.Panel1.SuspendLayout();
             this.HorizontalSplitter.Panel2.SuspendLayout();
             this.HorizontalSplitter.SuspendLayout();
@@ -137,7 +140,7 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.HorizontalSplitter.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.HorizontalSplitter.Location = new System.Drawing.Point(3, 6);
+            this.HorizontalSplitter.Location = new System.Drawing.Point(3, 3);
             this.HorizontalSplitter.Name = "HorizontalSplitter";
             this.HorizontalSplitter.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -149,8 +152,8 @@
             // 
             this.HorizontalSplitter.Panel2.Controls.Add(this.OffsetPanel);
             this.HorizontalSplitter.Panel2.Controls.Add(this.DirectionPanel);
-            this.HorizontalSplitter.Size = new System.Drawing.Size(696, 550);
-            this.HorizontalSplitter.SplitterDistance = 422;
+            this.HorizontalSplitter.Size = new System.Drawing.Size(732, 580);
+            this.HorizontalSplitter.SplitterDistance = 445;
             this.HorizontalSplitter.TabIndex = 0;
             // 
             // MainView
@@ -158,9 +161,9 @@
             this.MainView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.MainView.Location = new System.Drawing.Point(-2, 3);
+            this.MainView.Location = new System.Drawing.Point(3, 3);
             this.MainView.Name = "MainView";
-            this.MainView.Size = new System.Drawing.Size(691, 412);
+            this.MainView.Size = new System.Drawing.Size(722, 435);
             this.MainView.TabIndex = 0;
             this.MainView.TabStop = false;
             this.MainView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainView_MouseMove);
@@ -180,11 +183,13 @@
             this.OffsetPanel.Controls.Add(this.OffsetLabel);
             this.OffsetPanel.Location = new System.Drawing.Point(174, 3);
             this.OffsetPanel.Name = "OffsetPanel";
-            this.OffsetPanel.Size = new System.Drawing.Size(518, 114);
+            this.OffsetPanel.Size = new System.Drawing.Size(518, 121);
             this.OffsetPanel.TabIndex = 2;
             // 
             // PlayControllsPanel
             // 
+            this.PlayControllsPanel.Controls.Add(this.LayerLabel);
+            this.PlayControllsPanel.Controls.Add(this.label12);
             this.PlayControllsPanel.Controls.Add(this.GridIndex);
             this.PlayControllsPanel.Controls.Add(this.label11);
             this.PlayControllsPanel.Controls.Add(this.StepBackButton);
@@ -195,25 +200,62 @@
             this.PlayControllsPanel.Controls.Add(this.label10);
             this.PlayControllsPanel.Controls.Add(this.SequenceNumber);
             this.PlayControllsPanel.Controls.Add(this.label8);
-            this.PlayControllsPanel.Location = new System.Drawing.Point(340, 11);
+            this.PlayControllsPanel.Location = new System.Drawing.Point(317, 3);
             this.PlayControllsPanel.Name = "PlayControllsPanel";
-            this.PlayControllsPanel.Size = new System.Drawing.Size(162, 98);
+            this.PlayControllsPanel.Size = new System.Drawing.Size(198, 115);
             this.PlayControllsPanel.TabIndex = 6;
+            // 
+            // LayerLabel
+            // 
+            this.LayerLabel.AutoSize = true;
+            this.LayerLabel.Location = new System.Drawing.Point(40, 4);
+            this.LayerLabel.Name = "LayerLabel";
+            this.LayerLabel.Size = new System.Drawing.Size(56, 13);
+            this.LayerLabel.TabIndex = 11;
+            this.LayerLabel.Text = "XXXXXXX";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(3, 4);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(36, 13);
+            this.label12.TabIndex = 10;
+            this.label12.Text = "Layer:";
+            // 
+            // GridIndex
+            // 
+            this.GridIndex.AutoSize = true;
+            this.GridIndex.Location = new System.Drawing.Point(68, 64);
+            this.GridIndex.Name = "GridIndex";
+            this.GridIndex.Size = new System.Drawing.Size(56, 13);
+            this.GridIndex.TabIndex = 9;
+            this.GridIndex.Text = "XXXXXXX";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(3, 64);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(39, 13);
+            this.label11.TabIndex = 8;
+            this.label11.Text = "Image:";
             // 
             // StepBackButton
             // 
-            this.StepBackButton.Location = new System.Drawing.Point(19, 66);
+            this.StepBackButton.Enabled = false;
+            this.StepBackButton.Location = new System.Drawing.Point(19, 83);
             this.StepBackButton.Name = "StepBackButton";
-            this.StepBackButton.Size = new System.Drawing.Size(26, 23);
+            this.StepBackButton.Size = new System.Drawing.Size(24, 23);
             this.StepBackButton.TabIndex = 7;
             this.StepBackButton.Text = "|<";
             this.StepBackButton.UseVisualStyleBackColor = true;
             // 
             // StepForwardButton
             // 
-            this.StepForwardButton.Location = new System.Drawing.Point(115, 66);
+            this.StepForwardButton.Location = new System.Drawing.Point(115, 83);
             this.StepForwardButton.Name = "StepForwardButton";
-            this.StepForwardButton.Size = new System.Drawing.Size(26, 23);
+            this.StepForwardButton.Size = new System.Drawing.Size(24, 23);
             this.StepForwardButton.TabIndex = 6;
             this.StepForwardButton.Text = ">|";
             this.StepForwardButton.UseVisualStyleBackColor = true;
@@ -222,9 +264,9 @@
             // PlayButton
             // 
             this.PlayButton.Enabled = false;
-            this.PlayButton.Location = new System.Drawing.Point(83, 66);
+            this.PlayButton.Location = new System.Drawing.Point(83, 83);
             this.PlayButton.Name = "PlayButton";
-            this.PlayButton.Size = new System.Drawing.Size(26, 23);
+            this.PlayButton.Size = new System.Drawing.Size(24, 23);
             this.PlayButton.TabIndex = 5;
             this.PlayButton.Text = ">";
             this.PlayButton.UseVisualStyleBackColor = true;
@@ -232,9 +274,9 @@
             // StopButton
             // 
             this.StopButton.Enabled = false;
-            this.StopButton.Location = new System.Drawing.Point(51, 66);
+            this.StopButton.Location = new System.Drawing.Point(51, 83);
             this.StopButton.Name = "StopButton";
-            this.StopButton.Size = new System.Drawing.Size(26, 23);
+            this.StopButton.Size = new System.Drawing.Size(24, 23);
             this.StopButton.TabIndex = 4;
             this.StopButton.Text = "||";
             this.StopButton.UseVisualStyleBackColor = true;
@@ -242,7 +284,7 @@
             // IndexNumber
             // 
             this.IndexNumber.AutoSize = true;
-            this.IndexNumber.Location = new System.Drawing.Point(68, 27);
+            this.IndexNumber.Location = new System.Drawing.Point(68, 44);
             this.IndexNumber.Name = "IndexNumber";
             this.IndexNumber.Size = new System.Drawing.Size(56, 13);
             this.IndexNumber.TabIndex = 3;
@@ -251,7 +293,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(3, 27);
+            this.label10.Location = new System.Drawing.Point(3, 44);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(36, 13);
             this.label10.TabIndex = 2;
@@ -260,7 +302,7 @@
             // SequenceNumber
             // 
             this.SequenceNumber.AutoSize = true;
-            this.SequenceNumber.Location = new System.Drawing.Point(68, 8);
+            this.SequenceNumber.Location = new System.Drawing.Point(68, 25);
             this.SequenceNumber.Name = "SequenceNumber";
             this.SequenceNumber.Size = new System.Drawing.Size(56, 13);
             this.SequenceNumber.TabIndex = 1;
@@ -269,7 +311,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(3, 8);
+            this.label8.Location = new System.Drawing.Point(3, 25);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(59, 13);
             this.label8.TabIndex = 0;
@@ -285,7 +327,7 @@
             this.FrameDataGroup.Controls.Add(this.label6);
             this.FrameDataGroup.Controls.Add(this.AnimIsSeq);
             this.FrameDataGroup.Controls.Add(this.AnimIsFrame);
-            this.FrameDataGroup.Location = new System.Drawing.Point(112, 9);
+            this.FrameDataGroup.Location = new System.Drawing.Point(89, 3);
             this.FrameDataGroup.Name = "FrameDataGroup";
             this.FrameDataGroup.Size = new System.Drawing.Size(222, 100);
             this.FrameDataGroup.TabIndex = 5;
@@ -483,8 +525,8 @@
             // 
             this.VerticalSplitter.Panel2.Controls.Add(this.LayerPannel);
             this.VerticalSplitter.Panel2.Controls.Add(this.AnimPanel);
-            this.VerticalSplitter.Size = new System.Drawing.Size(942, 563);
-            this.VerticalSplitter.SplitterDistance = 706;
+            this.VerticalSplitter.Size = new System.Drawing.Size(991, 585);
+            this.VerticalSplitter.SplitterDistance = 742;
             this.VerticalSplitter.TabIndex = 0;
             // 
             // LayerPannel
@@ -502,14 +544,28 @@
             this.LayerPannel.Controls.Add(this.LayerList);
             this.LayerPannel.Location = new System.Drawing.Point(3, 3);
             this.LayerPannel.Name = "LayerPannel";
-            this.LayerPannel.Size = new System.Drawing.Size(227, 220);
+            this.LayerPannel.Size = new System.Drawing.Size(240, 220);
             this.LayerPannel.TabIndex = 0;
+            // 
+            // SaveLayer
+            // 
+            this.SaveLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.SaveLayer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.SaveLayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SaveLayer.Location = new System.Drawing.Point(209, 83);
+            this.SaveLayer.Name = "SaveLayer";
+            this.SaveLayer.Size = new System.Drawing.Size(22, 23);
+            this.SaveLayer.TabIndex = 8;
+            this.SaveLayer.Text = "S";
+            this.SaveLayer.UseVisualStyleBackColor = true;
+            this.SaveLayer.Click += new System.EventHandler(this.SaveLayer_Click);
             // 
             // LayerInfo
             // 
             this.LayerInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.LayerInfo.Enabled = false;
             this.LayerInfo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.LayerInfo.Location = new System.Drawing.Point(140, 194);
+            this.LayerInfo.Location = new System.Drawing.Point(153, 194);
             this.LayerInfo.Name = "LayerInfo";
             this.LayerInfo.Size = new System.Drawing.Size(22, 23);
             this.LayerInfo.TabIndex = 7;
@@ -519,6 +575,7 @@
             // NewLayer
             // 
             this.NewLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.NewLayer.Enabled = false;
             this.NewLayer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.NewLayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.NewLayer.Location = new System.Drawing.Point(59, 194);
@@ -532,7 +589,7 @@
             // 
             this.LayerDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.LayerDown.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.LayerDown.Location = new System.Drawing.Point(196, 165);
+            this.LayerDown.Location = new System.Drawing.Point(209, 165);
             this.LayerDown.Name = "LayerDown";
             this.LayerDown.Size = new System.Drawing.Size(22, 23);
             this.LayerDown.TabIndex = 5;
@@ -544,7 +601,7 @@
             // 
             this.LayerUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LayerUp.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.LayerUp.Location = new System.Drawing.Point(196, 3);
+            this.LayerUp.Location = new System.Drawing.Point(209, 3);
             this.LayerUp.Name = "LayerUp";
             this.LayerUp.Size = new System.Drawing.Size(22, 23);
             this.LayerUp.TabIndex = 4;
@@ -555,9 +612,10 @@
             // HideLayer
             // 
             this.HideLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.HideLayer.Enabled = false;
             this.HideLayer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.HideLayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.HideLayer.Location = new System.Drawing.Point(168, 194);
+            this.HideLayer.Location = new System.Drawing.Point(181, 194);
             this.HideLayer.Name = "HideLayer";
             this.HideLayer.Size = new System.Drawing.Size(22, 23);
             this.HideLayer.TabIndex = 3;
@@ -599,7 +657,7 @@
             this.LayerList.Location = new System.Drawing.Point(3, 3);
             this.LayerList.MultiSelect = false;
             this.LayerList.Name = "LayerList";
-            this.LayerList.Size = new System.Drawing.Size(187, 185);
+            this.LayerList.Size = new System.Drawing.Size(200, 185);
             this.LayerList.SmallImageList = this.LayerListImages;
             this.LayerList.StateImageList = this.LayerListImages;
             this.LayerList.TabIndex = 0;
@@ -634,7 +692,7 @@
             this.AnimPanel.Controls.Add(this.label3);
             this.AnimPanel.Location = new System.Drawing.Point(3, 229);
             this.AnimPanel.Name = "AnimPanel";
-            this.AnimPanel.Size = new System.Drawing.Size(228, 327);
+            this.AnimPanel.Size = new System.Drawing.Size(241, 349);
             this.AnimPanel.TabIndex = 1;
             // 
             // SequenceList
@@ -648,7 +706,7 @@
             this.SequenceList.Location = new System.Drawing.Point(8, 100);
             this.SequenceList.MultiSelect = false;
             this.SequenceList.Name = "SequenceList";
-            this.SequenceList.Size = new System.Drawing.Size(210, 198);
+            this.SequenceList.Size = new System.Drawing.Size(223, 220);
             this.SequenceList.SmallImageList = this.SeqImageList;
             this.SequenceList.StateImageList = this.SeqImageList;
             this.SequenceList.TabIndex = 15;
@@ -665,8 +723,9 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button1.Enabled = false;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Location = new System.Drawing.Point(34, 301);
+            this.button1.Location = new System.Drawing.Point(34, 323);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(22, 23);
             this.button1.TabIndex = 14;
@@ -676,8 +735,9 @@
             // button2
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button2.Enabled = false;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button2.Location = new System.Drawing.Point(6, 301);
+            this.button2.Location = new System.Drawing.Point(6, 323);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(22, 23);
             this.button2.TabIndex = 13;
@@ -705,8 +765,9 @@
             // EditImageSet
             // 
             this.EditImageSet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EditImageSet.Enabled = false;
             this.EditImageSet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.EditImageSet.Location = new System.Drawing.Point(196, 54);
+            this.EditImageSet.Location = new System.Drawing.Point(209, 54);
             this.EditImageSet.Name = "EditImageSet";
             this.EditImageSet.Size = new System.Drawing.Size(22, 23);
             this.EditImageSet.TabIndex = 9;
@@ -716,8 +777,9 @@
             // RemoveImageSet
             // 
             this.RemoveImageSet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.RemoveImageSet.Enabled = false;
             this.RemoveImageSet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.RemoveImageSet.Location = new System.Drawing.Point(168, 54);
+            this.RemoveImageSet.Location = new System.Drawing.Point(181, 54);
             this.RemoveImageSet.Name = "RemoveImageSet";
             this.RemoveImageSet.Size = new System.Drawing.Size(22, 23);
             this.RemoveImageSet.TabIndex = 8;
@@ -727,8 +789,9 @@
             // EditAction
             // 
             this.EditAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EditAction.Enabled = false;
             this.EditAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.EditAction.Location = new System.Drawing.Point(196, 16);
+            this.EditAction.Location = new System.Drawing.Point(209, 16);
             this.EditAction.Name = "EditAction";
             this.EditAction.Size = new System.Drawing.Size(22, 23);
             this.EditAction.TabIndex = 5;
@@ -738,8 +801,9 @@
             // AddImageSet
             // 
             this.AddImageSet.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.AddImageSet.Enabled = false;
             this.AddImageSet.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.AddImageSet.Location = new System.Drawing.Point(140, 54);
+            this.AddImageSet.Location = new System.Drawing.Point(153, 54);
             this.AddImageSet.Name = "AddImageSet";
             this.AddImageSet.Size = new System.Drawing.Size(22, 23);
             this.AddImageSet.TabIndex = 7;
@@ -749,8 +813,9 @@
             // RemoveAction
             // 
             this.RemoveAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.RemoveAction.Enabled = false;
             this.RemoveAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.RemoveAction.Location = new System.Drawing.Point(168, 16);
+            this.RemoveAction.Location = new System.Drawing.Point(181, 16);
             this.RemoveAction.Name = "RemoveAction";
             this.RemoveAction.Size = new System.Drawing.Size(22, 23);
             this.RemoveAction.TabIndex = 4;
@@ -765,14 +830,15 @@
             this.ImageSetList.FormattingEnabled = true;
             this.ImageSetList.Location = new System.Drawing.Point(7, 56);
             this.ImageSetList.Name = "ImageSetList";
-            this.ImageSetList.Size = new System.Drawing.Size(127, 21);
+            this.ImageSetList.Size = new System.Drawing.Size(140, 21);
             this.ImageSetList.TabIndex = 6;
             // 
             // AddAction
             // 
             this.AddAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.AddAction.Enabled = false;
             this.AddAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.AddAction.Location = new System.Drawing.Point(140, 16);
+            this.AddAction.Location = new System.Drawing.Point(153, 16);
             this.AddAction.Name = "AddAction";
             this.AddAction.Size = new System.Drawing.Size(22, 23);
             this.AddAction.TabIndex = 3;
@@ -787,7 +853,7 @@
             this.ActionList.FormattingEnabled = true;
             this.ActionList.Location = new System.Drawing.Point(6, 16);
             this.ActionList.Name = "ActionList";
-            this.ActionList.Size = new System.Drawing.Size(128, 21);
+            this.ActionList.Size = new System.Drawing.Size(141, 21);
             this.ActionList.TabIndex = 1;
             this.ActionList.SelectedIndexChanged += new System.EventHandler(this.ActionList_SelectedIndexChanged);
             // 
@@ -808,7 +874,7 @@
             this.toolsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(960, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1009, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -833,6 +899,7 @@
             // 
             // newLayerToolStripMenuItem
             // 
+            this.newLayerToolStripMenuItem.Enabled = false;
             this.newLayerToolStripMenuItem.Name = "newLayerToolStripMenuItem";
             this.newLayerToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.newLayerToolStripMenuItem.Text = "New Layer";
@@ -849,6 +916,7 @@
             this.saveAllLayersToolStripMenuItem.Name = "saveAllLayersToolStripMenuItem";
             this.saveAllLayersToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.saveAllLayersToolStripMenuItem.Text = "Save All Layers";
+            this.saveAllLayersToolStripMenuItem.Click += new System.EventHandler(this.saveAllLayersToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
@@ -875,8 +943,9 @@
             // recenterToolStripMenuItem
             // 
             this.recenterToolStripMenuItem.Name = "recenterToolStripMenuItem";
-            this.recenterToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.recenterToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.recenterToolStripMenuItem.Text = "Recenter";
+            this.recenterToolStripMenuItem.Click += new System.EventHandler(this.recenterToolStripMenuItem_Click);
             // 
             // zoomToolStripMenuItem
             // 
@@ -890,7 +959,7 @@
             this.xToolStripMenuItem5,
             this.xToolStripMenuItem6});
             this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.zoomToolStripMenuItem.Text = "Zoom";
             // 
             // toolStripMenuItem2
@@ -949,46 +1018,15 @@
             this.xToolStripMenuItem6.Text = "8X";
             this.xToolStripMenuItem6.Click += new System.EventHandler(this.xToolStripMenuItem6_Click);
             // 
-            // SaveLayer
-            // 
-            this.SaveLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.SaveLayer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.SaveLayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SaveLayer.Location = new System.Drawing.Point(196, 83);
-            this.SaveLayer.Name = "SaveLayer";
-            this.SaveLayer.Size = new System.Drawing.Size(22, 23);
-            this.SaveLayer.TabIndex = 8;
-            this.SaveLayer.Text = "S";
-            this.SaveLayer.UseVisualStyleBackColor = true;
-            this.SaveLayer.Click += new System.EventHandler(this.SaveLayer_Click);
-            // 
-            // GridIndex
-            // 
-            this.GridIndex.AutoSize = true;
-            this.GridIndex.Location = new System.Drawing.Point(68, 47);
-            this.GridIndex.Name = "GridIndex";
-            this.GridIndex.Size = new System.Drawing.Size(56, 13);
-            this.GridIndex.TabIndex = 9;
-            this.GridIndex.Text = "XXXXXXX";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(3, 47);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(36, 13);
-            this.label11.TabIndex = 8;
-            this.label11.Text = "Index:";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(960, 593);
+            this.ClientSize = new System.Drawing.Size(1009, 615);
             this.Controls.Add(this.VerticalSplitter);
             this.Controls.Add(this.menuStrip1);
             this.Name = "MainForm";
-            this.Text = "ManaSource Sprite Tool";
+            this.Text = "ManaSource Sprite Tool v0.0.0.1";
             this.HorizontalSplitter.Panel1.ResumeLayout(false);
             this.HorizontalSplitter.Panel2.ResumeLayout(false);
             this.HorizontalSplitter.ResumeLayout(false);
@@ -1100,6 +1138,9 @@
         private System.Windows.Forms.Button SaveLayer;
         private System.Windows.Forms.Label GridIndex;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label LayerLabel;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 
