@@ -99,12 +99,20 @@ namespace ManaSourceSpriteTool
                 Reload(this);
         }
 
+        static bool UseTempImages = false;
         public void DrawFrame ( Graphics graphics, ImageSet image, AnimationFrame frame, int index )
         {
-            DrawFrame(graphics, image, frame, index, true);
+            if (UseTempImages)
+            {
+                Image img = GetFrameImage(image, frame, index);
+                graphics.DrawImage(img, frame.Offset);
+                img.Dispose();
+            }
+            else
+                DrawRawImage(graphics, image, frame, index, true);
         }
 
-        public void DrawFrame ( Graphics graphics, ImageSet image, AnimationFrame frame, int index, bool useOffset )
+        public void DrawRawImage ( Graphics graphics, ImageSet image, AnimationFrame frame, int index, bool useOffset )
         {
             Rectangle destRect;
             if (useOffset)
@@ -128,7 +136,7 @@ namespace ManaSourceSpriteTool
         {
             Bitmap bitmap = new Bitmap(image.GridSize.Width, image.GridSize.Height);
             Graphics graphics = Graphics.FromImage(bitmap);
-            DrawFrame(graphics, image, frame, index, false);
+            DrawRawImage(graphics, image, frame, index, false);
             graphics.Dispose();
             return bitmap;
         }

@@ -18,13 +18,42 @@ namespace ManaSource.Sprites
 
     public enum Direction
     {
-        up,
-        down,
-        left,
-        right,
-        unknown,
+        Up,
+        Down,
+        Left,
+        Right,
+        Any,
+        Unknown,
     }
 
+     public class Utils
+     {
+         public static Direction ParseDirection(string text)
+         {
+             string name = text.ToLower();
+             if (name == "up")
+                 return Direction.Up;
+             if (name == "down")
+                 return Direction.Down;
+             if (name == "left")
+                 return Direction.Left;
+             if (name == "right")
+                 return Direction.Right;
+             if (name == "default")
+                 return Direction.Any;
+
+             return Direction.Unknown;
+         }
+
+         public static string DirectionToString( Direction dir )
+         {
+             if (dir == Direction.Any || dir == Direction.Unknown)
+                 return "default";
+
+             return dir.ToString().ToLower();
+         }
+        
+     }
     public class AnimationFrame
     {
         public Point Offset = Point.Empty;
@@ -59,8 +88,44 @@ namespace ManaSource.Sprites
 
     public class Animation
     {
-        public Direction Direction = Direction.down;
+        public Direction Direction = Direction.Down;
         public List<AnimationFrame> Frames = new List<AnimationFrame>();
+
+        public int Count
+        {
+            get { return Frames.Count; }
+        }
+
+        public AnimationFrame Get ( int sequence )
+        {
+            if (sequence < 0 || sequence >= Count)
+                return null;
+
+            return Frames[sequence];
+        }
+
+        public int Length
+        {
+            get
+            {
+                int count = 0;
+                foreach (AnimationFrame frame in Frames)
+                    count += frame.Length;
+
+                return count;
+            }
+        }
+
+        public int Time
+        {
+            get
+            {
+                int count = 0;
+                foreach (AnimationFrame frame in Frames)
+                    count += frame.Length * frame.Delay;
+                return count;
+            }
+        }
     }
 
     public class Action
@@ -68,6 +133,16 @@ namespace ManaSource.Sprites
         public string   Name;
         public String   Imageset;
         public Dictionary<Direction, Animation> Animations = new Dictionary<Direction, Animation>();
+
+        public Animation GetAnimation ( Direction dir )
+        {
+            if (Animations.ContainsKey(dir))
+                return Animations[dir];
+
+            if (Animations.ContainsKey(Direction.Any))
+                return Animations[Direction.Any];
+            return null;
+        }
     }
 
     public class Sprite
@@ -77,6 +152,14 @@ namespace ManaSource.Sprites
 
         public Dictionary<string, ImageSet> Imagesets = new Dictionary<string, ImageSet>();
         public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
+
+        public Action GetAction (string name)
+        {
+            if (Actions.ContainsKey(name))
+                return Actions[name];
+
+            return null;
+        }
     }
 
     public class XMLReader
@@ -216,7 +299,7 @@ namespace ManaSource.Sprites
                 try
                 {
                     if (attrib.Name == "direction")
-                        anim.Direction = (Direction)Enum.Parse(typeof(Direction), attrib.Value.ToLower());
+                        anim.Direction = Utils.ParseDirection(attrib.Value);
                 }
                 catch (System.Exception ex)
                 {
@@ -324,7 +407,7 @@ namespace ManaSource.Sprites
         protected void WriteAnimation ( XmlDocument doc, XmlElement root, Animation anim )
         {
             XmlElement node = doc.CreateElement("animation");
-            node.SetAttribute("direction", anim.Direction.ToString());
+            node.SetAttribute("direction", Utils.DirectionToString(anim.Direction));
             node.AppendChild(doc.CreateWhitespace("\r\n"));
 
             foreach (AnimationFrame frame in anim.Frames)
