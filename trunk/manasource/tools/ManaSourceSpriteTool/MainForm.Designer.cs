@@ -1044,7 +1044,7 @@
             this.Controls.Add(this.VerticalSplitter);
             this.Controls.Add(this.menuStrip1);
             this.Name = "MainForm";
-            this.Text = "ManaSource Sprite Tool v0.0.0.1";
+            this.Text = "ManaSource Sprite Tool v0.0.0.2";
             this.HorizontalSplitter.Panel1.ResumeLayout(false);
             this.HorizontalSplitter.Panel2.ResumeLayout(false);
             this.HorizontalSplitter.ResumeLayout(false);
