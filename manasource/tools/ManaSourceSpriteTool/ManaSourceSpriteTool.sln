@@ -3,10 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManaSourceSpriteTool", "ManaSourceSpriteTool.csproj", "{27187468-0300-475D-8154-6EF50C7A0806}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpSpriteExport", "..\SharpSpriteExport\SharpSpriteExport.csproj", "{81444B2D-20E6-4CBB-885B-928B9B220FC8}"
+EndProject
 Global
-	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
-		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -16,8 +15,15 @@ Global
 		{27187468-0300-475D-8154-6EF50C7A0806}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27187468-0300-475D-8154-6EF50C7A0806}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27187468-0300-475D-8154-6EF50C7A0806}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81444B2D-20E6-4CBB-885B-928B9B220FC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81444B2D-20E6-4CBB-885B-928B9B220FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81444B2D-20E6-4CBB-885B-928B9B220FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81444B2D-20E6-4CBB-885B-928B9B220FC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
 	EndGlobalSection
 EndGlobal
