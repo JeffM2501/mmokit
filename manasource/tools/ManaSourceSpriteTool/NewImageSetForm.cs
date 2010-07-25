@@ -66,6 +66,13 @@ namespace ManaSourceSpriteTool
 
         private void OK_Click(object sender, EventArgs e)
         {
+            if (XMLPath.Text == string.Empty || ImageSetName.Text == string.Empty || ImagePath.Text == string.Empty)
+            {
+                MessageBox.Show(this, "Fields must not be empty");
+                DialogResult = DialogResult.None;
+                return;
+            }
+
             XMLSrc = XMLPath.Text;
             XMLRecolor = Recolor.Text;
             XMLName = ImageSetName.Text;
