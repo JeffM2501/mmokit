@@ -113,6 +113,7 @@
             this.Zoom_7x = new System.Windows.Forms.ToolStripMenuItem();
             this.Zoom_8x = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.ToolsRootMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.HorizontalSplitter.Panel1.SuspendLayout();
             this.HorizontalSplitter.Panel2.SuspendLayout();
             this.HorizontalSplitter.SuspendLayout();
@@ -893,7 +894,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.toolsToolStripMenuItem});
+            this.toolsToolStripMenuItem,
+            this.ToolsRootMenu});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1009, 24);
@@ -1034,6 +1036,12 @@
             this.Zoom_8x.Text = "8X";
             this.Zoom_8x.Click += new System.EventHandler(this.xToolStripMenuItem6_Click);
             // 
+            // ToolsRootMenu
+            // 
+            this.ToolsRootMenu.Name = "ToolsRootMenu";
+            this.ToolsRootMenu.Size = new System.Drawing.Size(48, 20);
+            this.ToolsRootMenu.Text = "Tools";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1157,6 +1165,7 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button AnyButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolsRootMenu;
     }
 }
 

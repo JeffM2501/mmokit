@@ -8,6 +8,8 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
+using System.Reflection;
+
 namespace ManaSourceSpriteTool
 {
     public partial class MainForm : Form
@@ -37,6 +39,44 @@ namespace ManaSourceSpriteTool
         public MainForm()
         {
             InitializeComponent();
+
+            // load plugins
+            DirectoryInfo dir = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath),"plugins"));
+            if (dir.Exists)
+            {
+                foreach (FileInfo file in dir.GetFiles("*.dll"))
+                {
+                    try
+                    {
+                        Assembly plugin = Assembly.LoadFile(file.FullName);
+                        if (plugin != null)
+                        {
+                            foreach (Type t in plugin.GetTypes())
+                            {
+                                if (t.IsAbstract)
+                                    continue;
+
+                                if (t.IsSubclassOf(typeof(BToolMenuPlugin)))
+                                {
+                                    BToolMenuPlugin p = (BToolMenuPlugin)Activator.CreateInstance(t);
+                                    if (p != null)
+                                    {
+                                        ToolStripMenuItem item = new ToolStripMenuItem(p.MenuName());
+                                        item.Click +=new EventHandler(item_Click);
+                                        item.Tag = p;
+                                        ToolsRootMenu.DropDownItems.Add(item);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (System.Exception /*ex*/)
+                    {
+                    	
+                    }
+                }
+            }
+
             SpriteImage.LocateFile = new SpriteImage.UnknownFileHandler(FindSpriteImage);
             SpriteImage.Reload += new SpriteImage.FileReloadHandler(SpriteImage_Reload);
 
@@ -46,6 +86,17 @@ namespace ManaSourceSpriteTool
             SetToolTips();
             recenterToolStripMenuItem_Click(this, EventArgs.Empty);
             SetZoomCheck();
+        }
+
+        void item_Click(object sender, EventArgs e)
+        {
+            if (sender as ToolStripMenuItem != null)
+            {
+                if ((sender as ToolStripMenuItem).Tag as BToolMenuPlugin != null)
+                {
+                    ((sender as ToolStripMenuItem).Tag as BToolMenuPlugin).Execute(Doc);
+                }
+            }
         }
 
         protected void SetToolTips ()
@@ -1165,7 +1216,7 @@ namespace ManaSourceSpriteTool
             Redraw();
         }
 
-        protected void AddActionDir (  ManaSource.Sprites.Action action, ManaSource.Sprites.Direction dir )
+        protected void AddActionDir ( ManaSource.Sprites.Action action, ManaSource.Sprites.Direction dir )
         {
             if (action.Animations.ContainsKey(dir))
                 return;

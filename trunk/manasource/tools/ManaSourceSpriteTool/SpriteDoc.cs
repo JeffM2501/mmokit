@@ -7,6 +7,12 @@ using ManaSource.Sprites;
 
 namespace ManaSourceSpriteTool
 {
+    public class BToolMenuPlugin
+    {
+        public virtual string MenuName() { return string.Empty; }
+        public virtual void Execute(SpriteDoc document) { return; }
+    }
+
     public class SpriteLayer
     {
         public Sprite LayerSprite;
