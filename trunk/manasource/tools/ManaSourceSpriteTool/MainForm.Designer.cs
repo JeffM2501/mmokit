@@ -101,18 +101,17 @@
             this.saveLayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAllLayersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recenterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.xToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.xToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.xToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.xToolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
-            this.xToolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
-            this.xToolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
-            this.xToolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_1x = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_2x = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_3x = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_4x = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_5x = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_6x = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_7x = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom_8x = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.HorizontalSplitter.Panel1.SuspendLayout();
             this.HorizontalSplitter.Panel2.SuspendLayout();
@@ -338,6 +337,11 @@
             // FrameDelay
             // 
             this.FrameDelay.Location = new System.Drawing.Point(164, 60);
+            this.FrameDelay.Maximum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            0});
             this.FrameDelay.Name = "FrameDelay";
             this.FrameDelay.Size = new System.Drawing.Size(55, 20);
             this.FrameDelay.TabIndex = 7;
@@ -587,11 +591,11 @@
             this.LayerInfo.TabIndex = 7;
             this.LayerInfo.Text = "i";
             this.LayerInfo.UseVisualStyleBackColor = true;
+            this.LayerInfo.Click += new System.EventHandler(this.LayerInfo_Click);
             // 
             // NewLayer
             // 
             this.NewLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.NewLayer.Enabled = false;
             this.NewLayer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.NewLayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.NewLayer.Location = new System.Drawing.Point(59, 194);
@@ -600,6 +604,7 @@
             this.NewLayer.TabIndex = 6;
             this.NewLayer.Text = "N";
             this.NewLayer.UseVisualStyleBackColor = true;
+            this.NewLayer.Click += new System.EventHandler(this.NewLayer_Click);
             // 
             // LayerDown
             // 
@@ -888,7 +893,6 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.editToolStripMenuItem,
             this.toolsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -917,10 +921,10 @@
             // 
             // newLayerToolStripMenuItem
             // 
-            this.newLayerToolStripMenuItem.Enabled = false;
             this.newLayerToolStripMenuItem.Name = "newLayerToolStripMenuItem";
             this.newLayerToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.newLayerToolStripMenuItem.Text = "New Layer";
+            this.newLayerToolStripMenuItem.Click += new System.EventHandler(this.NewLayer_Click);
             // 
             // saveLayerToolStripMenuItem
             // 
@@ -943,12 +947,6 @@
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
-            // editToolStripMenuItem
-            // 
-            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
-            this.editToolStripMenuItem.Text = "Edit";
-            // 
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -968,73 +966,73 @@
             // zoomToolStripMenuItem
             // 
             this.zoomToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem2,
-            this.xToolStripMenuItem,
-            this.xToolStripMenuItem1,
-            this.xToolStripMenuItem2,
-            this.xToolStripMenuItem3,
-            this.xToolStripMenuItem4,
-            this.xToolStripMenuItem5,
-            this.xToolStripMenuItem6});
+            this.Zoom_1x,
+            this.Zoom_2x,
+            this.Zoom_3x,
+            this.Zoom_4x,
+            this.Zoom_5x,
+            this.Zoom_6x,
+            this.Zoom_7x,
+            this.Zoom_8x});
             this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
             this.zoomToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.zoomToolStripMenuItem.Text = "Zoom";
             // 
-            // toolStripMenuItem2
+            // Zoom_1x
             // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(87, 22);
-            this.toolStripMenuItem2.Text = "1X";
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+            this.Zoom_1x.Name = "Zoom_1x";
+            this.Zoom_1x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_1x.Text = "1X";
+            this.Zoom_1x.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
-            // xToolStripMenuItem
+            // Zoom_2x
             // 
-            this.xToolStripMenuItem.Name = "xToolStripMenuItem";
-            this.xToolStripMenuItem.Size = new System.Drawing.Size(87, 22);
-            this.xToolStripMenuItem.Text = "2X";
-            this.xToolStripMenuItem.Click += new System.EventHandler(this.xToolStripMenuItem_Click);
+            this.Zoom_2x.Name = "Zoom_2x";
+            this.Zoom_2x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_2x.Text = "2X";
+            this.Zoom_2x.Click += new System.EventHandler(this.xToolStripMenuItem_Click);
             // 
-            // xToolStripMenuItem1
+            // Zoom_3x
             // 
-            this.xToolStripMenuItem1.Name = "xToolStripMenuItem1";
-            this.xToolStripMenuItem1.Size = new System.Drawing.Size(87, 22);
-            this.xToolStripMenuItem1.Text = "3X";
-            this.xToolStripMenuItem1.Click += new System.EventHandler(this.xToolStripMenuItem1_Click);
+            this.Zoom_3x.Name = "Zoom_3x";
+            this.Zoom_3x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_3x.Text = "3X";
+            this.Zoom_3x.Click += new System.EventHandler(this.xToolStripMenuItem1_Click);
             // 
-            // xToolStripMenuItem2
+            // Zoom_4x
             // 
-            this.xToolStripMenuItem2.Name = "xToolStripMenuItem2";
-            this.xToolStripMenuItem2.Size = new System.Drawing.Size(87, 22);
-            this.xToolStripMenuItem2.Text = "4X";
-            this.xToolStripMenuItem2.Click += new System.EventHandler(this.xToolStripMenuItem2_Click);
+            this.Zoom_4x.Name = "Zoom_4x";
+            this.Zoom_4x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_4x.Text = "4X";
+            this.Zoom_4x.Click += new System.EventHandler(this.xToolStripMenuItem2_Click);
             // 
-            // xToolStripMenuItem3
+            // Zoom_5x
             // 
-            this.xToolStripMenuItem3.Name = "xToolStripMenuItem3";
-            this.xToolStripMenuItem3.Size = new System.Drawing.Size(87, 22);
-            this.xToolStripMenuItem3.Text = "5X";
-            this.xToolStripMenuItem3.Click += new System.EventHandler(this.xToolStripMenuItem3_Click);
+            this.Zoom_5x.Name = "Zoom_5x";
+            this.Zoom_5x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_5x.Text = "5X";
+            this.Zoom_5x.Click += new System.EventHandler(this.xToolStripMenuItem3_Click);
             // 
-            // xToolStripMenuItem4
+            // Zoom_6x
             // 
-            this.xToolStripMenuItem4.Name = "xToolStripMenuItem4";
-            this.xToolStripMenuItem4.Size = new System.Drawing.Size(87, 22);
-            this.xToolStripMenuItem4.Text = "6X";
-            this.xToolStripMenuItem4.Click += new System.EventHandler(this.xToolStripMenuItem4_Click);
+            this.Zoom_6x.Name = "Zoom_6x";
+            this.Zoom_6x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_6x.Text = "6X";
+            this.Zoom_6x.Click += new System.EventHandler(this.xToolStripMenuItem4_Click);
             // 
-            // xToolStripMenuItem5
+            // Zoom_7x
             // 
-            this.xToolStripMenuItem5.Name = "xToolStripMenuItem5";
-            this.xToolStripMenuItem5.Size = new System.Drawing.Size(87, 22);
-            this.xToolStripMenuItem5.Text = "7X";
-            this.xToolStripMenuItem5.Click += new System.EventHandler(this.xToolStripMenuItem5_Click);
+            this.Zoom_7x.Name = "Zoom_7x";
+            this.Zoom_7x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_7x.Text = "7X";
+            this.Zoom_7x.Click += new System.EventHandler(this.xToolStripMenuItem5_Click);
             // 
-            // xToolStripMenuItem6
+            // Zoom_8x
             // 
-            this.xToolStripMenuItem6.Name = "xToolStripMenuItem6";
-            this.xToolStripMenuItem6.Size = new System.Drawing.Size(87, 22);
-            this.xToolStripMenuItem6.Text = "8X";
-            this.xToolStripMenuItem6.Click += new System.EventHandler(this.xToolStripMenuItem6_Click);
+            this.Zoom_8x.Name = "Zoom_8x";
+            this.Zoom_8x.Size = new System.Drawing.Size(87, 22);
+            this.Zoom_8x.Text = "8X";
+            this.Zoom_8x.Click += new System.EventHandler(this.xToolStripMenuItem6_Click);
             // 
             // MainForm
             // 
@@ -1044,7 +1042,7 @@
             this.Controls.Add(this.VerticalSplitter);
             this.Controls.Add(this.menuStrip1);
             this.Name = "MainForm";
-            this.Text = "ManaSource Sprite Tool v0.0.0.2";
+            this.Text = "ManaSource Sprite Tool v0.0.0.3";
             this.HorizontalSplitter.Panel1.ResumeLayout(false);
             this.HorizontalSplitter.Panel2.ResumeLayout(false);
             this.HorizontalSplitter.ResumeLayout(false);
@@ -1081,7 +1079,6 @@
         private System.Windows.Forms.PictureBox MainView;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.Panel LayerPannel;
         private System.Windows.Forms.ListView LayerList;
@@ -1116,14 +1113,14 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recenterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
-        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem2;
-        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem3;
-        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem4;
-        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem5;
-        private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem6;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_1x;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_2x;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_3x;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_4x;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_5x;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_6x;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_7x;
+        private System.Windows.Forms.ToolStripMenuItem Zoom_8x;
         private System.Windows.Forms.Button EditAction;
         private System.Windows.Forms.Button EditImageSet;
         private System.Windows.Forms.Button RemoveImageSet;

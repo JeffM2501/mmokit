@@ -30,13 +30,19 @@ namespace ManaSourceSpriteTool
                 imageSet.Value.Tag = img;
             }
         }
+
+        public SpriteLayer(Sprite sprite, string xmlPath)
+        {
+            XMLFile = new FileInfo(xmlPath);
+            LayerSprite = sprite;
+
+            Name = Path.GetFileNameWithoutExtension(xmlPath);
+        }
     }
 
     public class SpriteDoc
     {
         public List<SpriteLayer> Layers = new List<SpriteLayer>();
-        public List<String> Actions = new List<String>();
-
-
+       // public List<String> Actions = new List<String>();
     }
 }

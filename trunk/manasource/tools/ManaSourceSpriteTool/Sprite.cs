@@ -202,8 +202,12 @@ namespace ManaSource.Sprites
                     sprite.DefaultAction = attrib.Value;
             }
 
-            foreach (XmlElement child in node)
+            foreach (XmlNode n in node.ChildNodes)
             {
+                XmlElement child = n as XmlElement;
+                if (child == null)
+                    continue;
+
                 if (child.Name == "imageset")
                 {
                     ImageSet imageset = ProcessImageSet(child);
@@ -279,8 +283,12 @@ namespace ManaSource.Sprites
                     action.Imageset = attrib.Value;
             }
 
-            foreach (XmlElement child in node.ChildNodes)
+            foreach (XmlNode n in node.ChildNodes)
             {
+                XmlElement child = n as XmlElement;
+                if (child == null)
+                    continue;
+
                 if (child.Name == "animation")
                 {
                     Animation anim = ProcessAnimation(child);
@@ -308,8 +316,12 @@ namespace ManaSource.Sprites
                 }
             }
 
-            foreach (XmlElement child in node.ChildNodes)
+            foreach (XmlNode n in node.ChildNodes)
             {
+                XmlElement child = n as XmlElement;
+                if (child == null)
+                    continue;
+
                 if (child.Name == "sequence" || child.Name == "frame")
                 {
                     AnimationFrame frame = new AnimationFrame();
