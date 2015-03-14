@@ -1,0 +1,1 @@
+MMOkit is an attempt to bring together a number of open source technologies into a viable MMO Style game system. This framework can be used to experiment and test new ideas and philosophies in the MMO game world.
